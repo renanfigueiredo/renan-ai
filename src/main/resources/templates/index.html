@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="pt-BR">
+<head>
+    <title>Dashboard - Renan AI</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="dashboard">
+
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="gradient-text">Renan AI</span>
+                </h1>
+                <p class="hero-subtitle">A plataforma de IA mais completa. Texto, Imagens e Vídeos com os melhores modelos do mundo.</p>
+                <div class="hero-actions">
+                    <a href="/chat" class="btn-primary-hero">
+                        <i class="bi bi-chat-dots-fill"></i> Iniciar Chat
+                    </a>
+                    <a href="/image" class="btn-secondary-hero">
+                        <i class="bi bi-image-fill"></i> Gerar Imagem
+                    </a>
+                    <a href="/video" class="btn-secondary-hero">
+                        <i class="bi bi-film"></i> Criar Vídeo
+                    </a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="ai-orb">
+                    <div class="orb-inner"></div>
+                    <div class="orb-ring ring1"></div>
+                    <div class="orb-ring ring2"></div>
+                    <div class="orb-ring ring3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-icon text-blue"><i class="bi bi-chat-dots-fill"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number" th:text="${totalConversations}">0</span>
+                    <span class="stat-label">Conversas</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-purple"><i class="bi bi-image-fill"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number" th:text="${totalImages}">0</span>
+                    <span class="stat-label">Imagens Geradas</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-red"><i class="bi bi-film"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number" th:text="${totalVideos}">0</span>
+                    <span class="stat-label">Vídeos Criados</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-green"><i class="bi bi-cpu-fill"></i></div>
+                <div class="stat-info">
+                    <span class="stat-number" th:text="${#lists.size(textModels) + #lists.size(imageModels) + #lists.size(videoModels)}">0</span>
+                    <span class="stat-label">Modelos Disponíveis</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access Grid -->
+        <div class="section-title">
+            <h2>🚀 Início Rápido</h2>
+        </div>
+
+        <div class="quick-access-grid">
+            <!-- Chat Card -->
+            <a href="/chat" class="feature-card feature-chat">
+                <div class="feature-card-header">
+                    <div class="feature-icon"><i class="bi bi-chat-dots-fill"></i></div>
+                    <span class="feature-tag">TEXTO</span>
+                </div>
+                <h3>Chat Inteligente</h3>
+                <p>Converse com os melhores modelos de IA. Claude, Nova, Llama, Mistral e muito mais.</p>
+                <div class="feature-highlights">
+                    <span><i class="bi bi-check-circle-fill"></i> Histórico de conversas</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Multimodal (texto+imagem)</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Comparação de modelos</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Export PDF/Markdown</span>
+                </div>
+                <div class="feature-arrow"><i class="bi bi-arrow-right-circle-fill"></i></div>
+            </a>
+
+            <!-- Image Card -->
+            <a href="/image" class="feature-card feature-image">
+                <div class="feature-card-header">
+                    <div class="feature-icon"><i class="bi bi-image-fill"></i></div>
+                    <span class="feature-tag">IMAGEM</span>
+                </div>
+                <h3>Geração de Imagens</h3>
+                <p>Crie imagens incríveis com Stable Diffusion XL, Nova Canvas e Titan Image.</p>
+                <div class="feature-highlights">
+                    <span><i class="bi bi-check-circle-fill"></i> Múltiplos estilos</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Image-to-Image</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Prompt enhancement</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Galeria HD</span>
+                </div>
+                <div class="feature-arrow"><i class="bi bi-arrow-right-circle-fill"></i></div>
+            </a>
+
+            <!-- Video Card -->
+            <a href="/video" class="feature-card feature-video">
+                <div class="feature-card-header">
+                    <div class="feature-icon"><i class="bi bi-film"></i></div>
+                    <span class="feature-tag">VÍDEO</span>
+                </div>
+                <h3>Geração de Vídeos</h3>
+                <p>Crie vídeos com Amazon Nova Reel. Do texto ou imagem ao vídeo em minutos.</p>
+                <div class="feature-highlights">
+                    <span><i class="bi bi-check-circle-fill"></i> Texto para vídeo</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Imagem para vídeo</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Status em tempo real</span>
+                    <span><i class="bi bi-check-circle-fill"></i> Resolução HD</span>
+                </div>
+                <div class="feature-arrow"><i class="bi bi-arrow-right-circle-fill"></i></div>
+            </a>
+        </div>
+
+        <!-- Available Models Section -->
+        <div class="section-title">
+            <h2>🤖 Modelos de Texto Disponíveis</h2>
+        </div>
+
+        <div class="models-grid">
+            <div th:each="model : ${textModels}" class="model-card">
+                <div class="model-header">
+                    <i class="bi" th:class="'bi ' + ${model.icon} + ' model-icon'"></i>
+                    <div class="model-info">
+                        <span class="model-name" th:text="${model.name}">Model Name</span>
+                        <span class="model-provider" th:text="${model.provider}">Provider</span>
+                    </div>
+                    <span class="model-badge" th:text="${model.provider}"
+                          th:classappend="' badge-' + ${model.badgeColor}">Badge</span>
+                </div>
+                <p class="model-desc" th:text="${model.description}">Description</p>
+                <div class="model-features">
+                    <span th:if="${model.supportsImages}" class="feature-pill">
+                        <i class="bi bi-image"></i> Visão
+                    </span>
+                    <span th:if="${model.supportsDocuments}" class="feature-pill">
+                        <i class="bi bi-file-text"></i> Documentos
+                    </span>
+                    <span th:if="${model.supportsStreaming}" class="feature-pill">
+                        <i class="bi bi-lightning-fill"></i> Streaming
+                    </span>
+                    <span class="feature-pill cost-pill">
+                        $<span th:text="${#numbers.formatDecimal(model.outputCostPer1K, 1, 5)}">0</span>/1K
+                    </span>
+                </div>
+                <a th:href="@{/chat(model=${model.id})}" class="btn-use-model">
+                    Usar Modelo <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Conversations -->
+        <div th:if="${!#lists.isEmpty(recentConversations)}">
+            <div class="section-title">
+                <h2>💬 Conversas Recentes</h2>
+                <a href="/history" class="see-all-link">Ver todas <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="recent-list">
+                <a th:each="conv : ${recentConversations}"
+                   th:href="@{/chat(id=${conv.id})}"
+                   class="recent-item">
+                    <div class="recent-icon"><i class="bi bi-chat-dots"></i></div>
+                    <div class="recent-info">
+                        <span class="recent-title" th:text="${conv.title}">Título</span>
+                        <span class="recent-meta">
+                            <span th:text="${conv.modelId}">model</span> •
+                            <span th:text="${#temporals.format(conv.updatedAt, 'dd/MM HH:mm')}">data</span>
+                        </span>
+                    </div>
+                    <div class="recent-messages" th:text="${#lists.size(conv.messages)} + ' msgs'">0 msgs</div>
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+<th:block layout:fragment="scripts"></th:block>
+</body>
+</html>

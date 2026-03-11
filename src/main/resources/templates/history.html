@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="pt-BR">
+<head>
+    <title>Histórico - Renan AI</title>
+</head>
+<body>
+<div layout:fragment="content">
+<div class="history-page">
+    <div class="page-header">
+        <h1><i class="bi bi-clock-history"></i> Histórico Completo</h1>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+        <button class="tab-btn active" data-tab="convTab">
+            <i class="bi bi-chat-dots-fill"></i> Conversas
+            <span class="tab-count" th:text="${#lists.size(conversations)}">0</span>
+        </button>
+        <button class="tab-btn" data-tab="imgTab">
+            <i class="bi bi-image-fill"></i> Imagens
+            <span class="tab-count" th:text="${#lists.size(images)}">0</span>
+        </button>
+        <button class="tab-btn" data-tab="vidTab">
+            <i class="bi bi-film"></i> Vídeos
+            <span class="tab-count" th:text="${#lists.size(videos)}">0</span>
+        </button>
+    </div>
+
+    <!-- Conversations Tab -->
+    <div class="tab-content active" id="convTab">
+        <div class="tab-actions">
+            <button class="btn-danger-small" onclick="clearAllConversations()">
+                <i class="bi bi-trash3"></i> Limpar Todas
+            </button>
+        </div>
+        <div class="history-list">
+            <a th:each="conv : ${conversations}"
+               th:href="@{/chat(id=${conv.id})}"
+               class="history-item">
+                <div class="hist-icon"><i class="bi bi-chat-dots-fill"></i></div>
+                <div class="hist-info">
+                    <span class="hist-title" th:text="${conv.title}">Título</span>
+                    <div class="hist-meta">
+                        <span th:text="${conv.modelId}">model</span>
+                        <span>•</span>
+                        <span th:text="${#lists.size(conv.messages)} + ' mensagens'">0</span>
+                        <span>•</span>
+                        <span th:text="${#temporals.format(conv.updatedAt, 'dd/MM/yyyy HH:mm')}">data</span>
+                        <span th:if="${conv.estimatedCost > 0}">•</span>
+                        <span th:if="${conv.estimatedCost > 0}"
+                              th:text="'$' + ${#numbers.formatDecimal(conv.estimatedCost, 1, 6)}">cost</span>
+                    </div>
+                </div>
+                <div class="hist-actions">
+                    <button class="hist-action-btn"
+                            th:data-id="${conv.id}"
+                            onclick="deleteHistConversation(this.dataset.id, event)">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </div>
+            </a>
+            <div th:if="${#lists.isEmpty(conversations)}" class="history-empty">
+                <i class="bi bi-chat-dots"></i>
+                <p>Nenhuma conversa no histórico</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Images Tab -->
+    <div class="tab-content" id="imgTab" style="display:none">
+        <div class="history-images-grid">
+            <div th:each="img : ${images}" class="hist-img-item">
+                <img th:src="'data:image/png;base64,' + ${img.base64Images[0]}"
+                     alt="Generated Image" loading="lazy">
+                <div class="hist-img-info">
+                    <p th:text="${#strings.abbreviate(img.prompt, 60)}">prompt</p>
+                    <div class="hist-img-meta">
+                        <span th:text="${img.modelName}">model</span>
+                        <span th:text="${img.width} + 'x' + ${img.height}">size</span>
+                        <span th:text="${#temporals.format(img.createdAt, 'dd/MM HH:mm')}">date</span>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(images)}" class="history-empty">
+                <i class="bi bi-images"></i>
+                <p>Nenhuma imagem gerada</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Videos Tab -->
+    <div class="tab-content" id="vidTab" style="display:none">
+        <div class="history-list">
+            <div th:each="video : ${videos}" class="history-item">
+                <div class="hist-icon" th:classappend="${video.status == 'COMPLETED'} ? ' text-success' : (${video.status == 'FAILED'} ? ' text-danger' : ' text-yellow')">
+                    <i class="bi bi-film"></i>
+                </div>
+                <div class="hist-info">
+                    <span class="hist-title" th:text="${#strings.abbreviate(video.prompt, 80)}">Prompt</span>
+                    <div class="hist-meta">
+                        <span th:text="${video.modelName}">model</span>
+                        <span>•</span>
+                        <span class="status-badge"
+                              th:text="${video.status}"
+                              th:classappend="${video.status == 'COMPLETED'} ? ' badge-success' : (${video.status == 'FAILED'} ? ' badge-error' : ' badge-warning')">
+                            Status
+                        </span>
+                        <span>•</span>
+                        <span th:text="${#temporals.format(video.createdAt, 'dd/MM/yyyy HH:mm')}">date</span>
+                        <span th:if="${video.s3Uri != null}">•</span>
+                        <a th:if="${video.s3Uri != null}" th:href="${video.s3Uri}" target="_blank" class="s3-link">
+                            <i class="bi bi-link-45deg"></i> S3 URI
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(videos)}" class="history-empty">
+                <i class="bi bi-film"></i>
+                <p>Nenhum vídeo gerado</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            this.classList.add('active');
+            document.getElementById(this.dataset.tab).style.display = 'block';
+        });
+    });
+
+    function clearAllConversations() {
+        if (confirm('Tem certeza? Isso apagará todas as conversas.')) {
+            fetch('/api/history/conversations', {method: 'DELETE'})
+                .then(() => window.location.reload());
+        }
+    }
+
+    function deleteHistConversation(id, event) {
+        event.preventDefault();
+        if (confirm('Apagar esta conversa?')) {
+            fetch('/api/chat/conversation/' + id, {method: 'DELETE'})
+                .then(() => window.location.reload());
+        }
+    }
+</script>
+</div>
+</body>
+</html>

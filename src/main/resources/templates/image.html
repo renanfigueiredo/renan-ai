@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="pt-BR">
+<head>
+    <title>Geração de Imagens - Renan AI</title>
+</head>
+<body>
+<div layout:fragment="content">
+<div class="image-layout">
+
+    <!-- Left Panel: Controls -->
+    <div class="image-controls-panel">
+        <div class="panel-title">
+            <i class="bi bi-image-fill"></i> Geração de Imagens
+        </div>
+
+        <!-- Model Selector -->
+        <div class="control-section">
+            <label class="control-label">Modelo de IA</label>
+            <input type="hidden" id="selectedImageModel"
+                   th:value="${imageModels != null and !imageModels.empty ? imageModels[0].id : 'amazon.nova-canvas-v1:0'}">
+            <div class="model-cards-horizontal">
+                <div th:each="model,iterStat : ${imageModels}"
+                     class="model-card-small"
+                     th:classappend="${iterStat.first} ? ' active' : ''"
+                     th:data-id="${model.id}"
+                     onclick="selectImageModel(this.dataset.id, this)">
+                    <i class="bi" th:class="'bi ' + ${model.icon}"></i>
+                    <span th:text="${model.name}">Model</span>
+                    <span class="model-card-provider" th:text="${model.provider}">Provider</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prompt -->
+        <div class="control-section">
+            <label class="control-label">
+                Prompt (o que gerar)
+                <button class="enhance-btn-small" id="btnEnhanceImagePrompt" title="Melhorar prompt com IA">
+                    <i class="bi bi-magic"></i> Melhorar
+                </button>
+            </label>
+            <textarea id="imagePrompt"
+                      placeholder="Descreva a imagem que deseja criar... Ex: 'Um astronauta andando a cavalo em Marte, ultra realista, 8K'"
+                      rows="4"></textarea>
+            <div id="promptCharCounter" class="char-counter">0 caracteres</div>
+        </div>
+
+        <!-- Negative Prompt -->
+        <div class="control-section">
+            <label class="control-label">
+                Prompt Negativo (o que evitar)
+                <button class="info-btn" title="Descreva elementos que NÃO devem aparecer">
+                    <i class="bi bi-info-circle"></i>
+                </button>
+            </label>
+            <textarea id="negativePrompt"
+                      placeholder="Ex: desfocado, baixa qualidade, distorcido, marca d'água, feio, ruído..."
+                      rows="2"></textarea>
+        </div>
+
+        <!-- Templates Section -->
+        <div class="control-section">
+            <label class="control-label">Templates Rápidos</label>
+            <div class="img-templates-grid">
+                <div th:each="tmpl : ${templates}"
+                     class="img-template-pill"
+                     th:data-content="${tmpl.content}"
+                     onclick="useImageTemplate(this.dataset.content)">
+                    <i class="bi" th:class="'bi ' + ${tmpl.icon}"></i>
+                    <span th:text="${tmpl.name}">Template</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Settings Accordion -->
+        <div class="control-section">
+            <button class="accordion-toggle" onclick="toggleAccordion('imgAdvanced')">
+                <i class="bi bi-sliders"></i> Configurações Avançadas
+                <i class="bi bi-chevron-down acc-icon"></i>
+            </button>
+            <div class="accordion-content" id="imgAdvanced" style="display:none">
+
+                <!-- Resolution -->
+                <div class="control-row">
+                    <label>Resolução</label>
+                    <div class="resolution-presets">
+                        <button class="res-btn active" data-w="1024" data-h="1024" onclick="setResolution(1024,1024,this)">1:1 (1024)</button>
+                        <button class="res-btn" data-w="1152" data-h="896" onclick="setResolution(1152,896,this)">4:3</button>
+                        <button class="res-btn" data-w="1344" data-h="768" onclick="setResolution(1344,768,this)">16:9</button>
+                        <button class="res-btn" data-w="768" data-h="1344" onclick="setResolution(768,1344,this)">9:16</button>
+                        <button class="res-btn" data-w="896" data-h="1152" onclick="setResolution(896,1152,this)">3:4</button>
+                    </div>
+                    <div class="custom-res-row">
+                        <input type="number" id="imgWidth" value="1024" min="512" max="2048" step="64">
+                        <span>×</span>
+                        <input type="number" id="imgHeight" value="1024" min="512" max="2048" step="64">
+                    </div>
+                </div>
+
+                <!-- Number of images -->
+                <div class="control-row">
+                    <label>Número de Imagens: <span id="numImagesVal">1</span></label>
+                    <input type="range" id="numImages" min="1" max="4" step="1" value="1"
+                           oninput="document.getElementById('numImagesVal').textContent=this.value">
+                </div>
+
+                <!-- CFG Scale -->
+                <div class="control-row">
+                    <label>CFG Scale: <span id="cfgVal">7.5</span></label>
+                    <input type="range" id="cfgScale" min="1" max="20" step="0.5" value="7.5"
+                           oninput="document.getElementById('cfgVal').textContent=this.value">
+                    <div class="range-labels"><span>Livre</span><span>Preciso</span></div>
+                </div>
+
+                <!-- Style Preset (SDXL) -->
+                <div class="control-row" id="styleRow">
+                    <label>Estilo</label>
+                    <select id="stylePreset">
+                        <option value="">Nenhum</option>
+                        <option value="photographic">📷 Fotográfico</option>
+                        <option value="cinematic">🎬 Cinematográfico</option>
+                        <option value="digital-art">🖥️ Arte Digital</option>
+                        <option value="anime">🎌 Anime</option>
+                        <option value="fantasy-art">🧙 Arte Fantasy</option>
+                        <option value="line-art">✏️ Line Art</option>
+                        <option value="comic-book">💥 Comic Book</option>
+                        <option value="isometric">📐 Isométrico</option>
+                        <option value="3d-model">🎮 3D Model</option>
+                        <option value="neon-punk">🌈 Neon Punk</option>
+                        <option value="pixel-art">👾 Pixel Art</option>
+                        <option value="origami">🦢 Origami</option>
+                        <option value="watercolor">🎨 Aquarela</option>
+                        <option value="oil-painting">🖼️ Pintura a Óleo</option>
+                        <option value="low-poly">🔺 Low Poly</option>
+                    </select>
+                </div>
+
+                <!-- Quality (Nova Canvas) -->
+                <div class="control-row" id="qualityRow">
+                    <label>Qualidade</label>
+                    <select id="imageQuality">
+                        <option value="standard">Standard</option>
+                        <option value="premium">Premium</option>
+                    </select>
+                </div>
+
+                <!-- Seed -->
+                <div class="control-row">
+                    <label>Seed (0 = aleatório)</label>
+                    <input type="number" id="imgSeed" value="0" min="0">
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Image-to-Image -->
+        <div class="control-section">
+            <button class="accordion-toggle" onclick="toggleAccordion('img2img')">
+                <i class="bi bi-images"></i> Image-to-Image (Variação)
+                <i class="bi bi-chevron-down acc-icon"></i>
+            </button>
+            <div class="accordion-content" id="img2img" style="display:none">
+                <div class="img2img-upload" id="img2imgUpload">
+                    <input type="file" id="referenceImage" accept="image/*" style="display:none">
+                    <div class="upload-area" onclick="document.getElementById('referenceImage').click()">
+                        <i class="bi bi-cloud-upload"></i>
+                        <p>Clique para enviar imagem de referência</p>
+                        <span>PNG, JPG, WEBP até 5MB</span>
+                    </div>
+                    <div class="ref-preview" id="refPreview" style="display:none">
+                        <img id="refPreviewImg" src="" alt="Reference">
+                        <button onclick="clearReferenceImage()" class="remove-ref">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="control-row" id="imgStrengthRow" style="display:none">
+                    <label>Força da Variação: <span id="imgStrengthVal">0.35</span></label>
+                    <input type="range" id="imgStrength" min="0.1" max="0.9" step="0.05" value="0.35"
+                           oninput="document.getElementById('imgStrengthVal').textContent=this.value">
+                    <div class="range-labels"><span>Fiel ao original</span><span>Muito diferente</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Button -->
+        <button class="btn-generate" id="btnGenerateImage">
+            <i class="bi bi-stars"></i>
+            <span>Gerar Imagem</span>
+        </button>
+    </div>
+
+    <!-- Right Panel: Results & Gallery -->
+    <div class="image-results-panel">
+
+        <!-- Result Area -->
+        <div class="result-area" id="resultArea">
+            <div class="result-placeholder" id="resultPlaceholder">
+                <div class="placeholder-animation">
+                    <div class="img-canvas-placeholder">
+                        <i class="bi bi-image"></i>
+                    </div>
+                </div>
+                <h3>Sua imagem aparecerá aqui</h3>
+                <p>Configure as opções e clique em "Gerar Imagem"</p>
+            </div>
+
+            <!-- Generated images display -->
+            <div class="generated-images" id="generatedImages" style="display:none">
+                <div class="generated-images-grid" id="generatedImagesGrid">
+                    <!-- Images inserted by JS -->
+                </div>
+                <div class="generation-meta" id="generationMeta"></div>
+            </div>
+
+            <!-- Loading state -->
+            <div class="generating-state" id="generatingState" style="display:none">
+                <div class="img-loading-anim">
+                    <div class="img-progress-bar" id="imgProgressBar"></div>
+                </div>
+                <p class="generating-text" id="generatingText">Gerando imagem...</p>
+                <div class="generation-steps" id="generationSteps">
+                    <span class="step active">📝 Processando prompt</span>
+                    <span class="step">🎨 Aplicando estilo</span>
+                    <span class="step">✨ Refinando detalhes</span>
+                    <span class="step">🖼️ Finalizando</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image History / Gallery -->
+        <div class="image-gallery">
+            <div class="gallery-header">
+                <h3><i class="bi bi-grid-3x3-gap-fill"></i> Galeria</h3>
+                <div class="gallery-filters">
+                    <button class="gallery-filter active" data-filter="all">Todas</button>
+                    <button class="gallery-filter" data-filter="favorites">⭐ Favoritas</button>
+                </div>
+            </div>
+            <div class="gallery-grid" id="galleryGrid">
+                <div th:each="img : ${imageHistory}" class="gallery-item" th:data-id="${img.id}">
+                    <div class="gallery-item-img">
+                        <img th:src="'data:image/png;base64,' + ${img.base64Images[0]}" alt="Generated" loading="lazy">
+                        <div class="gallery-overlay">
+                            <button class="gallery-action-btn" th:data-id="${img.id}" onclick="viewImage(this.dataset.id)">
+                                <i class="bi bi-fullscreen"></i>
+                            </button>
+                            <button class="gallery-action-btn" th:data-id="${img.id}" onclick="downloadImage(this.dataset.id, 0)">
+                                <i class="bi bi-download"></i>
+                            </button>
+                            <button class="gallery-action-btn" th:data-id="${img.id}" onclick="toggleFavoriteImage(this.dataset.id)">
+                                <i class="bi" th:class="${img.favorite} ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"></i>
+                            </button>
+                            <button class="gallery-action-btn danger" th:data-id="${img.id}" onclick="deleteImage(this.dataset.id)">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="gallery-item-info">
+                        <span class="gallery-prompt" th:title="${img.prompt}" th:text="${#strings.abbreviate(img.prompt, 50)}">Prompt</span>
+                        <span class="gallery-model" th:text="${img.modelName}">Model</span>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(imageHistory)}" class="gallery-empty">
+                    <i class="bi bi-images"></i>
+                    <p>Suas imagens geradas aparecerão aqui</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox for viewing images -->
+    <div class="lightbox" id="lightbox" style="display:none">
+        <div class="lightbox-backdrop" onclick="closeLightbox()"></div>
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <img id="lightboxImg" src="" alt="Full size image">
+            <div class="lightbox-actions">
+                <button onclick="downloadLightboxImage()">
+                    <i class="bi bi-download"></i> Download
+                </button>
+                <button onclick="useAsReference()">
+                    <i class="bi bi-arrow-repeat"></i> Usar como referência
+                </button>
+            </div>
+            <div class="lightbox-info">
+                <p id="lightboxPrompt"></p>
+                <div class="lightbox-meta">
+                    <span id="lightboxModel"></span>
+                    <span id="lightboxSize"></span>
+                    <span id="lightboxTime"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+</body>
+</html>

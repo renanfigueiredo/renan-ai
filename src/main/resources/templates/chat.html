@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="pt-BR">
+<head>
+    <title>Chat - Renan AI</title>
+</head>
+<body>
+<div layout:fragment="content">
+<div class="chat-layout">
+
+    <!-- Conversation Sidebar -->
+    <div class="conv-sidebar" id="convSidebar">
+        <div class="conv-sidebar-header">
+            <h3>Conversas</h3>
+            <button class="btn-new-chat" id="btnNewChat" title="Nova Conversa">
+                <i class="bi bi-plus-circle-fill"></i>
+            </button>
+        </div>
+
+        <div class="conv-search">
+            <i class="bi bi-search"></i>
+            <input type="text" id="searchConv" placeholder="Pesquisar conversas...">
+        </div>
+
+        <div class="conv-list" id="convList">
+            <div th:each="conv : ${conversations}"
+                 class="conv-item"
+                 th:classappend="${conv.id == conversation.id} ? ' active' : ''"
+                 th:data-id="${conv.id}"
+                 onclick="loadConversation(this.dataset.id)"
+            >
+                <div class="conv-item-icon">
+                    <i class="bi bi-chat-dots"></i>
+                    <i th:if="${conv.pinned}" class="bi bi-pin-fill pin-badge"></i>
+                </div>
+                <div class="conv-item-info">
+                    <span class="conv-item-title" th:text="${conv.title}">Conversa</span>
+                    <span class="conv-item-meta" th:text="${#lists.size(conv.messages)} + ' mensagens'">0</span>
+                </div>
+                <div class="conv-item-actions">
+                    <button class="conv-action-btn" th:data-id="${conv.id}" onclick="deleteConversation(this.dataset.id, event)">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(conversations)}" class="empty-convs">
+                <i class="bi bi-chat-dots"></i>
+                <p>Nenhuma conversa ainda</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Main Area -->
+    <div class="chat-main">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <button class="conv-sidebar-toggle" id="convSidebarToggle">
+                    <i class="bi bi-layout-sidebar-reverse"></i>
+                </button>
+                <div class="chat-title-area">
+                    <span class="chat-title" id="chatTitle" th:text="${conversation.title}">Nova Conversa</span>
+                    <span class="chat-stats" id="chatStats">Pronto</span>
+                </div>
+            </div>
+            <div class="chat-header-right">
+                <!-- Model Selector -->
+                <div class="model-selector-dropdown">
+                    <button class="model-selector-btn" id="modelSelectorBtn" onclick="toggleModelDropdown()">
+                        <i class="bi bi-cpu-fill"></i>
+                        <span id="currentModelName" th:text="${defaultModelName}">Claude Sonnet 4.6</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <div class="model-dropdown-panel" id="modelDropdown">
+                        <div class="model-search-input">
+                            <i class="bi bi-search"></i>
+                            <input type="text" id="modelSearch" placeholder="Buscar modelos..." oninput="filterModelDropdown(this.value)">
+                        </div>
+                        <div class="model-dropdown-list" id="modelDropdownList">
+                            <div th:each="model : ${textModels}"
+                                 class="model-dropdown-item"
+                                 th:data-id="${model.id}"
+                                 th:data-name="${model.name}"
+                                 th:classappend="${model.id == conversation.modelId} ? ' active' : ''"
+                                 onclick="selectModel(this.dataset.id, this.dataset.name)">
+                                <div class="model-item-left">
+                                    <i class="bi" th:class="'bi ' + ${model.icon}"></i>
+                                    <div>
+                                        <span class="model-item-name" th:text="${model.name}">Model</span>
+                                        <span class="model-item-provider" th:text="${model.provider}">Provider</span>
+                                    </div>
+                                </div>
+                                <div class="model-item-right">
+                                    <span th:if="${model.supportsImages}" class="model-pill">👁</span>
+                                    <span th:if="${model.supportsDocuments}" class="model-pill">📄</span>
+                                    <span class="model-cost" th:text="'$' + ${#numbers.formatDecimal(model.outputCostPer1K, 1, 5)}">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compare Mode -->
+                <button class="header-action-btn" id="btnCompare" title="Comparar Modelos">
+                    <i class="bi bi-layout-split"></i>
+                </button>
+
+                <!-- Settings -->
+                <button class="header-action-btn" id="btnSettings" title="Configurações">
+                    <i class="bi bi-sliders"></i>
+                </button>
+
+                <!-- Export -->
+                <button class="header-action-btn" id="btnExport" title="Exportar Conversa">
+                    <i class="bi bi-download"></i>
+                </button>
+
+                <!-- Clear Chat -->
+                <button class="header-action-btn danger" id="btnClearChat" title="Limpar Chat">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="messages-area" id="messagesArea">
+
+            <!-- Welcome message if no messages -->
+            <div th:if="${#lists.isEmpty(conversation.messages)}" class="welcome-message" id="welcomeMessage">
+                <div class="welcome-icon">🧠</div>
+                <h2>Como posso ajudar você hoje?</h2>
+                <p>Escolha um modelo acima e comece a conversar. Você pode fazer perguntas, pedir análises, gerar código e muito mais.</p>
+                <div class="welcome-suggestions">
+                    <button class="suggestion-chip" onclick="setSuggestion('Explique quantum computing de forma simples')">
+                        🔬 Explique quantum computing
+                    </button>
+                    <button class="suggestion-chip" onclick="setSuggestion('Escreva um plano de negócios para um app de delivery')">
+                        💼 Plano de negócios
+                    </button>
+                    <button class="suggestion-chip" onclick="setSuggestion('Crie um código Python para web scraping')">
+                        💻 Código Python
+                    </button>
+                    <button class="suggestion-chip" onclick="setSuggestion('Análise SWOT da minha startup de tecnologia')">
+                        📊 Análise SWOT
+                    </button>
+                </div>
+            </div>
+
+            <!-- Existing messages -->
+            <div th:each="msg : ${conversation.messages}"
+                 class="message-wrapper"
+                 th:classappend="${msg.role} == 'user' ? ' user-side' : ' assistant-side'">
+                <div th:if="${msg.role == 'user'}" class="message user-message">
+                    <div class="message-content" th:text="${msg.content}">Mensagem</div>
+                    <div class="message-meta">
+                        <span th:text="${#temporals.format(msg.timestamp, 'HH:mm')}">00:00</span>
+                    </div>
+                </div>
+                <div th:if="${msg.role == 'assistant'}" class="message assistant-message">
+                    <div class="message-avatar">🧠</div>
+                    <div class="message-body">
+                        <div class="message-content prose" th:utext="${msg.formattedContent}">Resposta</div>
+                        <div class="message-meta">
+                            <span class="meta-model" th:text="${msg.modelId}">model</span>
+                            <span class="meta-tokens" th:if="${msg.outputTokens > 0}"
+                                  th:text="${msg.outputTokens} + ' tokens'">0 tokens</span>
+                            <span class="meta-latency" th:if="${msg.latencyMs > 0}"
+                                  th:text="${msg.latencyMs} + 'ms'">0ms</span>
+                            <button class="meta-btn" th:data-id="${msg.id}" onclick="copyToClipboard(this.dataset.id)" title="Copiar">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing indicator -->
+            <div class="typing-indicator" id="typingIndicator" style="display:none">
+                <div class="message-avatar">🧠</div>
+                <div class="typing-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <!-- Attached file preview -->
+            <div class="attached-preview" id="attachedPreview" style="display:none">
+                <div class="attached-item" id="attachedItem">
+                    <i class="bi bi-image attached-icon" id="attachedIcon"></i>
+                    <span id="attachedName">arquivo.jpg</span>
+                    <button onclick="removeAttachment()" class="remove-attached">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="input-toolbar">
+                <!-- Templates Button -->
+                <button class="toolbar-btn" id="btnTemplates" title="Templates de Prompt">
+                    <i class="bi bi-grid-1x2"></i>
+                </button>
+
+                <!-- Attach Image -->
+                <button class="toolbar-btn" id="btnAttachImage" title="Anexar Imagem">
+                    <i class="bi bi-image"></i>
+                </button>
+                <input type="file" id="imageFileInput" accept="image/*" style="display:none">
+
+                <!-- Attach Document -->
+                <button class="toolbar-btn" id="btnAttachDoc" title="Anexar Documento PDF">
+                    <i class="bi bi-file-pdf"></i>
+                </button>
+                <input type="file" id="docFileInput" accept=".pdf" style="display:none">
+
+                <!-- Enhance Prompt -->
+                <button class="toolbar-btn" id="btnEnhancePrompt" title="Melhorar Prompt com IA">
+                    <i class="bi bi-magic"></i>
+                    <span>Melhorar</span>
+                </button>
+
+                <div class="toolbar-spacer"></div>
+
+                <!-- Token counter -->
+                <span class="token-count" id="tokenCount">0 chars</span>
+            </div>
+
+            <div class="message-input-row">
+                <div class="textarea-wrapper">
+                    <textarea
+                        id="messageInput"
+                        placeholder="Digite sua mensagem... (Shift+Enter para nova linha, Enter para enviar)"
+                        rows="1"
+                        maxlength="50000"
+                    ></textarea>
+                </div>
+                <button class="send-btn" id="sendBtn" disabled>
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel" style="display:none">
+        <div class="settings-header">
+            <h3>⚙️ Configurações</h3>
+            <button onclick="document.getElementById('settingsPanel').style.display='none'">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="settings-body">
+            <div class="settings-section">
+                <h4>System Prompt</h4>
+                <textarea id="systemPrompt" placeholder="Defina o comportamento do assistente..."
+                          rows="4" th:text="${conversation.systemPrompt}"></textarea>
+                <div class="system-prompt-presets">
+                    <button onclick="setSystemPrompt('Você é um especialista em programação. Sempre forneça código limpo, bem comentado e com as melhores práticas.')">💻 Dev Expert</button>
+                    <button onclick="setSystemPrompt('Você é um analista de negócios sênior. Forneça análises detalhadas, dados e recomendações estratégicas.')">📊 Business Analyst</button>
+                    <button onclick="setSystemPrompt('Você é um professor experiente. Explique os conceitos de forma clara, com exemplos práticos e analogias.')">🎓 Professor</button>
+                    <button onclick="setSystemPrompt('Você é um escritor criativo talentoso. Crie textos envolventes, com narrativa rica e linguagem expressiva.')">✍️ Writer</button>
+                    <button onclick="setSystemPrompt('Você é um especialista em marketing digital. Crie conteúdo persuasivo, estratégias de crescimento e campanhas criativas.')">📱 Marketing</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Temperatura: <span id="tempValue">0.7</span></h4>
+                <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7"
+                       oninput="document.getElementById('tempValue').textContent=this.value">
+                <div class="range-labels"><span>Preciso</span><span>Criativo</span></div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Máx. Tokens: <span id="maxTokensValue">4096</span></h4>
+                <input type="range" id="maxTokens" min="256" max="8192" step="256" value="4096"
+                       oninput="document.getElementById('maxTokensValue').textContent=this.value">
+            </div>
+
+            <div class="settings-section">
+                <h4>Top P: <span id="topPValue">0.9</span></h4>
+                <input type="range" id="topP" min="0.1" max="1" step="0.05" value="0.9"
+                       oninput="document.getElementById('topPValue').textContent=this.value">
+            </div>
+        </div>
+    </div>
+
+    <!-- Compare Panel -->
+    <div class="compare-modal" id="compareModal" style="display:none">
+        <div class="compare-backdrop" onclick="document.getElementById('compareModal').style.display='none'"></div>
+        <div class="compare-container">
+            <div class="compare-header">
+                <h2>🔬 Comparar Modelos</h2>
+                <button onclick="document.getElementById('compareModal').style.display='none'">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="compare-body">
+                <textarea id="comparePrompt" placeholder="Digite o prompt para comparar..." rows="3"></textarea>
+                <div class="model-selection">
+                    <h4>Selecione os modelos (2-4):</h4>
+                    <div class="compare-models-list">
+                        <label th:each="model : ${textModels}" class="compare-model-check">
+                            <input type="checkbox" th:value="${model.id}" th:data-name="${model.name}">
+                            <div class="check-model-info">
+                                <i class="bi" th:class="'bi ' + ${model.icon}"></i>
+                                <span th:text="${model.name}">Model</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <button class="btn-compare-run" id="btnRunCompare">
+                    <i class="bi bi-play-fill"></i> Comparar Agora
+                </button>
+            </div>
+            <div class="compare-results" id="compareResults" style="display:none">
+                <h3>Resultados da Comparação</h3>
+                <div class="compare-grid" id="compareGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates Modal for Chat -->
+    <div class="templates-modal" id="templatesModal" style="display:none">
+        <div class="templates-backdrop" onclick="document.getElementById('templatesModal').style.display='none'"></div>
+        <div class="templates-container">
+            <div class="templates-header">
+                <h2>📋 Templates de Prompt</h2>
+                <button onclick="document.getElementById('templatesModal').style.display='none'">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="templates-search">
+                <i class="bi bi-search"></i>
+                <input type="text" id="templateSearch" placeholder="Buscar templates...">
+            </div>
+            <div class="templates-categories" id="templateCategories">
+                <button class="cat-btn active" data-cat="all">Todos</button>
+                <span th:each="cat : ${templateCategories}">
+                    <button class="cat-btn" th:data-cat="${cat}" th:text="${cat}">Cat</button>
+                </span>
+            </div>
+            <div class="templates-grid" id="templatesGrid">
+                <div th:each="tmpl : ${templates}"
+                     class="template-item"
+                     th:data-category="${tmpl.category}"
+                     th:data-name="${tmpl.name}"
+                     onclick="useTemplate(this)"
+                     th:attr="data-content=${tmpl.content}">
+                    <div class="template-icon">
+                        <i class="bi" th:class="'bi ' + ${tmpl.icon}"></i>
+                    </div>
+                    <div class="template-info">
+                        <span class="template-name" th:text="${tmpl.name}">Template</span>
+                        <span class="template-cat" th:text="${tmpl.category}">Category</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Hidden data -->
+<div id="conversationId" th:data-id="${conversation.id}" style="display:none"></div>
+<div id="modelId" th:data-id="${conversation.modelId}" style="display:none"></div>
+
+</div>
+</body>
+</html>

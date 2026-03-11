@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="pt-BR">
+<head>
+    <title>Geração de Vídeos - Renan AI</title>
+</head>
+<body>
+<div layout:fragment="content">
+<div class="video-layout">
+
+    <!-- Left Panel: Controls -->
+    <div class="video-controls-panel">
+        <div class="panel-title">
+            <i class="bi bi-film"></i> Geração de Vídeos
+        </div>
+
+        <!-- Model Info -->
+        <div class="control-section">
+            <label class="control-label">Modelo</label>
+            <div class="video-model-info">
+                <div th:each="model : ${videoModels}" class="video-model-card active">
+                    <div class="vmc-header">
+                        <i class="bi" th:class="'bi ' + ${model.icon}"></i>
+                        <div>
+                            <span class="vmc-name" th:text="${model.name}">Model</span>
+                            <span class="vmc-provider" th:text="${model.provider}">Provider</span>
+                        </div>
+                    </div>
+                    <p class="vmc-desc" th:text="${model.description}">...</p>
+                    <div class="vmc-specs">
+                        <span>🎬 Texto → Vídeo</span>
+                        <span>🖼️ Imagem → Vídeo</span>
+                        <span>📱 1280×720</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prompt -->
+        <div class="control-section">
+            <label class="control-label">
+                Descrição do Vídeo
+                <button class="enhance-btn-small" id="btnEnhanceVideoPrompt">
+                    <i class="bi bi-magic"></i> Melhorar
+                </button>
+            </label>
+            <textarea id="videoPrompt" rows="5" maxlength="512"
+                      oninput="updatePromptCounter()"
+                      placeholder="Descreva o vídeo que você quer criar... Ex: 'A cinematic drone shot flying over a dense rainforest at golden hour, misty valleys below, birds in flight'"></textarea>
+            <div style="text-align:right;font-size:0.78rem;margin-top:4px;">
+                <span id="promptCharCount" style="color:var(--text-muted)">0</span><span style="color:var(--text-muted)">&nbsp;/ 512 caracteres</span>
+            </div>
+        </div>
+
+        <!-- Templates -->
+        <div class="control-section">
+            <label class="control-label">Templates de Vídeo</label>
+            <div class="video-templates">
+                <div th:each="tmpl : ${templates}" class="video-template-item"
+                     th:data-content="${tmpl.content}"
+                     onclick="useVideoTemplate(this.dataset.content)">
+                    <i class="bi" th:class="'bi ' + ${tmpl.icon}"></i>
+                    <span th:text="${tmpl.name}">Template</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Duration -->
+        <div class="control-section">
+            <label class="control-label">Duração</label>
+            <div class="config-note" style="margin:0">
+                <i class="bi bi-info-circle"></i> O Amazon Nova Reel gera vídeos de <strong>6 segundos</strong> (única duração suportada atualmente).
+            </div>
+        </div>
+
+        <!-- Reference Image -->
+        <div class="control-section">
+            <button class="accordion-toggle" onclick="toggleAccordion('videoImg')">
+                <i class="bi bi-image"></i> Imagem de Referência (opcional)
+                <i class="bi bi-chevron-down acc-icon"></i>
+            </button>
+            <div class="accordion-content" id="videoImg" style="display:none">
+                <input type="file" id="videoRefImage" accept="image/*" style="display:none">
+                <div class="upload-area" onclick="document.getElementById('videoRefImage').click()">
+                    <i class="bi bi-cloud-upload"></i>
+                    <p>Enviar imagem de referência</p>
+                    <span>A IA criará o vídeo baseado nesta imagem</span>
+                </div>
+                <div class="ref-preview" id="videoRefPreview" style="display:none">
+                    <img id="videoRefPreviewImg" src="" alt="Reference">
+                    <button onclick="clearVideoRef()"><i class="bi bi-x-circle-fill"></i></button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Generate Button -->
+        <button class="btn-generate" id="btnGenerateVideo">
+            <i class="bi bi-play-circle-fill"></i>
+            <span>Gerar Vídeo</span>
+        </button>
+
+        <div class="generation-notice">
+            <i class="bi bi-info-circle"></i>
+            A geração de vídeo leva entre 2-8 minutos. A página atualizará automaticamente quando pronto.
+        </div>
+    </div>
+
+    <!-- Right Panel: Queue & History -->
+    <div class="video-results-panel">
+
+        <!-- Active Jobs -->
+        <div class="video-queue" id="videoQueue">
+            <h3><i class="bi bi-hourglass-split"></i> Em Processamento</h3>
+            <div class="queue-list" id="queueList">
+                <!-- Active jobs populated by JS -->
+                <div class="queue-empty" th:if="${#lists.isEmpty(videoHistory)}">
+                    <i class="bi bi-collection-play"></i>
+                    <p>Nenhum vídeo em processamento</p>
+                </div>
+                <!-- Pending jobs -->
+                <div th:each="video : ${videoHistory}"
+                     th:if="${video.status == 'PROCESSING'}"
+                     class="queue-item"
+                     th:data-id="${video.id}">
+                    <div class="queue-item-info">
+                        <div class="queue-status-badge processing">
+                            <div class="spinner-small"></div>
+                            Processando
+                        </div>
+                        <p class="queue-prompt" th:text="${#strings.abbreviate(video.prompt, 80)}">Prompt</p>
+                        <span class="queue-time" th:text="'Iniciado: ' + ${#temporals.format(video.createdAt, 'HH:mm:ss')}">time</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Videos -->
+        <div class="video-history">
+            <h3><i class="bi bi-collection-play-fill"></i> Vídeos Gerados</h3>
+            <div class="video-cards" id="videoCards">
+                <div th:each="video : ${videoHistory}"
+                     th:if="${video.status == 'COMPLETED'}"
+                     class="video-card"
+                     th:data-id="${video.id}">
+                    <div class="video-card-player">
+                        <div class="video-thumb-placeholder">
+                            <i class="bi bi-play-circle-fill"></i>
+                        </div>
+                        <div class="video-card-overlay">
+                            <span class="video-badge completed">✅ Concluído</span>
+                        </div>
+                        <div class="video-info-bar">
+                            <span th:text="${video.durationSeconds} + 's'">6s</span>
+                            <span th:text="${video.resolution}">1280×720</span>
+                            <span th:text="${#temporals.format(video.completedAt, 'dd/MM HH:mm')}" th:if="${video.completedAt != null}">date</span>
+                        </div>
+                    </div>
+                    <div class="video-card-body">
+                        <p class="video-card-prompt" th:text="${#strings.abbreviate(video.prompt, 100)}">Prompt</p>
+                        <div class="video-card-actions">
+                            <button th:if="${video.s3Uri != null}"
+                                    th:onclick="'downloadVideo(\'' + ${video.id} + '\')'"
+                                    class="btn-video-action">
+                                <i class="bi bi-download"></i> Baixar Vídeo
+                            </button>
+                            <button th:data-id="${video.id}" onclick="deleteVideo(this.dataset.id)">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Failed videos -->
+                <div th:each="video : ${videoHistory}"
+                     th:if="${video.status == 'FAILED'}"
+                     class="video-card failed">
+                    <div class="video-card-player error-card">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span class="video-badge failed">❌ Falhou</span>
+                    </div>
+                    <div class="video-card-body">
+                        <p class="video-card-prompt" th:text="${#strings.abbreviate(video.prompt, 80)}">Prompt</p>
+                        <p class="error-msg" th:text="${video.errorMessage}">Error</p>
+                        <button th:data-prompt="${video.prompt}" onclick="retryVideo(this.dataset.prompt)">
+                            <i class="bi bi-arrow-repeat"></i> Tentar Novamente
+                        </button>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(videoHistory)}" class="video-empty">
+                    <i class="bi bi-film"></i>
+                    <h4>Nenhum vídeo gerado ainda</h4>
+                    <p>Configure o prompt e gere seu primeiro vídeo com IA</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+</body>
+</html>

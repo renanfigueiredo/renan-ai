@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="pt-BR">
+<head>
+    <title>Templates - Renan AI</title>
+</head>
+<body>
+<div layout:fragment="content">
+<div class="templates-page">
+    <div class="page-header">
+        <h1><i class="bi bi-grid-fill"></i> Biblioteca de Templates</h1>
+        <button class="btn-primary-small" onclick="openCreateTemplate()">
+            <i class="bi bi-plus-circle"></i> Criar Template
+        </button>
+    </div>
+
+    <div class="templates-filter-bar">
+        <input type="text" id="templateSearch" placeholder="🔍 Buscar templates...">
+        <div class="filter-chips">
+            <button class="filter-chip active" data-filter="all">Todos</button>
+            <button class="filter-chip" data-filter="TEXT">
+                <i class="bi bi-chat-dots"></i> Texto
+            </button>
+            <button class="filter-chip" data-filter="IMAGE">
+                <i class="bi bi-image"></i> Imagem
+            </button>
+            <button class="filter-chip" data-filter="VIDEO">
+                <i class="bi bi-film"></i> Vídeo
+            </button>
+        </div>
+    </div>
+
+    <!-- Category Sections -->
+    <div th:each="cat : ${categories}">
+        <div class="templates-section">
+            <div class="section-label" th:text="${cat}">Category</div>
+            <div class="templates-cards-grid">
+                <div th:each="tmpl : ${templates}"
+                     th:if="${tmpl.category == cat}"
+                     class="template-card"
+                     th:data-type="${tmpl.type}"
+                     th:data-category="${tmpl.category}">
+                    <div class="tc-header">
+                        <div class="tc-icon">
+                            <i class="bi" th:class="'bi ' + ${tmpl.icon}"></i>
+                        </div>
+                        <div class="tc-meta">
+                            <span class="tc-type-badge"
+                                  th:text="${tmpl.type}"
+                                  th:classappend="${tmpl.type == 'TEXT'} ? ' badge-blue' : (${tmpl.type == 'IMAGE'} ? ' badge-purple' : ' badge-red')">
+                                TEXT
+                            </span>
+                            <span th:if="${tmpl.isFavorite}" class="tc-favorite">⭐</span>
+                        </div>
+                    </div>
+                    <h4 class="tc-name" th:text="${tmpl.name}">Template Name</h4>
+                    <p class="tc-content" th:text="${#strings.abbreviate(tmpl.content, 120)}">Content preview</p>
+                    <div class="tc-actions">
+                        <button th:data-type="${tmpl.type}" th:data-content="${tmpl.content}" onclick="useTemplateGlobal(this.dataset.type, this.dataset.content)">
+                            <i class="bi bi-arrow-right-circle-fill"></i> Usar
+                        </button>
+                        <button th:data-content="${tmpl.content}" onclick="copyTemplate(this.dataset.content)">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                        <button th:data-id="${tmpl.id}" onclick="toggleTemplateFav(this.dataset.id)">
+                            <i class="bi" th:class="${tmpl.isFavorite} ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"></i>
+                        </button>
+                        <button th:if="${!tmpl.isBuiltIn}" th:data-id="${tmpl.id}" onclick="deleteTemplate(this.dataset.id)">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Template Modal -->
+<div class="modal-overlay" id="createTemplateModal" style="display:none">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2>Criar Novo Template</h2>
+            <button onclick="document.getElementById('createTemplateModal').style.display='none'">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Nome</label>
+                <input type="text" id="newTmplName" placeholder="Nome do template">
+            </div>
+            <div class="form-group">
+                <label>Tipo</label>
+                <select id="newTmplType">
+                    <option value="TEXT">Texto / Chat</option>
+                    <option value="IMAGE">Imagem</option>
+                    <option value="VIDEO">Vídeo</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Categoria</label>
+                <input type="text" id="newTmplCategory" placeholder="Ex: CODING, WRITING, CREATIVE...">
+            </div>
+            <div class="form-group">
+                <label>Conteúdo do Prompt</label>
+                <textarea id="newTmplContent" rows="6" placeholder="Escreva o template aqui..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="document.getElementById('createTemplateModal').style.display='none'">Cancelar</button>
+            <button class="btn-save" onclick="saveTemplate()">
+                <i class="bi bi-check-circle-fill"></i> Salvar Template
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Filter by type
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            const filter = this.dataset.filter;
+            document.querySelectorAll('.template-card').forEach(card => {
+                if (filter === 'all' || card.dataset.type === filter) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Search
+    document.getElementById('templateSearch').addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.template-card').forEach(card => {
+            const name = card.querySelector('.tc-name').textContent.toLowerCase();
+            const content = card.querySelector('.tc-content').textContent.toLowerCase();
+            card.style.display = (name.includes(q) || content.includes(q)) ? '' : 'none';
+        });
+    });
+
+    function openCreateTemplate() {
+        document.getElementById('createTemplateModal').style.display = 'flex';
+    }
+
+    function saveTemplate() {
+        const template = {
+            name: document.getElementById('newTmplName').value,
+            type: document.getElementById('newTmplType').value,
+            category: document.getElementById('newTmplCategory').value,
+            content: document.getElementById('newTmplContent').value,
+            icon: 'bi-file-text'
+        };
+        fetch('/api/templates', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(template)
+        }).then(() => window.location.reload());
+    }
+
+    function deleteTemplate(id) {
+        if (confirm('Apagar este template?')) {
+            fetch('/api/templates/' + id, {method: 'DELETE'})
+                .then(() => window.location.reload());
+        }
+    }
+
+    function toggleTemplateFav(id) {
+        fetch('/api/templates/' + id + '/favorite', {method: 'PATCH'})
+            .then(() => window.location.reload());
+    }
+
+    function copyTemplate(content) {
+        navigator.clipboard.writeText(content);
+        showToastGlobal('Template copiado!', 'success');
+    }
+
+    function useTemplateGlobal(type, content) {
+        if (type === 'TEXT') {
+            window.location.href = '/chat';
+            // Note: would need localStorage to pass content
+            localStorage.setItem('pendingTemplate', content);
+        } else if (type === 'IMAGE') {
+            window.location.href = '/image';
+            localStorage.setItem('pendingTemplate', content);
+        } else if (type === 'VIDEO') {
+            window.location.href = '/video';
+            localStorage.setItem('pendingTemplate', content);
+        }
+    }
+
+    function showToastGlobal(msg, type) {
+        if (window.showToast) window.showToast(msg, type);
+    }
+</script>
+</div>
+</body>
+</html>

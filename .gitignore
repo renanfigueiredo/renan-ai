@@ -1,0 +1,35 @@
+# ========================
+# Maven
+# ========================
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+
+# ========================
+# IDE
+# ========================
+.idea/
+*.iws
+*.iml
+*.ipr
+.classpath
+.project
+.settings/
+.vscode/
+
+# ========================
+# OS
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# SEGURANÇA — jamais commitar
+# ========================
+**/application-local.properties
+**/*.env
+.env
+.env.*
+!.env.template
