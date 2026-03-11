@@ -1,9 +1,0 @@
-# ================================================================
-# TEMPLATE — pode ser commitado
-# 1. Copie este arquivo:
-#    cp src/main/resources/application-local.properties.template \
-#       src/main/resources/application-local.properties
-# 2. Preencha com suas chaves AWS reais
-# ================================================================
-aws.access-key-id=SUA_ACCESS_KEY_AQUI
-aws.secret-access-key=SUA_SECRET_KEY_AQUI
