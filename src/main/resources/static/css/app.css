@@ -292,6 +292,20 @@ body {
     color: var(--text-primary);
 }
 
+/* Theme button in topbar — hidden on desktop (sidebar has it), visible on mobile */
+.topbar-theme-btn {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.3rem;
+    color: var(--text-secondary);
+    padding: 6px 8px;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+}
+.topbar-theme-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
 /* ── Page Content ── */
 .page-content {
     flex: 1;
@@ -2979,6 +2993,7 @@ textarea#messageInput {
     .sidebar.mobile-open { transform: translateX(0); }
     .main-content { margin-left: 0; }
     .mobile-menu-btn { display: flex; }
+    .topbar-theme-btn { display: flex; }
     .stats-bar { grid-template-columns: repeat(2, 1fr); }
     .quick-access-grid { grid-template-columns: 1fr; }
 }

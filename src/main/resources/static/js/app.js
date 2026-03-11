@@ -50,15 +50,21 @@ function toggleTheme() {
 
 function updateThemeIcon() {
     const btn = document.querySelector('.theme-toggle');
-    if (!btn) return;
-    const icon = btn.querySelector('i');
-    const span = btn.querySelector('span');
-    if (App.theme === 'light') {
-        if (icon) { icon.className = 'bi bi-moon-stars'; }
-        if (span) span.textContent = 'Modo Escuro';
-    } else {
-        if (icon) { icon.className = 'bi bi-brightness-high'; }
-        if (span) span.textContent = 'Modo Claro';
+    const topbarBtn = document.getElementById('topbarThemeBtn');
+    const isDark = App.theme === 'dark';
+
+    // Sidebar button
+    if (btn) {
+        const icon = btn.querySelector('i');
+        const span = btn.querySelector('span');
+        if (icon) icon.className = isDark ? 'bi bi-brightness-high' : 'bi bi-moon-stars';
+        if (span) span.textContent = isDark ? 'Modo Claro' : 'Modo Escuro';
+    }
+    // Topbar button (icon only)
+    if (topbarBtn) {
+        const icon = topbarBtn.querySelector('i');
+        if (icon) icon.className = isDark ? 'bi bi-brightness-high' : 'bi bi-moon-stars-fill';
+        topbarBtn.title = isDark ? 'Modo Claro' : 'Modo Escuro';
     }
 }
 

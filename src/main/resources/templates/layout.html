@@ -81,7 +81,7 @@
     </nav>
 
     <div class="sidebar-footer">
-        <button class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode">
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">
             <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
             <span id="themeLabel">Modo Escuro</span>
         </button>
@@ -97,6 +97,10 @@
         </button>
         <div class="topbar-title" id="topbarTitle">Renan AI</div>
         <div class="topbar-actions">
+            <!-- Theme toggle — always visible on mobile, hides on desktop (sidebar button is used there) -->
+            <button class="topbar-theme-btn" id="topbarThemeBtn" onclick="toggleTheme()" title="Modo Claro">
+                <i class="bi bi-brightness-high"></i>
+            </button>
             <div class="status-indicator online" title="AWS Bedrock Conectado">
                 <span class="status-dot"></span>
                 <span class="status-text">Bedrock Online</span>
