@@ -260,9 +260,9 @@
                           rows="4" th:text="${conversation.systemPrompt}"></textarea>
                 <div class="system-prompt-presets">
                     <button onclick="setSystemPrompt('Você é um especialista em programação. Sempre forneça código limpo, bem comentado e com as melhores práticas.')">💻 Dev Expert</button>
-                    <button onclick="setSystemPrompt('Você é um analista de negócios sênior. Forneça análises detalhadas, dados e recomendações estratégicas.')">📊 Business Analyst</button>
+                    <button onclick="setSystemPrompt('Você é um analista de negócios sênior. Forneça análises detalhadas, dados e recomendações estratégicas.')">📊 Analista de Negócios</button>
                     <button onclick="setSystemPrompt('Você é um professor experiente. Explique os conceitos de forma clara, com exemplos práticos e analogias.')">🎓 Professor</button>
-                    <button onclick="setSystemPrompt('Você é um escritor criativo talentoso. Crie textos envolventes, com narrativa rica e linguagem expressiva.')">✍️ Writer</button>
+                    <button onclick="setSystemPrompt('Você é um escritor criativo talentoso. Crie textos envolventes, com narrativa rica e linguagem expressiva.')">✍️ Escritor</button>
                     <button onclick="setSystemPrompt('Você é um especialista em marketing digital. Crie conteúdo persuasivo, estratégias de crescimento e campanhas criativas.')">📱 Marketing</button>
                 </div>
             </div>
@@ -307,7 +307,7 @@
                             <input type="checkbox" th:value="${model.id}" th:data-name="${model.name}">
                             <div class="check-model-info">
                                 <i class="bi" th:class="'bi ' + ${model.icon}"></i>
-                                <span th:text="${model.name}">Model</span>
+                                <span th:text="${model.name}">Modelo</span>
                             </div>
                         </label>
                     </div>
@@ -355,7 +355,7 @@
                     </div>
                     <div class="template-info">
                         <span class="template-name" th:text="${tmpl.name}">Template</span>
-                        <span class="template-cat" th:text="${tmpl.category}">Category</span>
+                        <span class="template-cat" th:text="${tmpl.category}">Categoria</span>
                     </div>
                 </div>
             </div>

@@ -32,10 +32,10 @@
         </div>
     </div>
 
-    <!-- Category Sections -->
+    <!-- Seções por Categoria -->
     <div th:each="cat : ${categories}">
         <div class="templates-section">
-            <div class="section-label" th:text="${cat}">Category</div>
+            <div class="section-label" th:text="${cat}">Categoria</div>
             <div class="templates-cards-grid">
                 <div th:each="tmpl : ${templates}"
                      th:if="${tmpl.category == cat}"
@@ -55,8 +55,8 @@
                             <span th:if="${tmpl.isFavorite}" class="tc-favorite">⭐</span>
                         </div>
                     </div>
-                    <h4 class="tc-name" th:text="${tmpl.name}">Template Name</h4>
-                    <p class="tc-content" th:text="${#strings.abbreviate(tmpl.content, 120)}">Content preview</p>
+                    <h4 class="tc-name" th:text="${tmpl.name}">Nome do Template</h4>
+                    <p class="tc-content" th:text="${#strings.abbreviate(tmpl.content, 120)}">Prévia do conteúdo</p>
                     <div class="tc-actions">
                         <button th:data-type="${tmpl.type}" th:data-content="${tmpl.content}" onclick="useTemplateGlobal(this.dataset.type, this.dataset.content)">
                             <i class="bi bi-arrow-right-circle-fill"></i> Usar
@@ -101,7 +101,7 @@
             </div>
             <div class="form-group">
                 <label>Categoria</label>
-                <input type="text" id="newTmplCategory" placeholder="Ex: CODING, WRITING, CREATIVE...">
+                <input type="text" id="newTmplCategory" placeholder="Ex: PROGRAMAÇÃO, REDAÇÃO, CRIATIVO...">
             </div>
             <div class="form-group">
                 <label>Conteúdo do Prompt</label>
@@ -118,7 +118,7 @@
 </div>
 
 <script>
-    // Filter by type
+    // Filtrar por tipo
     document.querySelectorAll('.filter-chip').forEach(chip => {
         chip.addEventListener('click', function() {
             document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
@@ -134,7 +134,7 @@
         });
     });
 
-    // Search
+    // Busca
     document.getElementById('templateSearch').addEventListener('input', function() {
         const q = this.value.toLowerCase();
         document.querySelectorAll('.template-card').forEach(card => {
@@ -183,7 +183,7 @@
     function useTemplateGlobal(type, content) {
         if (type === 'TEXT') {
             window.location.href = '/chat';
-            // Note: would need localStorage to pass content
+            // Nota: usa localStorage para passar o conteúdo para a outra página
             localStorage.setItem('pendingTemplate', content);
         } else if (type === 'IMAGE') {
             window.location.href = '/image';

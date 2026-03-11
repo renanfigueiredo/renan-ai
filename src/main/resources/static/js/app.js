@@ -55,10 +55,10 @@ function updateThemeIcon() {
     const span = btn.querySelector('span');
     if (App.theme === 'light') {
         if (icon) { icon.className = 'bi bi-moon-stars'; }
-        if (span) span.textContent = 'Dark Mode';
+        if (span) span.textContent = 'Modo Escuro';
     } else {
         if (icon) { icon.className = 'bi bi-brightness-high'; }
-        if (span) span.textContent = 'Light Mode';
+        if (span) span.textContent = 'Modo Claro';
     }
 }
 
@@ -72,6 +72,12 @@ function initSidebar() {
         sidebar.classList.add('collapsed');
         mainContent?.classList.add('sidebar-collapsed');
     }
+
+    // Desktop toggle button (collapses sidebar)
+    document.getElementById('sidebarToggle')?.addEventListener('click', toggleSidebar);
+
+    // Mobile hamburger button (slides sidebar in)
+    document.getElementById('mobileMenuBtn')?.addEventListener('click', openMobileSidebar);
 }
 
 function toggleSidebar() {
@@ -114,7 +120,7 @@ function showToast(message, type = 'info', duration = 3500) {
 }
 
 // ── Loading Overlay ───────────────────────────────────
-function showLoading(text = 'Processing…') {
+function showLoading(text = 'Processando…') {
     const overlay = document.getElementById('loadingOverlay');
     const txt = document.getElementById('loadingText');
     if (overlay) { overlay.style.display = 'flex'; }
@@ -151,9 +157,9 @@ function toBase64(file) {
 async function copyToClipboard(text) {
     try {
         await navigator.clipboard.writeText(text);
-        showToast('Copied to clipboard!', 'success', 1500);
+        showToast('Copiado para a área de transferência!', 'success', 1500);
     } catch {
-        showToast('Copy failed', 'error');
+        showToast('Falha ao copiar', 'error');
     }
 }
 
@@ -226,6 +232,9 @@ function initChat() {
         loadConversation(convId);
     }
 
+    // New chat button
+    document.getElementById('btnNewChat')?.addEventListener('click', createNewChat);
+
     // Conv search
     const srch = document.getElementById('convSearch');
     if (srch) {
@@ -259,7 +268,7 @@ function renderConvList(convs) {
     if (!list) return;
 
     if (!convs.length) {
-        list.innerHTML = `<div class="empty-convs"><i class="bi bi-chat-left-dots"></i><span>No conversations yet</span></div>`;
+        list.innerHTML = `<div class="empty-convs"><i class="bi bi-chat-left-dots"></i><span>Nenhuma conversa ainda</span></div>`;
         return;
     }
 
@@ -271,7 +280,7 @@ function renderConvList(convs) {
                 <span class="conv-item-meta">${c.messages?.length || 0} msgs · ${escHtml(c.modelId || '')}</span>
             </div>
             <div class="conv-item-actions">
-                <button class="conv-action-btn" onclick="event.stopPropagation(); deleteConversation('${c.id}')" title="Delete"><i class="bi bi-trash"></i></button>
+                <button class="conv-action-btn" onclick="event.stopPropagation(); deleteConversation('${c.id}')" title="Excluir"><i class="bi bi-trash"></i></button>
             </div>
         </div>
     `).join('');
@@ -335,7 +344,7 @@ function appendMessage(msg) {
                         <span class="meta-model"><i class="bi bi-cpu"></i> ${escHtml(msg.modelId || '')}</span>
                         ${msg.inputTokens ? `<span class="meta-tokens"><i class="bi bi-lightning"></i> ${msg.inputTokens}+${msg.outputTokens}</span>` : ''}
                         ${msg.latencyMs ? `<span class="meta-latency"><i class="bi bi-clock"></i> ${(msg.latencyMs/1000).toFixed(1)}s</span>` : ''}
-                        <button class="meta-btn" onclick="copyToClipboard(this.closest('.message-body').querySelector('.prose').innerText)" title="Copy"><i class="bi bi-clipboard"></i></button>
+                        <button class="meta-btn" onclick="copyToClipboard(this.closest('.message-body').querySelector('.prose').innerText)" title="Copiar"><i class="bi bi-clipboard"></i></button>
                     </div>
                 </div>
             </div>`;
@@ -420,7 +429,7 @@ async function sendMessage() {
 
     } catch (e) {
         removeTypingIndicator();
-        showToast(e.message || 'Error sending message', 'error');
+        showToast(e.message || 'Erro ao enviar mensagem', 'error');
     } finally {
         App.isGenerating = false;
         if (sendBtn) sendBtn.disabled = false;
@@ -452,13 +461,13 @@ function scrollToBottom() {
 
 function updateChatHeader(conv) {
     const titleEl = document.querySelector('.chat-title');
-    if (titleEl) titleEl.textContent = conv.title || 'Conversation';
+    if (titleEl) titleEl.textContent = conv.title || 'Conversa';
 }
 
 function updateChatStats(data) {
     const statsEl = document.querySelector('.chat-stats');
     if (statsEl && data.totalTokens) {
-        statsEl.textContent = `${data.totalTokens} tokens · $${data.estimatedCost?.toFixed(4) || '0.0000'}`;
+        statsEl.textContent = `${data.totalTokens} tokens · $${(+data.estimatedCost || 0).toFixed(4)}`;
     }
 }
 
@@ -466,24 +475,24 @@ async function createNewChat() {
     try {
         const res = await fetch('/api/chat/new', { method: 'POST' });
         const conv = await res.json();
-        window.location.href = `/chat?id=${conv.id}`;
+        window.location.href = `/chat?id=${conv.conversationId}`;
     } catch (e) {
-        showToast('Error creating conversation', 'error');
+        showToast('Erro ao criar conversa', 'error');
     }
 }
 
 async function deleteConversation(id) {
-    if (!confirm('Delete this conversation?')) return;
+    if (!confirm('Excluir esta conversa?')) return;
     try {
         await fetch(`/api/chat/conversation/${id}`, { method: 'DELETE' });
-        showToast('Conversation deleted', 'success');
+        showToast('Conversa excluída', 'success');
         if (id === App.currentConversationId) {
             window.location.href = '/chat';
         } else {
             loadConversationsList();
         }
     } catch (e) {
-        showToast('Error deleting', 'error');
+        showToast('Erro ao excluir', 'error');
     }
 }
 
@@ -732,7 +741,7 @@ async function loadChatTemplates(category = '', search = '') {
 function renderChatTemplates(templates) {
     const grid = document.getElementById('chatTemplatesGrid');
     if (!grid) return;
-    if (!templates.length) { grid.innerHTML = '<p style="color:var(--text-muted);padding:20px;text-align:center">No templates found</p>'; return; }
+    if (!templates.length) { grid.innerHTML = '<p style="color:var(--text-muted);padding:20px;text-align:center">Nenhum template encontrado</p>'; return; }
     grid.innerHTML = templates.map(t => `
         <div class="template-item" onclick="useChatTemplate(${JSON.stringify(escHtml(t.content))})">
             <div class="template-icon">${t.icon || '✨'}</div>
@@ -1149,18 +1158,18 @@ function downloadImageById(genId, idx) {
 async function toggleFavorite(id) {
     try {
         await fetch(`/api/image/${id}/favorite`, { method: 'PATCH' });
-        showToast('Favorite toggled!', 'success');
+        showToast('Favorito atualizado!', 'success');
         loadImageHistory();
-    } catch { showToast('Error', 'error'); }
+    } catch { showToast('Erro', 'error'); }
 }
 
 async function deleteImage(id) {
-    if (!confirm('Delete this image?')) return;
+    if (!confirm('Excluir esta imagem?')) return;
     try {
         await fetch(`/api/image/${id}`, { method: 'DELETE' });
-        showToast('Image deleted', 'success');
+        showToast('Imagem excluída', 'success');
         loadImageHistory();
-    } catch { showToast('Error deleting', 'error'); }
+    } catch { showToast('Erro ao excluir', 'error'); }
 }
 
 async function loadImageHistory() {
@@ -1176,7 +1185,7 @@ function renderImageGallery(items) {
     if (!grid) return;
 
     if (!items.length) {
-        grid.innerHTML = `<div class="gallery-empty"><i class="bi bi-images"></i><span>No images yet</span></div>`;
+        grid.innerHTML = `<div class="gallery-empty"><i class="bi bi-images"></i><span>Nenhuma imagem ainda</span></div>`;
         return;
     }
 
@@ -1187,9 +1196,9 @@ function renderImageGallery(items) {
                 <div class="gallery-item-img">
                     ${first ? `<img src="data:image/png;base64,${first}" alt="${escHtml(item.prompt)}" loading="lazy">` : '<div style="background:var(--bg-tertiary);height:100%;display:flex;align-items:center;justify-content:center"><i class="bi bi-image" style="font-size:2rem;color:var(--text-muted)"></i></div>'}
                     <div class="gallery-overlay">
-                        <button class="gallery-action-btn" onclick="downloadImageById('${item.id}', 0)" title="Download"><i class="bi bi-download"></i></button>
-                        <button class="gallery-action-btn ${item.favorite ? 'text-danger' : ''}" onclick="toggleFavorite('${item.id}')" title="Favorite"><i class="bi bi-heart${item.favorite ? '-fill' : ''}"></i></button>
-                        <button class="gallery-action-btn danger" onclick="deleteImage('${item.id}')" title="Delete"><i class="bi bi-trash"></i></button>
+                        <button class="gallery-action-btn" onclick="downloadImageById('${item.id}', 0)" title="Baixar"><i class="bi bi-download"></i></button>
+                        <button class="gallery-action-btn ${item.favorite ? 'text-danger' : ''}" onclick="toggleFavorite('${item.id}')" title="Favoritar"><i class="bi bi-heart${item.favorite ? '-fill' : ''}"></i></button>
+                        <button class="gallery-action-btn danger" onclick="deleteImage('${item.id}')" title="Excluir"><i class="bi bi-trash"></i></button>
                     </div>
                 </div>
                 <div class="gallery-item-info">

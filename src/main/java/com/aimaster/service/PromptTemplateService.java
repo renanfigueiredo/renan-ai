@@ -16,37 +16,37 @@ public class PromptTemplateService {
     }
 
     private void initBuiltInTemplates() {
-        // CODING
-        addBuiltIn("Code Review", "Review and improve the following code. Identify bugs, security issues, performance problems, and suggest refactoring:", "CODING", "TEXT", "bi-code-slash");
-        addBuiltIn("Debug Assistant", "Analyze this error/bug and provide a detailed solution with explanation:\n\n[PASTE ERROR HERE]", "CODING", "TEXT", "bi-bug");
-        addBuiltIn("Unit Test Generator", "Generate comprehensive unit tests for the following code. Include edge cases, happy path, and error scenarios:", "CODING", "TEXT", "bi-check-circle");
-        addBuiltIn("Architecture Design", "Design a scalable architecture for: [DESCRIBE YOUR SYSTEM]. Include diagrams description, components, data flow, and technology choices.", "CODING", "TEXT", "bi-diagram-3");
-        addBuiltIn("SQL Query Builder", "Write an optimized SQL query for: [DESCRIBE YOUR NEED]. Include indexes suggestions and explain the query.", "CODING", "TEXT", "bi-database");
-        addBuiltIn("API Documentation", "Generate complete API documentation in OpenAPI/Swagger format for the following endpoint:", "CODING", "TEXT", "bi-file-code");
+        // PROGRAMAÇÃO
+        addBuiltIn("Revisão de Código", "Revise e melhore o seguinte código. Identifique bugs, problemas de segurança, problemas de desempenho e sugira refatorações:", "PROGRAMAÇÃO", "TEXT", "bi-code-slash");
+        addBuiltIn("Assistente de Debug", "Analise este erro/bug e forneça uma solução detalhada com explicação:\n\n[COLE O ERRO AQUI]", "PROGRAMAÇÃO", "TEXT", "bi-bug");
+        addBuiltIn("Gerador de Testes Unitários", "Gere testes unitários completos para o seguinte código. Inclua casos extremos, caminho feliz e cenários de erro:", "PROGRAMAÇÃO", "TEXT", "bi-check-circle");
+        addBuiltIn("Design de Arquitetura", "Projete uma arquitetura escalável para: [DESCREVA SEU SISTEMA]. Inclua descrição dos diagramas, componentes, fluxo de dados e escolhas tecnológicas.", "PROGRAMAÇÃO", "TEXT", "bi-diagram-3");
+        addBuiltIn("Construtor de Queries SQL", "Escreva uma query SQL otimizada para: [DESCREVA SUA NECESSIDADE]. Inclua sugestões de índices e explique a query.", "PROGRAMAÇÃO", "TEXT", "bi-database");
+        addBuiltIn("Documentação de API", "Gere documentação completa de API no formato OpenAPI/Swagger para o seguinte endpoint:", "PROGRAMAÇÃO", "TEXT", "bi-file-code");
 
-        // WRITING
-        addBuiltIn("Blog Post Writer", "Write an engaging, SEO-optimized blog post about: [TOPIC]. Include an attention-grabbing title, introduction, 5 key sections, and a strong conclusion. Tone: professional yet conversational.", "WRITING", "TEXT", "bi-pen");
-        addBuiltIn("Email Composer", "Write a professional email for: [PURPOSE]. Recipient: [RECIPIENT ROLE]. Tone: [formal/casual]. Include subject line.", "WRITING", "TEXT", "bi-envelope");
-        addBuiltIn("Social Media Post", "Create 5 engaging social media posts for [PLATFORM] about: [TOPIC]. Include hashtags, emojis, and call-to-action.", "WRITING", "TEXT", "bi-share");
-        addBuiltIn("Story Generator", "Write a compelling short story about: [THEME/CONCEPT]. Genre: [GENRE]. Length: ~1000 words. Include vivid characters and an unexpected twist.", "WRITING", "TEXT", "bi-book");
-        addBuiltIn("Resume Builder", "Create a professional resume for a [JOB TITLE] position. Include: summary, skills, experience format, and achievements section.", "WRITING", "TEXT", "bi-file-person");
+        // REDAÇÃO
+        addBuiltIn("Escritor de Post para Blog", "Escreva um post de blog envolvente e otimizado para SEO sobre: [TÓPICO]. Inclua um título chamativo, introdução, 5 seções principais e uma conclusão forte. Tom: profissional, porém conversacional.", "REDAÇÃO", "TEXT", "bi-pen");
+        addBuiltIn("Compositor de E-mail", "Escreva um e-mail profissional para: [FINALIDADE]. Destinatário: [CARGO DO DESTINATÁRIO]. Tom: [formal/informal]. Inclua o assunto.", "REDAÇÃO", "TEXT", "bi-envelope");
+        addBuiltIn("Post para Redes Sociais", "Crie 5 posts envolventes para [PLATAFORMA] sobre: [TÓPICO]. Inclua hashtags, emojis e chamada para ação.", "REDAÇÃO", "TEXT", "bi-share");
+        addBuiltIn("Gerador de Histórias", "Escreva uma história curta e envolvente sobre: [TEMA/CONCEITO]. Gênero: [GÊNERO]. Extensão: ~1000 palavras. Inclua personagens marcantes e uma reviravolta inesperada.", "REDAÇÃO", "TEXT", "bi-book");
+        addBuiltIn("Criador de Currículo", "Crie um currículo profissional para a posição de [CARGO]. Inclua: resumo, habilidades, formato de experiência e seção de conquistas.", "REDAÇÃO", "TEXT", "bi-file-person");
 
-        // ANALYSIS
-        addBuiltIn("Data Analyst", "Analyze the following data and provide insights, trends, patterns, and actionable recommendations:\n\n[PASTE DATA]", "ANALYSIS", "TEXT", "bi-graph-up");
-        addBuiltIn("SWOT Analysis", "Perform a detailed SWOT analysis for: [COMPANY/PRODUCT/IDEA]. Be specific and actionable.", "ANALYSIS", "TEXT", "bi-grid");
-        addBuiltIn("Competitive Analysis", "Analyze the competitive landscape for [PRODUCT/COMPANY] against competitors. Include strengths, weaknesses, market positioning, and opportunities.", "ANALYSIS", "TEXT", "bi-bar-chart");
-        addBuiltIn("Legal Document Review", "Review the following agreement/contract and identify: potential issues, unfair clauses, missing protections, and suggest amendments:\n\n[PASTE DOCUMENT]", "ANALYSIS", "TEXT", "bi-file-text");
-        addBuiltIn("Risk Assessment", "Conduct a comprehensive risk assessment for: [PROJECT/DECISION]. Categorize risks by probability and impact, and suggest mitigation strategies.", "ANALYSIS", "TEXT", "bi-shield-exclamation");
+        // ANÁLISE
+        addBuiltIn("Analista de Dados", "Analise os seguintes dados e forneça insights, tendências, padrões e recomendações práticas:\n\n[COLE OS DADOS AQUI]", "ANÁLISE", "TEXT", "bi-graph-up");
+        addBuiltIn("Análise SWOT", "Realize uma análise SWOT detalhada para: [EMPRESA/PRODUTO/IDEIA]. Seja específico e prático.", "ANÁLISE", "TEXT", "bi-grid");
+        addBuiltIn("Análise Competitiva", "Analise o cenário competitivo de [PRODUTO/EMPRESA] em relação aos concorrentes. Inclua pontos fortes, fracos, posicionamento de mercado e oportunidades.", "ANÁLISE", "TEXT", "bi-bar-chart");
+        addBuiltIn("Revisão de Documento Legal", "Revise o seguinte contrato/acordo e identifique: problemas potenciais, cláusulas injustas, proteções ausentes e sugira alterações:\n\n[COLE O DOCUMENTO AQUI]", "ANÁLISE", "TEXT", "bi-file-text");
+        addBuiltIn("Avaliação de Riscos", "Realize uma avaliação de riscos completa para: [PROJETO/DECISÃO]. Categorize os riscos por probabilidade e impacto, e sugira estratégias de mitigação.", "ANÁLISE", "TEXT", "bi-shield-exclamation");
 
-        // CREATIVE
-        addBuiltIn("Logo Concept Generator", "Design concept description for a logo for: [BRAND NAME]. Industry: [INDUSTRY]. Style: [modern/classic/playful]. Colors: [COLORS]. Include visual metaphors.", "CREATIVE", "TEXT", "bi-palette");
-        addBuiltIn("Script Writer", "Write a compelling script for a [duration]-minute [YouTube/podcast/presentation] about: [TOPIC]. Include intro hook, main points, transitions, and outro.", "CREATIVE", "TEXT", "bi-camera-video");
-        addBuiltIn("Product Description", "Write 3 versions of a compelling product description for: [PRODUCT]. Version 1: SEO-optimized. Version 2: Emotional/storytelling. Version 3: Technical/features-focused.", "CREATIVE", "TEXT", "bi-shop");
+        // CRIATIVO
+        addBuiltIn("Gerador de Conceito de Logo", "Descreva o conceito de um logo para: [NOME DA MARCA]. Setor: [SETOR]. Estilo: [moderno/clássico/divertido]. Cores: [CORES]. Inclua metáforas visuais.", "CRIATIVO", "TEXT", "bi-palette");
+        addBuiltIn("Roteirista", "Escreva um roteiro envolvente para um [YouTube/podcast/apresentação] de [duração] minutos sobre: [TÓPICO]. Inclua gancho inicial, pontos principais, transições e encerramento.", "CRIATIVO", "TEXT", "bi-camera-video");
+        addBuiltIn("Descrição de Produto", "Escreva 3 versões de uma descrição de produto envolvente para: [PRODUTO]. Versão 1: Otimizada para SEO. Versão 2: Emocional/narrativa. Versão 3: Técnica/focada em recursos.", "CRIATIVO", "TEXT", "bi-shop");
 
-        // BUSINESS
-        addBuiltIn("Business Plan", "Create a comprehensive business plan for: [BUSINESS IDEA]. Include executive summary, market analysis, revenue model, go-to-market strategy, and financial projections.", "BUSINESS", "TEXT", "bi-briefcase");
-        addBuiltIn("Meeting Summarizer", "Summarize the following meeting notes into: key decisions, action items (with owners), risks identified, and next steps:\n\n[PASTE NOTES]", "BUSINESS", "TEXT", "bi-calendar-check");
-        addBuiltIn("Pitch Deck Outline", "Create a compelling investor pitch deck outline for: [STARTUP/PRODUCT]. Include all key slides with bullet points for each.", "BUSINESS", "TEXT", "bi-presentation");
+        // NEGÓCIOS
+        addBuiltIn("Plano de Negócios", "Crie um plano de negócios completo para: [IDEIA DE NEGÓCIO]. Inclua sumário executivo, análise de mercado, modelo de receita, estratégia de entrada no mercado e projeções financeiras.", "NEGÓCIOS", "TEXT", "bi-briefcase");
+        addBuiltIn("Resumidor de Reunião", "Resuma as seguintes anotações de reunião em: decisões principais, itens de ação (com responsáveis), riscos identificados e próximos passos:\n\n[COLE AS ANOTAÇÕES AQUI]", "NEGÓCIOS", "TEXT", "bi-calendar-check");
+        addBuiltIn("Estrutura de Pitch Deck", "Crie uma estrutura convincente de pitch deck para investidores para: [STARTUP/PRODUTO]. Inclua todos os slides principais com pontos de destaque para cada um.", "NEGÓCIOS", "TEXT", "bi-presentation");
 
         // IMAGE PROMPTS
         addBuiltIn("Retrato Fotorrealista", "Retrato ultra-realista de [SUJEITO], fotografia profissional, lente 85mm, fundo desfocado, iluminação de estúdio, resolução 8K, altamente detalhado, fotorrealista", "IMAGEM", "IMAGE", "bi-person");
