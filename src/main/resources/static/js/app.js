@@ -241,6 +241,9 @@ function initChat() {
     // New chat button
     document.getElementById('btnNewChat')?.addEventListener('click', createNewChat);
 
+    // Conv sidebar toggle
+    document.getElementById('convSidebarToggle')?.addEventListener('click', toggleConvSidebar);
+
     // Conv search
     const srch = document.getElementById('convSearch');
     if (srch) {
@@ -801,7 +804,72 @@ function useTemplate(content, type) {
 // Toggle Conversation Panel
 function toggleConvSidebar() {
     const panel = document.querySelector('.conv-sidebar');
-    if (panel) panel.classList.toggle('collapsed');
+    if (!panel) return;
+
+    const isMobile = window.innerWidth <= 1024;
+    if (isMobile) {
+        const isOpen = panel.classList.toggle('mobile-open');
+        let backdrop = document.getElementById('convSidebarBackdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.id = 'convSidebarBackdrop';
+            backdrop.className = 'conv-sidebar-backdrop';
+            backdrop.addEventListener('click', () => {
+                panel.classList.remove('mobile-open');
+                backdrop.classList.remove('visible');
+            });
+            document.body.appendChild(backdrop);
+        }
+        backdrop.classList.toggle('visible', isOpen);
+    } else {
+        panel.classList.toggle('collapsed');
+    }
+}
+
+// Close the conversation sidebar on mobile (called by close button)
+function closeConvSidebar() {
+    const panel = document.querySelector('.conv-sidebar');
+    if (!panel) return;
+    panel.classList.remove('mobile-open');
+    const backdrop = document.getElementById('convSidebarBackdrop');
+    if (backdrop) backdrop.classList.remove('visible');
+}
+
+// ─────────────────────────────────────────────────────
+// MOBILE PANEL TABS  (Image / Video pages)
+// ─────────────────────────────────────────────────────
+
+/**
+ * Switch between 'controls' and 'results' panels on mobile.
+ * @param {'image'|'video'} pageType
+ * @param {'controls'|'results'} panel
+ */
+function switchMobilePanel(pageType, panel) {
+    // Only applies on mobile widths
+    if (window.innerWidth > 768) return;
+
+    const controlsPanel = document.querySelector(`.${pageType}-controls-panel`);
+    const resultsPanel  = document.querySelector(`.${pageType}-results-panel`);
+    const prefix = pageType === 'image' ? 'img' : 'vid';
+    const tabControls = document.getElementById(`mpt-${prefix}-controls`);
+    const tabResults  = document.getElementById(`mpt-${prefix}-results`);
+
+    if (!controlsPanel || !resultsPanel) return;
+
+    if (panel === 'controls') {
+        controlsPanel.classList.remove('panel-hidden');
+        resultsPanel.classList.add('panel-hidden');
+        tabControls?.classList.add('active');
+        tabResults?.classList.remove('active');
+    } else {
+        controlsPanel.classList.add('panel-hidden');
+        resultsPanel.classList.remove('panel-hidden');
+        tabControls?.classList.remove('active');
+        tabResults?.classList.add('active');
+        // Scroll page-content back to top so the result area is immediately visible
+        const pageContent = document.querySelector('.page-content');
+        if (pageContent) pageContent.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 }
 
 // ─────────────────────────────────────────────────────
@@ -849,6 +917,11 @@ function initImage() {
             const file = e.dataTransfer.files[0];
             if (file) handleRefImage(file);
         });
+    }
+
+    // On mobile the layout is a single column; start on controls tab
+    if (window.innerWidth <= 768) {
+        switchMobilePanel('image', 'controls');
     }
 }
 
@@ -939,6 +1012,11 @@ async function generateImage() {
 
     // Show generating state
     showGeneratingState();
+
+    // On mobile: auto-switch to results panel so the loading animation is visible
+    if (window.innerWidth <= 768) {
+        switchMobilePanel('image', 'results');
+    }
 
     const request = {
         prompt,
@@ -1274,6 +1352,11 @@ function initVideo() {
 
     // Init counter
     updatePromptCounter();
+
+    // On mobile: start on controls tab
+    if (window.innerWidth <= 768) {
+        switchMobilePanel('video', 'controls');
+    }
 }
 
 function updatePromptCounter() {
@@ -1323,6 +1406,11 @@ async function generateVideo() {
         showToast('Geração de vídeo iniciada! Isso leva de 2 a 8 minutos.', 'success');
         addToQueue({ ...data, prompt });
         startPollingVideo(data.id);
+
+        // On mobile: auto-switch to results panel so the queue item is visible
+        if (window.innerWidth <= 768) {
+            switchMobilePanel('video', 'results');
+        }
 
     } catch (e) {
         showToast(e.message || 'Falha ao iniciar geração de vídeo', 'error');

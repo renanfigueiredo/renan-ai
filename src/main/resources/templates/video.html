@@ -10,6 +10,18 @@
 <div layout:fragment="content">
 <div class="video-layout">
 
+    <!-- Mobile panel tab switcher: only shows on ≤768px via CSS -->
+    <div class="mobile-panel-tabs" id="videoPanelTabs">
+        <button class="mobile-panel-tab active" id="mpt-vid-controls"
+                onclick="switchMobilePanel('video','controls')">
+            <i class="bi bi-sliders"></i> Configurar
+        </button>
+        <button class="mobile-panel-tab" id="mpt-vid-results"
+                onclick="switchMobilePanel('video','results')">
+            <i class="bi bi-film"></i> Vídeos
+        </button>
+    </div>
+
     <!-- Left Panel: Controls -->
     <div class="video-controls-panel">
         <div class="panel-title">

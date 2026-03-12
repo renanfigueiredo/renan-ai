@@ -10,6 +10,18 @@
 <div layout:fragment="content">
 <div class="image-layout">
 
+    <!-- Mobile panel tab switcher: only shows on ≤768px via CSS -->
+    <div class="mobile-panel-tabs" id="imagePanelTabs">
+        <button class="mobile-panel-tab active" id="mpt-img-controls"
+                onclick="switchMobilePanel('image','controls')">
+            <i class="bi bi-sliders"></i> Configurar
+        </button>
+        <button class="mobile-panel-tab" id="mpt-img-results"
+                onclick="switchMobilePanel('image','results')">
+            <i class="bi bi-image"></i> Resultado
+        </button>
+    </div>
+
     <!-- Left Panel: Controls -->
     <div class="image-controls-panel">
         <div class="panel-title">

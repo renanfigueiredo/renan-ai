@@ -14,9 +14,15 @@
     <div class="conv-sidebar" id="convSidebar">
         <div class="conv-sidebar-header">
             <h3>Conversas</h3>
-            <button class="btn-new-chat" id="btnNewChat" title="Nova Conversa">
-                <i class="bi bi-plus-circle-fill"></i>
-            </button>
+            <div style="display:flex;gap:6px;align-items:center">
+                <button class="btn-new-chat" id="btnNewChat" title="Nova Conversa">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </button>
+                <!-- Close button — only visible on mobile overlay -->
+                <button class="conv-sidebar-close" id="convSidebarClose" onclick="closeConvSidebar()" title="Fechar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
         </div>
 
         <div class="conv-search">
@@ -57,7 +63,7 @@
         <!-- Chat Header -->
         <div class="chat-header">
             <div class="chat-header-left">
-                <button class="conv-sidebar-toggle" id="convSidebarToggle">
+                <button class="conv-sidebar-toggle" id="convSidebarToggle" onclick="toggleConvSidebar()">
                     <i class="bi bi-layout-sidebar-reverse"></i>
                 </button>
                 <div class="chat-title-area">
