@@ -60,33 +60,6 @@
             <div id="promptCharCounter" class="char-counter">0 caracteres</div>
         </div>
 
-        <!-- Negative Prompt -->
-        <div class="control-section">
-            <label class="control-label">
-                Prompt Negativo (o que evitar)
-                <button class="info-btn" title="Descreva elementos que NÃO devem aparecer">
-                    <i class="bi bi-info-circle"></i>
-                </button>
-            </label>
-            <textarea id="negativePrompt"
-                      placeholder="Ex: desfocado, baixa qualidade, distorcido, marca d'água, feio, ruído..."
-                      rows="2"></textarea>
-        </div>
-
-        <!-- Templates Section -->
-        <div class="control-section">
-            <label class="control-label">Templates Rápidos</label>
-            <div class="img-templates-grid">
-                <div th:each="tmpl : ${templates}"
-                     class="img-template-pill"
-                     th:data-content="${tmpl.content}"
-                     onclick="useImageTemplate(this.dataset.content)">
-                    <i class="bi" th:class="'bi ' + ${tmpl.icon}"></i>
-                    <span th:text="${tmpl.name}">Template</span>
-                </div>
-            </div>
-        </div>
-
         <!-- Advanced Settings Accordion -->
         <div class="control-section">
             <button class="accordion-toggle" onclick="toggleAccordion('imgAdvanced')">

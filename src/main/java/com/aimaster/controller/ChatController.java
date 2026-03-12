@@ -23,7 +23,6 @@ public class ChatController {
     private final TextGenerationService textGenerationService;
     private final ModelCatalogService modelCatalog;
     private final StorageService storageService;
-    private final PromptTemplateService promptTemplateService;
 
     @GetMapping("/chat")
     public String chatPage(
@@ -47,8 +46,6 @@ public class ChatController {
         uiModel.addAttribute("defaultModelName", modelCatalog.getModelById(conversation.getModelId())
                 .map(m -> m.getName()).orElse("Claude Sonnet 4.6"));
         uiModel.addAttribute("conversations", storageService.getAllConversations());
-        uiModel.addAttribute("templates", promptTemplateService.getTemplatesByType("TEXT"));
-        uiModel.addAttribute("templateCategories", promptTemplateService.getCategories());
         return "chat";
     }
 

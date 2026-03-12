@@ -21,10 +21,10 @@ public class ChatRequest {
     private double topP;
     private boolean stream;
     private List<String> stopSequences;
-    private String imageBase64; // for multimodal
-    private String imageMimeType;
-    private String documentBase64;
-    private String documentName;
+    private List<String> imagesBase64;
+    private List<String> imagesMimeTypes;
+    private List<String> documentsBase64;
+    private List<String> documentsNames;
     private boolean enhancePrompt; // auto-enhance with AI
     private String responseLanguage;
 }

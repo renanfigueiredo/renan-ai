@@ -3,7 +3,6 @@ package com.aimaster.controller;
 import com.aimaster.model.GeneratedVideo;
 import com.aimaster.model.VideoGenerationRequest;
 import com.aimaster.service.ModelCatalogService;
-import com.aimaster.service.PromptTemplateService;
 import com.aimaster.service.StorageService;
 import com.aimaster.service.VideoCleanupService;
 import com.aimaster.service.VideoGenerationService;
@@ -30,7 +29,6 @@ public class VideoController {
     private final VideoGenerationService videoGenerationService;
     private final ModelCatalogService modelCatalog;
     private final StorageService storageService;
-    private final PromptTemplateService promptTemplateService;
     private final S3Presigner s3Presigner;
     private final VideoCleanupService videoCleanupService;
 
@@ -41,7 +39,6 @@ public class VideoController {
     public String videoPage(Model model) {
         model.addAttribute("videoModels", modelCatalog.getVideoModels());
         model.addAttribute("videoHistory", storageService.getAllVideos());
-        model.addAttribute("templates", promptTemplateService.getTemplatesByType("VIDEO"));
         return "video";
     }
 

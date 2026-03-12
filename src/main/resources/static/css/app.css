@@ -128,7 +128,8 @@ body {
     border-bottom: 1px solid var(--border);
 }
 
-.logo { display: flex; align-items: center; gap: 10px; }
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; cursor: pointer; transition: opacity 0.2s; }
+.logo:hover { opacity: 0.85; }
 .logo-icon {
     display: flex;
     align-items: center;
@@ -259,6 +260,29 @@ body {
     font-weight: 600;
     color: var(--text-primary);
     flex: 1;
+}
+.topbar-brand {
+    font-size: 1.05rem;
+    font-weight: 800;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    transition: opacity 0.2s;
+}
+.topbar-brand:hover { opacity: 0.8; }
+.topbar-brand-name {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+.topbar-brand-ai {
+    background: linear-gradient(135deg, #7c6fff, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 900;
+    letter-spacing: -0.02em;
 }
 
 .topbar-actions { display: flex; align-items: center; gap: 12px; }
@@ -1231,18 +1255,35 @@ body {
 
 .attached-preview {
     margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
 .attached-item {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 12px;
+    padding: 5px 10px 5px 6px;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-full);
     font-size: 0.82rem;
     color: var(--text-secondary);
+    max-width: 320px;
+}
+.attached-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+}
+.attached-thumb {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
 }
 
 .attached-icon { color: var(--blue); }
@@ -1280,10 +1321,15 @@ body {
 }
 .toolbar-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
 .toolbar-btn i { font-size: 0.95rem; }
+.toolbar-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+.spin { animation: spinAnim 0.8s linear infinite; display: inline-block; }
+@keyframes spinAnim { to { transform: rotate(360deg); } }
 
 .toolbar-spacer { flex: 1; }
 
-.token-count { font-size: 0.75rem; color: var(--text-muted); }
+.token-count { font-size: 0.75rem; color: var(--text-muted); transition: color 0.2s; }
+.token-count.warn { color: #f59e0b; font-weight: 600; }
+.token-count.danger { color: #ef4444; font-weight: 700; }
 
 .message-input-row {
     display: flex;
@@ -3327,6 +3373,7 @@ textarea#messageInput {
     /* Topbar: smaller gap */
     .topbar { padding: 0 12px; gap: 10px; }
     .topbar-title { font-size: 0.9rem; }
+    .topbar-brand { font-size: 0.9rem; }
 
     /* Status indicator: hide text on very small */
     .status-text { display: none; }

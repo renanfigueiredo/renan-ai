@@ -66,19 +66,6 @@
             </div>
         </div>
 
-        <!-- Templates -->
-        <div class="control-section">
-            <label class="control-label">Templates de Vídeo</label>
-            <div class="video-templates">
-                <div th:each="tmpl : ${templates}" class="video-template-item"
-                     th:data-content="${tmpl.content}"
-                     onclick="useVideoTemplate(this.dataset.content)">
-                    <i class="bi" th:class="'bi ' + ${tmpl.icon}"></i>
-                    <span th:text="${tmpl.name}">Template</span>
-                </div>
-            </div>
-        </div>
-
         <!-- Duration -->
         <div class="control-section">
             <label class="control-label">Duração</label>

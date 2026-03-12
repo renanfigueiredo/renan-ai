@@ -65,8 +65,8 @@
             <div class="stat-card">
                 <div class="stat-icon text-green"><i class="bi bi-cpu-fill"></i></div>
                 <div class="stat-info">
-                    <span class="stat-number" th:text="${#lists.size(textModels) + #lists.size(imageModels) + #lists.size(videoModels)}">0</span>
-                    <span class="stat-label">Modelos Disponíveis</span>
+                    <span class="stat-number">3</span>
+                    <span class="stat-label">Modelos de Chat</span>
                 </div>
             </div>
         </div>
@@ -127,66 +127,6 @@
                 </div>
                 <div class="feature-arrow"><i class="bi bi-arrow-right-circle-fill"></i></div>
             </a>
-        </div>
-
-        <!-- Available Models Section -->
-        <div class="section-title">
-            <h2>🤖 Modelos de Texto Disponíveis</h2>
-        </div>
-
-        <div class="models-grid">
-            <div th:each="model : ${textModels}" class="model-card">
-                <div class="model-header">
-                    <i class="bi" th:class="'bi ' + ${model.icon} + ' model-icon'"></i>
-                    <div class="model-info">
-                        <span class="model-name" th:text="${model.name}">Model Name</span>
-                        <span class="model-provider" th:text="${model.provider}">Provider</span>
-                    </div>
-                    <span class="model-badge" th:text="${model.provider}"
-                          th:classappend="' badge-' + ${model.badgeColor}">Badge</span>
-                </div>
-                <p class="model-desc" th:text="${model.description}">Description</p>
-                <div class="model-features">
-                    <span th:if="${model.supportsImages}" class="feature-pill">
-                        <i class="bi bi-image"></i> Visão
-                    </span>
-                    <span th:if="${model.supportsDocuments}" class="feature-pill">
-                        <i class="bi bi-file-text"></i> Documentos
-                    </span>
-                    <span th:if="${model.supportsStreaming}" class="feature-pill">
-                        <i class="bi bi-lightning-fill"></i> Streaming
-                    </span>
-                    <span class="feature-pill cost-pill">
-                        $<span th:text="${#numbers.formatDecimal(model.outputCostPer1K, 1, 5)}">0</span>/1K
-                    </span>
-                </div>
-                <a th:href="@{/chat(model=${model.id})}" class="btn-use-model">
-                    Usar Modelo <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Recent Conversations -->
-        <div th:if="${!#lists.isEmpty(recentConversations)}">
-            <div class="section-title">
-                <h2>💬 Conversas Recentes</h2>
-                <a href="/history" class="see-all-link">Ver todas <i class="bi bi-arrow-right"></i></a>
-            </div>
-            <div class="recent-list">
-                <a th:each="conv : ${recentConversations}"
-                   th:href="@{/chat(id=${conv.id})}"
-                   class="recent-item">
-                    <div class="recent-icon"><i class="bi bi-chat-dots"></i></div>
-                    <div class="recent-info">
-                        <span class="recent-title" th:text="${conv.title}">Título</span>
-                        <span class="recent-meta">
-                            <span th:text="${conv.modelId}">model</span> •
-                            <span th:text="${#temporals.format(conv.updatedAt, 'dd/MM HH:mm')}">data</span>
-                        </span>
-                    </div>
-                    <div class="recent-messages" th:text="${#lists.size(conv.messages)} + ' msgs'">0 msgs</div>
-                </a>
-            </div>
         </div>
 
     </div>

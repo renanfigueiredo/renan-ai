@@ -11,8 +11,8 @@ const App = {
     currentConversationId: null,
     currentModel: null,
     isGenerating: false,
-    attachedImage: null,
-    attachedDocument: null,
+    attachedImages: [],
+    attachedDocuments: [],
     videoPollers: {},   // { videoId: intervalId }
     galleryItems: [],
     lightboxIdx: 0,
@@ -176,8 +176,6 @@ function initPageSpecific() {
     else if (path.startsWith('/chat')) { initChat(); }
     else if (path.startsWith('/image')) { initImage(); }
     else if (path.startsWith('/video')) { initVideo(); }
-    else if (path.startsWith('/history')) { initHistory(); }
-    else if (path.startsWith('/templates')) { initTemplatesPage(); }
 }
 
 // ─────────────────────────────────────────────────────
@@ -218,8 +216,16 @@ function initChat() {
         ta.addEventListener('input', () => {
             ta.style.height = 'auto';
             ta.style.height = Math.min(ta.scrollHeight, 200) + 'px';
-            const count = document.getElementById('charCount');
-            if (count) count.textContent = ta.value.length;
+            const count = document.getElementById('tokenCount');
+            const len = ta.value.length;
+            const max = 50000;
+            if (count) {
+                count.textContent = `${len.toLocaleString('pt-BR')} / ${max.toLocaleString('pt-BR')}`;
+                count.classList.toggle('warn', len > max * 0.85);
+                count.classList.toggle('danger', len > max * 0.95);
+            }
+            const btn = document.getElementById('sendBtn');
+            if (btn) btn.disabled = !ta.value.trim();
         });
 
         ta.addEventListener('keydown', e => {
@@ -377,8 +383,8 @@ async function sendMessage() {
     appendMessage({ role: 'user', content: text, timestamp: new Date().toISOString() });
     ta.value = '';
     ta.style.height = 'auto';
-    const charCount = document.getElementById('charCount');
-    if (charCount) charCount.textContent = '0';
+    const charCount = document.getElementById('tokenCount');
+    if (charCount) charCount.textContent = '0 / 50.000';
 
     // Show typing indicator
     showTypingIndicator();
@@ -395,13 +401,13 @@ async function sendMessage() {
         topP: parseFloat(document.getElementById('topP')?.value || 0.9),
     };
 
-    if (App.attachedImage) {
-        req.imageBase64 = App.attachedImage.base64;
-        req.imageMimeType = App.attachedImage.mimeType;
+    if (App.attachedImages.length > 0) {
+        req.imagesBase64 = App.attachedImages.map(f => f.base64);
+        req.imagesMimeTypes = App.attachedImages.map(f => f.mimeType);
     }
-    if (App.attachedDocument) {
-        req.documentBase64 = App.attachedDocument.base64;
-        req.documentName = App.attachedDocument.name;
+    if (App.attachedDocuments.length > 0) {
+        req.documentsBase64 = App.attachedDocuments.map(f => f.base64);
+        req.documentsNames = App.attachedDocuments.map(f => f.name);
     }
 
     try {
@@ -476,7 +482,7 @@ function updateChatHeader(conv) {
 function updateChatStats(data) {
     const statsEl = document.querySelector('.chat-stats');
     if (statsEl && data.totalTokens) {
-        statsEl.textContent = `${data.totalTokens} tokens · $${(+data.estimatedCost || 0).toFixed(4)}`;
+        statsEl.textContent = `${data.totalTokens} tokens`;
     }
 }
 
@@ -550,36 +556,18 @@ function filterModelDropdown(query) {
     });
 }
 
-// Settings Panel
-function toggleSettings() {
-    const panel = document.getElementById('settingsPanel');
-    if (!panel) return;
-    const isOpen = panel.style.width !== '0px' && panel.style.display !== 'none';
-    if (!isOpen) { panel.style.display = 'flex'; panel.style.width = '320px'; }
-    else { panel.style.display = 'none'; }
-}
-
-function closeSettings() {
-    const panel = document.getElementById('settingsPanel');
-    if (panel) panel.style.display = 'none';
-}
-
-function setSystemPrompt(text) {
-    const ta = document.getElementById('systemPrompt');
-    if (ta) ta.value = text;
-}
-
 // Attach Image
 function triggerAttachImage() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
+    input.multiple = true;
     input.onchange = async e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const base64 = await toBase64(file);
-        App.attachedImage = { base64, mimeType: file.type, name: file.name };
-        showAttachedPreview('image', file.name);
+        for (const file of e.target.files) {
+            const base64 = await toBase64(file);
+            App.attachedImages.push({ base64, mimeType: file.type, name: file.name });
+        }
+        refreshAttachedPreview();
     };
     input.click();
 }
@@ -589,41 +577,55 @@ function triggerAttachDocument() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.pdf,.txt,.doc,.docx,.csv,.json';
+    input.multiple = true;
     input.onchange = async e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const base64 = await toBase64(file);
-        App.attachedDocument = { base64, name: file.name, mimeType: file.type };
-        showAttachedPreview('document', file.name);
+        for (const file of e.target.files) {
+            const base64 = await toBase64(file);
+            App.attachedDocuments.push({ base64, name: file.name, mimeType: file.type });
+        }
+        refreshAttachedPreview();
     };
     input.click();
 }
 
-function showAttachedPreview(type, name) {
+function refreshAttachedPreview() {
     const preview = document.getElementById('attachedPreview');
     if (!preview) return;
-    preview.innerHTML = `
-        <div class="attached-item">
-            <i class="bi ${type === 'image' ? 'bi-image' : 'bi-file-earmark-text'} attached-icon"></i>
-            <span>${escHtml(name)}</span>
-            <button class="remove-attached" onclick="clearAttachments()"><i class="bi bi-x"></i></button>
-        </div>`;
+    preview.innerHTML = '';
+    App.attachedImages.forEach((f, i) => {
+        const item = document.createElement('div');
+        item.className = 'attached-item';
+        item.innerHTML = `<img src="data:${f.mimeType};base64,${f.base64}" class="attached-thumb" alt="${escHtml(f.name)}"><span>${escHtml(f.name)}</span><button class="remove-attached" onclick="removeAttachmentByType('image',${i})" title="Remover"><i class="bi bi-x"></i></button>`;
+        preview.appendChild(item);
+    });
+    App.attachedDocuments.forEach((f, i) => {
+        const item = document.createElement('div');
+        item.className = 'attached-item';
+        item.innerHTML = `<i class="bi bi-file-earmark-pdf attached-icon"></i><span>${escHtml(f.name)}</span><button class="remove-attached" onclick="removeAttachmentByType('document',${i})" title="Remover"><i class="bi bi-x"></i></button>`;
+        preview.appendChild(item);
+    });
+    preview.style.display = (App.attachedImages.length || App.attachedDocuments.length) ? '' : 'none';
+}
+
+function removeAttachmentByType(type, index) {
+    if (type === 'image') App.attachedImages.splice(index, 1);
+    else App.attachedDocuments.splice(index, 1);
+    refreshAttachedPreview();
 }
 
 function clearAttachments() {
-    App.attachedImage = null;
-    App.attachedDocument = null;
-    const preview = document.getElementById('attachedPreview');
-    if (preview) preview.innerHTML = '';
+    App.attachedImages = [];
+    App.attachedDocuments = [];
+    refreshAttachedPreview();
 }
 
 // Enhance Prompt
 async function enhanceChatPrompt() {
     const ta = document.getElementById('messageInput');
-    if (!ta || !ta.value.trim()) { showToast('Enter a prompt first', 'warning'); return; }
+    if (!ta || !ta.value.trim()) { showToast('Digite um prompt primeiro', 'warning'); return; }
 
-    const btn = document.getElementById('enhancePromptBtn');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Enhancing…'; }
+    const btn = document.getElementById('btnEnhancePrompt');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> <span>Melhorando...</span>'; }
 
     try {
         const res = await fetch('/api/chat/enhance-prompt', {
@@ -632,23 +634,23 @@ async function enhanceChatPrompt() {
             body: JSON.stringify({ prompt: ta.value.trim() })
         });
         const data = await res.json();
-        if (data.enhanced) { ta.value = data.enhanced; ta.dispatchEvent(new Event('input')); showToast('Prompt enhanced!', 'success'); }
-    } catch { showToast('Enhancement failed', 'error'); }
+        if (data.enhanced) { ta.value = data.enhanced; ta.dispatchEvent(new Event('input')); showToast('Prompt melhorado!', 'success'); }
+    } catch { showToast('Erro ao melhorar prompt', 'error'); }
     finally {
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-stars"></i> Enhance'; }
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-magic"></i> <span>Melhorar</span>'; }
     }
 }
 
 // Export Chat
 function exportChat() {
     const messages = document.querySelectorAll('.message-wrapper');
-    if (!messages.length) { showToast('No messages to export', 'warning'); return; }
-    let md = `# Chat Export\n\n**Date:** ${new Date().toLocaleString()}\n\n---\n\n`;
+    if (!messages.length) { showToast('Nenhuma mensagem para exportar', 'warning'); return; }
+    let md = `# Chat Export\n\n**Data:** ${new Date().toLocaleString()}\n\n---\n\n`;
     messages.forEach(w => {
         if (w.classList.contains('user-side')) {
-            md += `**You:** ${w.querySelector('.message-content')?.textContent || ''}\n\n`;
+            md += `**Você:** ${w.querySelector('.message-content')?.textContent || ''}\n\n`;
         } else {
-            md += `**AI:** ${w.querySelector('.prose')?.innerText || ''}\n\n`;
+            md += `**IA:** ${w.querySelector('.prose')?.innerText || ''}\n\n`;
         }
         md += '---\n\n';
     });
@@ -657,14 +659,27 @@ function exportChat() {
     a.href = URL.createObjectURL(blob);
     a.download = `chat-${Date.now()}.md`;
     a.click();
+    showToast('Conversa exportada como Markdown', 'success');
 }
+
+// Clear current chat messages
+function clearCurrentChat() {
+    const messages = document.querySelectorAll('.message-wrapper');
+    if (!messages.length) { showToast('Chat já está vazio', 'warning'); return; }
+    if (!confirm('Limpar todas as mensagens desta conversa?')) return;
+    messages.forEach(m => m.remove());
+    const welcome = document.getElementById('welcomeMessage');
+    if (welcome) welcome.style.display = '';
+    showToast('Chat limpo', 'success');
+}
+
+// Alias for removeAttachment used in HTML
+function removeAttachment() { clearAttachments(); }
 
 // Compare Modal
 function openCompareModal() {
     const prompt = document.getElementById('messageInput')?.value.trim();
     if (prompt) { const cta = document.getElementById('comparePromptText'); if (cta) cta.value = prompt; }
-    document.getElementById('compareModal')?.removeAttribute('style');
-    document.getElementById('compareModal')?.style.setProperty ? null : null;
     const modal = document.getElementById('compareModal');
     if (modal) modal.style.display = 'flex';
 }
@@ -676,13 +691,13 @@ function closeCompareModal() {
 
 async function runCompare() {
     const prompt = document.getElementById('comparePromptText')?.value.trim();
-    if (!prompt) { showToast('Enter a prompt to compare', 'warning'); return; }
+    if (!prompt) { showToast('Digite um prompt para comparar', 'warning'); return; }
 
     const checked = Array.from(document.querySelectorAll('.compare-model-check input:checked')).map(cb => cb.value);
-    if (checked.length < 2) { showToast('Select at least 2 models', 'warning'); return; }
+    if (checked.length < 2) { showToast('Selecione pelo menos 2 modelos', 'warning'); return; }
 
     const btn = document.getElementById('btnRunCompare');
-    if (btn) { btn.disabled = true; btn.textContent = 'Comparing…'; }
+    if (btn) { btn.disabled = true; btn.textContent = 'Comparando…'; }
 
     try {
         const res = await fetch('/api/chat/compare', {
@@ -690,12 +705,16 @@ async function runCompare() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt, modelIds: checked })
         });
-        const results = await res.json();
-        renderCompareResults(results, checked);
+        const data = await res.json();
+        if (data.success) {
+            renderCompareResults(data.results, checked);
+        } else {
+            showToast(data.error || 'Erro na comparação', 'error');
+        }
     } catch (e) {
-        showToast('Compare failed', 'error');
+        showToast('Falha na comparação', 'error');
     } finally {
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-columns-gap"></i> Run Comparison'; }
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-play-fill"></i> Comparar Agora'; }
     }
 }
 
@@ -722,83 +741,6 @@ function renderCompareResults(results, modelIds) {
                 <div class="compare-result-content prose">${r.formattedContent || escHtml(r.content || r.error || '')}</div>
             </div>`;
     }).join('');
-}
-
-// Templates Modal (Chat)
-function openTemplatesModal() {
-    const modal = document.getElementById('templatesModal');
-    if (modal) modal.style.display = 'flex';
-    loadChatTemplates();
-}
-
-function closeTemplatesModal() {
-    const modal = document.getElementById('templatesModal');
-    if (modal) modal.style.display = 'none';
-}
-
-async function loadChatTemplates(category = '', search = '') {
-    try {
-        const params = new URLSearchParams({ type: 'TEXT' });
-        if (category) params.set('category', category);
-        if (search) params.set('search', search);
-        const res = await fetch('/api/templates?' + params);
-        const templates = await res.json();
-        renderChatTemplates(templates);
-    } catch (e) { console.error(e); }
-}
-
-function renderChatTemplates(templates) {
-    const grid = document.getElementById('chatTemplatesGrid');
-    if (!grid) return;
-    if (!templates.length) { grid.innerHTML = '<p style="color:var(--text-muted);padding:20px;text-align:center">Nenhum template encontrado</p>'; return; }
-    grid.innerHTML = templates.map(t => `
-        <div class="template-item" onclick="useChatTemplate(${JSON.stringify(escHtml(t.content))})">
-            <div class="template-icon">${t.icon || '✨'}</div>
-            <div class="template-info">
-                <span class="template-name">${escHtml(t.name)}</span>
-                <span class="template-cat">${escHtml(t.category || '')}</span>
-            </div>
-        </div>`).join('');
-}
-
-function filterChatTemplates(category) {
-    document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === category));
-    loadChatTemplates(category === 'ALL' ? '' : category);
-}
-
-function searchChatTemplates(query) {
-    loadChatTemplates('', query);
-}
-
-function useChatTemplate(content) {
-    const ta = document.getElementById('messageInput');
-    if (ta) { ta.value = content; ta.dispatchEvent(new Event('input')); ta.focus(); }
-    closeTemplatesModal();
-}
-
-// Pending template cross-page
-function checkPendingTemplate() {
-    const t = localStorage.getItem('pendingTemplate');
-    if (!t) return;
-    localStorage.removeItem('pendingTemplate');
-    const path = window.location.pathname;
-    if (path.startsWith('/chat')) {
-        const ta = document.getElementById('messageInput') || document.getElementById('videoPrompt') || document.getElementById('imagePrompt');
-        if (ta) { ta.value = t; ta.dispatchEvent(new Event('input')); }
-    }
-}
-
-function useTemplate(content, type) {
-    if (type === 'TEXT') {
-        localStorage.setItem('pendingTemplate', content);
-        window.location.href = '/chat';
-    } else if (type === 'IMAGE') {
-        localStorage.setItem('pendingTemplate', content);
-        window.location.href = '/image';
-    } else if (type === 'VIDEO') {
-        localStorage.setItem('pendingTemplate', content);
-        window.location.href = '/video';
-    }
 }
 
 // Toggle Conversation Panel
@@ -890,8 +832,8 @@ function initImage() {
     // Wire up char counter on imagePrompt textarea
     const taPrompt = document.getElementById('imagePrompt');
     if (taPrompt) {
-        taPrompt.addEventListener('input', updatePromptCounter);
-        updatePromptCounter();
+        taPrompt.addEventListener('input', updateImagePromptCounter);
+        updateImagePromptCounter();
     }
 
     // Wire up reference image file input
@@ -930,34 +872,28 @@ function selectImageModel(modelId, cardEl) {
     cardEl.classList.add('active');
     const input = document.getElementById('selectedImageModel');
     if (input) input.value = modelId;
-    updatePromptCounter();
+    updateImagePromptCounter();
 }
 
-function updatePromptCounter() {
+function updateImagePromptCounter() {
     const ta = document.getElementById('imagePrompt');
     const counter = document.getElementById('promptCharCounter');
     if (!ta || !counter) return;
     const len = ta.value.length;
     const modelInput = document.getElementById('selectedImageModel');
-    const isTitan = modelInput && modelInput.value.includes('titan');
+    const modelVal = modelInput ? modelInput.value : '';
+    const isTitan = modelVal.includes('titan');
+    const limit = isTitan ? 512 : 1024;
     counter.classList.remove('warn', 'danger');
-    if (isTitan && len > 512) {
+    if (len > limit) {
         counter.classList.add('danger');
-        counter.textContent = `${len} caracteres ⚠️ Titan Image: limite de 512 (será cortado)`;
-    } else if (isTitan && len > 400) {
+        counter.textContent = `${len} / ${limit} ⚠️ Limite excedido — o prompt será cortado`;
+    } else if (len > limit * 0.85) {
         counter.classList.add('warn');
-        counter.textContent = `${len}/512 caracteres (Titan Image)`;
-    } else if (len > 800) {
-        counter.classList.add('warn');
-        counter.textContent = `${len} caracteres`;
+        counter.textContent = `${len} / ${limit} caracteres`;
     } else {
-        counter.textContent = `${len} caracteres`;
+        counter.textContent = `${len} / ${limit} caracteres`;
     }
-}
-
-function useImageTemplate(prompt) {
-    const ta = document.getElementById('imagePrompt');
-    if (ta) { ta.value = prompt; ta.dispatchEvent(new Event('input')); ta.focus(); }
 }
 
 function setResolution(w, h, btn) {
@@ -1020,7 +956,7 @@ async function generateImage() {
 
     const request = {
         prompt,
-        negativePrompt: document.getElementById('negativePrompt')?.value || '',
+        negativePrompt: '',
         modelId,
         width: parseInt(document.getElementById('imgWidth')?.value || 1024),
         height: parseInt(document.getElementById('imgHeight')?.value || 1024),
@@ -1335,6 +1271,10 @@ function initVideo() {
     const btnEnhance = document.getElementById('btnEnhanceVideoPrompt');
     if (btnEnhance) btnEnhance.addEventListener('click', enhanceVideoPrompt);
 
+    // Wire video prompt char counter
+    const taVideo = document.getElementById('videoPrompt');
+    if (taVideo) taVideo.addEventListener('input', updateVideoPromptCounter);
+
     // Reference image file input
     const refInput = document.getElementById('videoRefImage');
     if (refInput) {
@@ -1351,7 +1291,7 @@ function initVideo() {
     }
 
     // Init counter
-    updatePromptCounter();
+    updateVideoPromptCounter();
 
     // On mobile: start on controls tab
     if (window.innerWidth <= 768) {
@@ -1359,7 +1299,7 @@ function initVideo() {
     }
 }
 
-function updatePromptCounter() {
+function updateVideoPromptCounter() {
     const ta = document.getElementById('videoPrompt');
     const counter = document.getElementById('promptCharCount');
     if (!ta || !counter) return;
@@ -1368,11 +1308,6 @@ function updatePromptCounter() {
     counter.style.color = len >= 512 ? 'var(--red, #e53e3e)'
         : len >= 490 ? 'var(--warning, #d97706)'
         : 'var(--text-muted)';
-}
-
-function useVideoTemplate(text) {
-    const ta = document.getElementById('videoPrompt');
-    if (ta) { ta.value = text; updatePromptCounter(); ta.focus(); }
 }
 
 async function generateVideo() {
@@ -1663,120 +1598,16 @@ function retryVideo(prompt) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ─────────────────────────────────────────────────────
-// HISTORY PAGE
-// ─────────────────────────────────────────────────────
-function initHistory() {
-    // Tab switching already handled by HTML onclick, ensure first tab visible
-    document.querySelectorAll('.tab-pane').forEach((p, i) => {
-        p.style.display = i === 0 ? '' : 'none';
-    });
-}
-
-function switchTab(tabId, btn) {
-    document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    const pane = document.getElementById(tabId);
-    if (pane) pane.style.display = '';
-    if (btn) btn.classList.add('active');
-}
-
-async function clearAllConversations() {
-    if (!confirm('Delete ALL conversations? This cannot be undone.')) return;
-    try {
-        await fetch('/api/history/conversations', { method: 'DELETE' });
-        showToast('All conversations deleted', 'success');
-        setTimeout(() => location.reload(), 1000);
-    } catch { showToast('Error', 'error'); }
-}
-
-// ─────────────────────────────────────────────────────
-// TEMPLATES PAGE
-// ─────────────────────────────────────────────────────
-function initTemplatesPage() {
-    // Filter state
-    App.templateFilter = { type: '', category: '', search: '' };
-}
-
-function filterTemplateType(type, btn) {
-    document.querySelectorAll('[data-type-filter]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    App.templateFilter = { ...App.templateFilter, type };
-}
-
-function searchTemplates(query) {
-    App.templateFilter = { ...App.templateFilter, search: query };
-}
-
-function openCreateTemplateModal() {
-    const modal = document.getElementById('createTemplateModal');
-    if (modal) modal.style.display = 'flex';
-}
-
-function closeCreateTemplateModal() {
-    const modal = document.getElementById('createTemplateModal');
-    if (modal) modal.style.display = 'none';
-    document.getElementById('createTemplateForm')?.reset();
-}
-
-async function saveTemplate() {
-    const name = document.getElementById('newTplName')?.value.trim();
-    const content = document.getElementById('newTplContent')?.value.trim();
-    const type = document.getElementById('newTplType')?.value;
-    const category = document.getElementById('newTplCategory')?.value;
-    const icon = document.getElementById('newTplIcon')?.value || '✨';
-    const description = document.getElementById('newTplDescription')?.value.trim();
-
-    if (!name || !content) { showToast('Name and content are required', 'warning'); return; }
-
-    try {
-        await fetch('/api/templates', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, content, type, category, icon, description })
-        });
-        showToast('Template saved!', 'success');
-        closeCreateTemplateModal();
-        setTimeout(() => location.reload(), 800);
-    } catch { showToast('Error saving template', 'error'); }
-}
-
-async function deleteTemplate(id) {
-    if (!confirm('Delete this template?')) return;
-    try {
-        await fetch(`/api/templates/${id}`, { method: 'DELETE' });
-        showToast('Template deleted', 'success');
-        document.getElementById(`tpl-${id}`)?.remove();
-    } catch { showToast('Error', 'error'); }
-}
-
-async function toggleTemplateFavorite(id) {
-    try {
-        await fetch(`/api/templates/${id}/favorite`, { method: 'PATCH' });
-        const icon = document.querySelector(`#tpl-${id} .tc-favorite`);
-        if (icon) icon.textContent = icon.textContent === '⭐' ? '☆' : '⭐';
-    } catch { showToast('Error', 'error'); }
-}
-
-function useTemplateFromPage(content, type) {
-    useTemplate(content, type);
-}
-
 // Close modals on backdrop click
 document.addEventListener('click', e => {
     if (e.target.id === 'compareModal') closeCompareModal();
-    if (e.target.id === 'templatesModal') closeTemplatesModal();
     if (e.target.id === 'lightbox') closeLightbox();
-    if (e.target.id === 'createTemplateModal') closeCreateTemplateModal();
 });
 
 // ESC closes modals
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
         closeCompareModal();
-        closeTemplatesModal();
         closeLightbox();
-        closeCreateTemplateModal();
-        closeSettings();
     }
 });

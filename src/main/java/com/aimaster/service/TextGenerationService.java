@@ -180,26 +180,35 @@ public class TextGenerationService {
         userMsg.put("role", "user");
         ArrayNode userContent = userMsg.putArray("content");
 
-        // Add image if present
-        if (request.getImageBase64() != null && !request.getImageBase64().isEmpty()) {
-            ObjectNode imageBlock = userContent.addObject();
-            imageBlock.put("type", "image");
-            ObjectNode source = imageBlock.putObject("source");
-            source.put("type", "base64");
-            source.put("media_type", request.getImageMimeType() != null ? request.getImageMimeType() : "image/jpeg");
-            source.put("data", request.getImageBase64());
+        // Add images if present
+        if (request.getImagesBase64() != null) {
+            for (int i = 0; i < request.getImagesBase64().size(); i++) {
+                String b64 = request.getImagesBase64().get(i);
+                String mime = (request.getImagesMimeTypes() != null && i < request.getImagesMimeTypes().size())
+                        ? request.getImagesMimeTypes().get(i) : "image/jpeg";
+                ObjectNode imageBlock = userContent.addObject();
+                imageBlock.put("type", "image");
+                ObjectNode source = imageBlock.putObject("source");
+                source.put("type", "base64");
+                source.put("media_type", mime);
+                source.put("data", b64);
+            }
         }
 
-        // Add document if present
-        if (request.getDocumentBase64() != null && !request.getDocumentBase64().isEmpty()) {
-            ObjectNode docBlock = userContent.addObject();
-            docBlock.put("type", "document");
-            ObjectNode source = docBlock.putObject("source");
-            source.put("type", "base64");
-            source.put("media_type", "application/pdf");
-            source.put("data", request.getDocumentBase64());
-            ObjectNode docMeta = docBlock.putObject("document");
-            docMeta.put("name", request.getDocumentName() != null ? request.getDocumentName() : "document.pdf");
+        // Add documents if present
+        if (request.getDocumentsBase64() != null) {
+            for (int i = 0; i < request.getDocumentsBase64().size(); i++) {
+                String b64 = request.getDocumentsBase64().get(i);
+                String name = (request.getDocumentsNames() != null && i < request.getDocumentsNames().size())
+                        ? request.getDocumentsNames().get(i) : "document.pdf";
+                ObjectNode docBlock = userContent.addObject();
+                docBlock.put("type", "document");
+                ObjectNode source = docBlock.putObject("source");
+                source.put("type", "base64");
+                source.put("media_type", "application/pdf");
+                source.put("data", b64);
+                docBlock.put("title", name);
+            }
         }
 
         ObjectNode textBlock = userContent.addObject();
@@ -263,12 +272,19 @@ public class TextGenerationService {
         userMsg.put("role", "user");
         ArrayNode userContent = userMsg.putArray("content");
 
-        if (request.getImageBase64() != null && !request.getImageBase64().isEmpty()) {
-            ObjectNode imgPart = userContent.addObject();
-            ObjectNode image = imgPart.putObject("image");
-            image.put("format", "jpeg");
-            ObjectNode source = image.putObject("source");
-            source.put("bytes", request.getImageBase64());
+        // Add images if present (Nova)
+        if (request.getImagesBase64() != null) {
+            for (int i = 0; i < request.getImagesBase64().size(); i++) {
+                String b64 = request.getImagesBase64().get(i);
+                String mime = (request.getImagesMimeTypes() != null && i < request.getImagesMimeTypes().size())
+                        ? request.getImagesMimeTypes().get(i) : "image/jpeg";
+                String fmt = mime.contains("/") ? mime.split("/")[1] : "jpeg";
+                ObjectNode imgPart = userContent.addObject();
+                ObjectNode image = imgPart.putObject("image");
+                image.put("format", fmt);
+                ObjectNode source = image.putObject("source");
+                source.put("bytes", b64);
+            }
         }
 
         ObjectNode textPart = userContent.addObject();

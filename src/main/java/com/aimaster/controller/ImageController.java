@@ -4,7 +4,6 @@ import com.aimaster.model.GeneratedImage;
 import com.aimaster.model.ImageGenerationRequest;
 import com.aimaster.service.ImageGenerationService;
 import com.aimaster.service.ModelCatalogService;
-import com.aimaster.service.PromptTemplateService;
 import com.aimaster.service.StorageService;
 import com.aimaster.service.TextGenerationService;
 import lombok.RequiredArgsConstructor;
@@ -26,14 +25,12 @@ public class ImageController {
     private final ImageGenerationService imageGenerationService;
     private final ModelCatalogService modelCatalog;
     private final StorageService storageService;
-    private final PromptTemplateService promptTemplateService;
     private final TextGenerationService textGenerationService;
 
     @GetMapping("/image")
     public String imagePage(Model model) {
         model.addAttribute("imageModels", modelCatalog.getImageModels());
         model.addAttribute("imageHistory", storageService.getAllImages());
-        model.addAttribute("templates", promptTemplateService.getTemplatesByType("IMAGE"));
         return "image";
     }
 
