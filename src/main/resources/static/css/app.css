@@ -3429,6 +3429,21 @@ textarea#messageInput {
     .status-text { display: none; }
 }
 
+/* ── Streaming cursor ── */
+.cursor-blink {
+    display: inline-block;
+    width: 2px;
+    animation: blink 0.7s step-start infinite;
+    color: var(--purple);
+    font-weight: 700;
+    margin-left: 1px;
+    vertical-align: text-bottom;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
 /* ── Guest Mode Timer Banner ── */
 .guest-timer-banner {
     display: flex;

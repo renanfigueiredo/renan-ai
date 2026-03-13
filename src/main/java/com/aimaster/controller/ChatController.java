@@ -7,10 +7,12 @@ import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.data.MutableDataSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -120,6 +122,69 @@ public class ChatController {
         } catch (Exception e) {
             log.error("Chat error", e);
             return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Streaming endpoint — returns SSE events so the browser renders tokens as they arrive.
+     * This avoids Heroku's 30-second H12 timeout for long LLM responses.
+     */
+    @PostMapping(value = "/api/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @ResponseBody
+    public SseEmitter streamMessage(@RequestBody ChatRequest request, Principal principal) {
+        try {
+            Long userId = getUserId(principal);
+
+            Conversation conversation;
+            if (request.getConversationId() != null && !request.getConversationId().isEmpty()) {
+                conversation = storageService.findConversationByUser(request.getConversationId(), userId)
+                        .orElseGet(() -> newConversation(userId));
+            } else {
+                conversation = newConversation(userId);
+                if (request.getModelId() != null) conversation.setModelId(request.getModelId());
+                if (request.getSystemPrompt() != null) conversation.setSystemPrompt(request.getSystemPrompt());
+            }
+
+            // Add user message to conversation
+            String htmlUserContent = "<p>" + escapeHtml(request.getMessage()) + "</p>";
+            Message userMsg = Message.builder()
+                    .role("user")
+                    .content(request.getMessage())
+                    .formattedContent(htmlUserContent)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            userMsg.setConversation(conversation);
+            conversation.getMessages().add(userMsg);
+
+            if (conversation.getTitle() == null || conversation.getTitle().equals("New Conversation")) {
+                String title = request.getMessage().length() > 60
+                        ? request.getMessage().substring(0, 60) + "..."
+                        : request.getMessage();
+                conversation.setTitle(title);
+            }
+
+            if (request.isEnhancePrompt()) {
+                try {
+                    request.setMessage(textGenerationService.enhancePrompt(request.getMessage(), "chat"));
+                } catch (Exception e) {
+                    log.warn("Prompt enhancement failed, using original", e);
+                }
+            }
+
+            // Persist user message immediately so it's saved even if streaming is interrupted
+            storageService.saveConversation(conversation);
+
+            return textGenerationService.streamResponse(request, conversation);
+
+        } catch (Exception e) {
+            log.error("Stream setup error", e);
+            SseEmitter errorEmitter = new SseEmitter(0L);
+            try {
+                errorEmitter.send(SseEmitter.event()
+                        .data("{\"type\":\"error\",\"message\":\"" + e.getMessage() + "\"}"));
+            } catch (Exception ignored) {}
+            errorEmitter.complete();
+            return errorEmitter;
         }
     }
 

@@ -414,11 +414,9 @@ async function sendMessage() {
     const charCount = document.getElementById('tokenCount');
     if (charCount) charCount.textContent = '0 / 50.000';
 
-    // Show typing indicator
     showTypingIndicator();
     scrollToBottom();
 
-    // Build request
     const req = {
         conversationId: App.currentConversationId,
         message: text,
@@ -439,36 +437,62 @@ async function sendMessage() {
     }
 
     try {
-        const res = await fetch('/api/chat/send', {
+        const res = await fetch('/api/chat/stream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(req)
         });
 
         if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
 
+        // Remove typing indicator and create streaming message bubble
         removeTypingIndicator();
-
-        // Update conversation ID
-        if (data.conversationId) {
-            App.currentConversationId = data.conversationId;
-            history.replaceState({}, '', `/chat?id=${data.conversationId}`);
-        }
-
-        // Append assistant message
-        if (data.assistantMessage) {
-            appendMessage(data.assistantMessage);
-        }
-
-        // Clear attachments
+        const streamId = 'stream-msg-' + Date.now();
+        appendStreamingMessage(streamId);
         clearAttachments();
 
-        // Reload conversation list
-        loadConversationsList();
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let rawText = ''; // Accumulate raw text for final markdown render
 
-        // Update token stats
-        updateChatStats(data);
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // keep incomplete line
+
+            for (const line of lines) {
+                if (!line.startsWith('data:')) continue;
+                const jsonStr = line.slice(5).trim();
+                if (!jsonStr) continue;
+
+                let event;
+                try { event = JSON.parse(jsonStr); } catch { continue; }
+
+                if (event.type === 'token') {
+                    rawText += event.text;
+                    updateStreamingMessage(streamId, rawText);
+                } else if (event.type === 'done') {
+                    finalizeStreamingMessage(streamId, event.formattedContent);
+                    if (event.conversationId) {
+                        App.currentConversationId = event.conversationId;
+                        history.replaceState({}, '', `/chat?id=${event.conversationId}`);
+                    }
+                    if (event.conversationTitle) {
+                        const titleEl = document.querySelector('.chat-title');
+                        if (titleEl) titleEl.textContent = event.conversationTitle;
+                    }
+                    updateChatStats(event);
+                    loadConversationsList();
+                } else if (event.type === 'error') {
+                    document.getElementById(streamId)?.remove();
+                    showToast(event.message || 'Erro ao gerar resposta', 'error');
+                }
+            }
+        }
 
     } catch (e) {
         removeTypingIndicator();
@@ -477,6 +501,49 @@ async function sendMessage() {
         App.isGenerating = false;
         if (sendBtn) sendBtn.disabled = false;
         scrollToBottom();
+    }
+}
+
+function appendStreamingMessage(id) {
+    const area = document.getElementById('messagesArea');
+    if (!area) return;
+    const div = document.createElement('div');
+    div.id = id;
+    div.className = 'message assistant streaming';
+    div.innerHTML = `
+        <div class="message-avatar">🤖</div>
+        <div class="message-content">
+            <div class="message-bubble" id="${id}-bubble"><span class="cursor-blink">▋</span></div>
+            <div class="message-meta"></div>
+        </div>`;
+    area.appendChild(div);
+    scrollToBottom();
+}
+
+function updateStreamingMessage(id, rawText) {
+    const bubble = document.getElementById(id + '-bubble');
+    if (!bubble) return;
+    // Render markdown incrementally — append cursor after content
+    bubble.innerHTML = marked.parse ? marked.parse(rawText) + '<span class="cursor-blink">▋</span>'
+                                    : rawText + '<span class="cursor-blink">▋</span>';
+    scrollToBottom();
+}
+
+function finalizeStreamingMessage(id, formattedContent) {
+    const bubble = document.getElementById(id + '-bubble');
+    if (!bubble) return;
+    // Replace with server-rendered HTML (already sanitized by flexmark)
+    if (formattedContent) {
+        bubble.innerHTML = formattedContent;
+    } else {
+        // Remove cursor blink if no server HTML
+        bubble.querySelectorAll('.cursor-blink').forEach(el => el.remove());
+    }
+    const msgDiv = document.getElementById(id);
+    if (msgDiv) msgDiv.classList.remove('streaming');
+    // Apply syntax highlighting if hljs is available
+    if (window.hljs) {
+        bubble.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
     }
 }
 
