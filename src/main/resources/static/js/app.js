@@ -22,6 +22,7 @@ const App = {
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initSidebar();
+    initUserMenu();
     initPageSpecific();
     initHighlightJs();
     checkPendingTemplate();
@@ -46,6 +47,32 @@ function toggleTheme() {
     document.body.classList.toggle('light-mode', App.theme === 'light');
     localStorage.setItem('theme', App.theme);
     updateThemeIcon();
+}
+
+// ── User Menu ─────────────────────────────────────────
+function initUserMenu() {
+    const menu = document.getElementById('userMenu');
+    const btn  = document.getElementById('userMenuBtn');
+    if (!menu || !btn) return;
+
+    // Fetch name + email from server
+    fetch('/api/me').then(r => r.ok ? r.json() : null).then(data => {
+        if (!data) return;
+        const initial = (data.name[0] || '?').toUpperCase();
+        document.getElementById('userAvatarInitial').textContent  = initial;
+        document.getElementById('userDropdownAvatar').textContent = initial;
+        document.getElementById('userMenuName').textContent        = data.name;
+        document.getElementById('userDropdownName').textContent    = data.name;
+        document.getElementById('userDropdownEmail').textContent   = data.email;
+    });
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.toggle('open');
+    });
+
+    document.addEventListener('click', () => menu.classList.remove('open'));
+    document.getElementById('userDropdown')?.addEventListener('click', e => e.stopPropagation());
 }
 
 function updateThemeIcon() {

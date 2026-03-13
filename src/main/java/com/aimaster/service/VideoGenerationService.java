@@ -18,7 +18,7 @@ public class VideoGenerationService {
     @Value("${aws.s3.output-bucket:}")
     private String defaultBucket;
 
-    public GeneratedVideo startVideoGeneration(VideoGenerationRequest request) {
+    public GeneratedVideo startVideoGeneration(VideoGenerationRequest request, Long userId) {
         String modelId = request.getModelId();
         if (modelId == null || modelId.isEmpty()) modelId = "amazon.nova-reel-v1:0";
 
@@ -33,6 +33,7 @@ public class VideoGenerationService {
                 .modelId(modelId)
                 .modelName("Amazon Nova Reel")
                 .status("PROCESSING")
+                .userId(userId)
                 .durationSeconds(6)
                 .resolution("1280x720")
                 .build();

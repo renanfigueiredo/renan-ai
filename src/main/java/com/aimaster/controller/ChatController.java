@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -23,19 +24,29 @@ public class ChatController {
     private final TextGenerationService textGenerationService;
     private final ModelCatalogService modelCatalog;
     private final StorageService storageService;
+    private final UserService userService;
+
+    private Long getUserId(Principal principal) {
+        return userService.findByEmail(principal.getName())
+                .orElseThrow(() -> new IllegalStateException("Usuário não encontrado"))
+                .getId();
+    }
 
     @GetMapping("/chat")
     public String chatPage(
             @RequestParam(required = false) String id,
             @RequestParam(required = false) String model,
-            Model uiModel) {
+            Model uiModel,
+            Principal principal) {
+
+        Long userId = getUserId(principal);
 
         Conversation conversation;
         if (id != null && !id.isEmpty()) {
-            conversation = storageService.findConversation(id)
-                    .orElseGet(this::newConversation);
+            conversation = storageService.findConversationByUser(id, userId)
+                    .orElseGet(() -> newConversation(userId));
         } else {
-            conversation = newConversation();
+            conversation = newConversation(userId);
             if (model != null && !model.isEmpty()) {
                 conversation.setModelId(model);
             }
@@ -45,30 +56,26 @@ public class ChatController {
         uiModel.addAttribute("textModels", modelCatalog.getTextModels());
         uiModel.addAttribute("defaultModelName", modelCatalog.getModelById(conversation.getModelId())
                 .map(m -> m.getName()).orElse("Claude Sonnet 4.6"));
-        uiModel.addAttribute("conversations", storageService.getAllConversations());
+        uiModel.addAttribute("conversations", storageService.getConversationsByUser(userId));
         return "chat";
     }
 
     @PostMapping("/api/chat/send")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> sendMessage(@RequestBody ChatRequest request) {
+    public ResponseEntity<Map<String, Object>> sendMessage(@RequestBody ChatRequest request, Principal principal) {
         try {
-            // Get or create conversation
+            Long userId = getUserId(principal);
+
             Conversation conversation;
             if (request.getConversationId() != null && !request.getConversationId().isEmpty()) {
-                conversation = storageService.findConversation(request.getConversationId())
-                        .orElseGet(this::newConversation);
+                conversation = storageService.findConversationByUser(request.getConversationId(), userId)
+                        .orElseGet(() -> newConversation(userId));
             } else {
-                conversation = newConversation();
-                if (request.getModelId() != null) {
-                    conversation.setModelId(request.getModelId());
-                }
-                if (request.getSystemPrompt() != null) {
-                    conversation.setSystemPrompt(request.getSystemPrompt());
-                }
+                conversation = newConversation(userId);
+                if (request.getModelId() != null) conversation.setModelId(request.getModelId());
+                if (request.getSystemPrompt() != null) conversation.setSystemPrompt(request.getSystemPrompt());
             }
 
-            // Add user message
             String htmlUserContent = "<p>" + escapeHtml(request.getMessage()) + "</p>";
             Message userMsg = Message.builder()
                     .role("user")
@@ -76,9 +83,9 @@ public class ChatController {
                     .formattedContent(htmlUserContent)
                     .timestamp(LocalDateTime.now())
                     .build();
+            userMsg.setConversation(conversation);
             conversation.getMessages().add(userMsg);
 
-            // Auto-set conversation title from first message
             if (conversation.getTitle() == null || conversation.getTitle().equals("New Conversation")) {
                 String title = request.getMessage().length() > 60
                         ? request.getMessage().substring(0, 60) + "..."
@@ -86,19 +93,16 @@ public class ChatController {
                 conversation.setTitle(title);
             }
 
-            // Optionally enhance prompt
-            String finalMessage = request.getMessage();
             if (request.isEnhancePrompt()) {
                 try {
-                    finalMessage = textGenerationService.enhancePrompt(request.getMessage(), "chat");
-                    request.setMessage(finalMessage);
+                    request.setMessage(textGenerationService.enhancePrompt(request.getMessage(), "chat"));
                 } catch (Exception e) {
                     log.warn("Prompt enhancement failed, using original", e);
                 }
             }
 
-            // Generate AI response
             Message assistantMsg = textGenerationService.generateResponse(request, conversation);
+            assistantMsg.setConversation(conversation);
             conversation.getMessages().add(assistantMsg);
 
             storageService.saveConversation(conversation);
@@ -111,62 +115,48 @@ public class ChatController {
             response.put("totalTokens", conversation.getTotalTokensUsed());
             response.put("estimatedCost", String.format("$%.6f", conversation.getEstimatedCost()));
             response.put("success", true);
-
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             log.error("Chat error", e);
-            Map<String, Object> error = new HashMap<>();
-            error.put("success", false);
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
         }
     }
 
     @PostMapping("/api/chat/new")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> newConversationApi() {
-        Conversation conv = newConversation();
+    public ResponseEntity<Map<String, Object>> newConversationApi(Principal principal) {
+        Long userId = getUserId(principal);
+        Conversation conv = newConversation(userId);
         storageService.saveConversation(conv);
         return ResponseEntity.ok(Map.of("conversationId", conv.getId()));
     }
 
     @GetMapping("/api/chat/conversation/{id}")
     @ResponseBody
-    public ResponseEntity<Conversation> getConversation(@PathVariable String id) {
-        return storageService.findConversation(id)
+    public ResponseEntity<Conversation> getConversation(@PathVariable String id, Principal principal) {
+        Long userId = getUserId(principal);
+        return storageService.findConversationByUser(id, userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/api/chat/conversation/{id}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> deleteConversation(@PathVariable String id) {
-        storageService.deleteConversation(id);
+    public ResponseEntity<Map<String, Object>> deleteConversation(@PathVariable String id, Principal principal) {
+        Long userId = getUserId(principal);
+        storageService.deleteConversationByUser(id, userId);
         return ResponseEntity.ok(Map.of("success", true));
     }
 
     @GetMapping("/api/chat/conversations")
     @ResponseBody
     public ResponseEntity<List<Conversation>> listConversations(
-            @RequestParam(required = false) String search) {
-        List<Conversation> list;
-        if (search != null && !search.isEmpty()) {
-            list = storageService.searchConversations(search);
-        } else {
-            list = storageService.getAllConversations();
-        }
-        // Remove message content for performance, keep only metadata
-        List<Map<String, Object>> lightweight = list.stream().map(c -> {
-            Map<String, Object> m = new HashMap<>();
-            m.put("id", c.getId());
-            m.put("title", c.getTitle());
-            m.put("modelId", c.getModelId());
-            m.put("updatedAt", c.getUpdatedAt());
-            m.put("messageCount", c.getMessages().size());
-            m.put("pinned", c.isPinned());
-            return m;
-        }).toList();
+            @RequestParam(required = false) String search, Principal principal) {
+        Long userId = getUserId(principal);
+        List<Conversation> list = (search != null && !search.isEmpty())
+                ? storageService.searchConversationsByUser(search, userId)
+                : storageService.getConversationsByUser(userId);
         return ResponseEntity.ok(list);
     }
 
@@ -183,8 +173,9 @@ public class ChatController {
 
     @PatchMapping("/api/chat/conversation/{id}/pin")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> togglePin(@PathVariable String id) {
-        storageService.findConversation(id).ifPresent(c -> {
+    public ResponseEntity<Map<String, Object>> togglePin(@PathVariable String id, Principal principal) {
+        Long userId = getUserId(principal);
+        storageService.findConversationByUser(id, userId).ifPresent(c -> {
             c.setPinned(!c.isPinned());
             storageService.saveConversation(c);
         });
@@ -194,15 +185,16 @@ public class ChatController {
     @PatchMapping("/api/chat/conversation/{id}/model")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> changeModel(@PathVariable String id,
-                                                            @RequestBody Map<String, String> body) {
-        storageService.findConversation(id).ifPresent(c -> {
+                                                            @RequestBody Map<String, String> body,
+                                                            Principal principal) {
+        Long userId = getUserId(principal);
+        storageService.findConversationByUser(id, userId).ifPresent(c -> {
             c.setModelId(body.get("modelId"));
             storageService.saveConversation(c);
         });
         return ResponseEntity.ok(Map.of("success", true));
     }
 
-    // Model comparison - run same prompt on multiple models
     @PostMapping("/api/chat/compare")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> compareModels(@RequestBody Map<String, Object> body) {
@@ -230,17 +222,17 @@ public class ChatController {
                         "latencyMs", msg.getLatencyMs()
                 ));
             }
-
             return ResponseEntity.ok(Map.of("results", results, "success", true));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
         }
     }
 
-    private Conversation newConversation() {
+    private Conversation newConversation(Long userId) {
         return Conversation.builder()
                 .title("New Conversation")
                 .modelId("us.anthropic.claude-sonnet-4-6")
+                .userId(userId)
                 .build();
     }
 
@@ -252,3 +244,4 @@ public class ChatController {
                 .replace("\"", "&quot;");
     }
 }
+

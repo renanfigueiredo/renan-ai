@@ -30,7 +30,7 @@ public class ImageGenerationService {
     private final StorageService storageService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public GeneratedImage generateImages(ImageGenerationRequest request) {
+    public GeneratedImage generateImages(ImageGenerationRequest request, Long userId) {
         long startTime = System.currentTimeMillis();
 
         try {
@@ -62,6 +62,7 @@ public class ImageGenerationService {
                     .modelId(modelId)
                     .modelName(model != null ? model.getName() : modelId)
                     .base64Images(base64Images)
+                    .userId(userId)
                     .width(request.getWidth() > 0 ? request.getWidth() : 1024)
                     .height(request.getHeight() > 0 ? request.getHeight() : 1024)
                     .cfgScale(request.getCfgScale() > 0 ? request.getCfgScale() : 7.5)

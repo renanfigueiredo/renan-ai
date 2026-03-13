@@ -4,12 +4,14 @@ import com.aimaster.model.PromptTemplate;
 import com.aimaster.service.ModelCatalogService;
 import com.aimaster.service.PromptTemplateService;
 import com.aimaster.service.StorageService;
+import com.aimaster.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -20,12 +22,20 @@ public class HistoryController {
     private final StorageService storageService;
     private final ModelCatalogService modelCatalog;
     private final PromptTemplateService templateService;
+    private final UserService userService;
+
+    private Long getUserId(Principal principal) {
+        return userService.findByEmail(principal.getName())
+                .orElseThrow(() -> new IllegalStateException("Usuário não encontrado"))
+                .getId();
+    }
 
     @GetMapping("/history")
-    public String historyPage(Model model) {
-        model.addAttribute("conversations", storageService.getAllConversations());
-        model.addAttribute("images", storageService.getAllImages());
-        model.addAttribute("videos", storageService.getAllVideos());
+    public String historyPage(Model model, Principal principal) {
+        Long userId = getUserId(principal);
+        model.addAttribute("conversations", storageService.getConversationsByUser(userId));
+        model.addAttribute("images", storageService.getImagesByUser(userId));
+        model.addAttribute("videos", storageService.getVideosByUser(userId));
         return "history";
     }
 
@@ -84,8 +94,11 @@ public class HistoryController {
 
     @DeleteMapping("/api/history/conversations")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> clearConversations() {
-        storageService.clearAllConversations();
+    public ResponseEntity<Map<String, Object>> clearConversations(Principal principal) {
+        Long userId = getUserId(principal);
+        storageService.getConversationsByUser(userId)
+                .forEach(c -> storageService.deleteConversationByUser(c.getId(), userId));
         return ResponseEntity.ok(Map.of("success", true));
     }
 }
+

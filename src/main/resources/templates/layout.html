@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -96,13 +97,36 @@
         </button>
         <a th:href="@{/}" class="topbar-brand" id="topbarTitle"><span class="topbar-brand-name">Renan</span><span class="topbar-brand-ai"> AI</span></a>
         <div class="topbar-actions">
-            <!-- Theme toggle — always visible on mobile, hides on desktop (sidebar button is used there) -->
+            <!-- Theme toggle -->
             <button class="topbar-theme-btn" id="topbarThemeBtn" onclick="toggleTheme()" title="Modo Claro">
                 <i class="bi bi-brightness-high"></i>
             </button>
             <div class="status-indicator online" title="AWS Bedrock Conectado">
                 <span class="status-dot"></span>
                 <span class="status-text">Bedrock Online</span>
+            </div>
+            <!-- Logged-in user dropdown -->
+            <div class="user-menu" sec:authorize="isAuthenticated()" id="userMenu">
+                <button class="user-menu-btn" id="userMenuBtn" title="Minha conta">
+                    <span class="user-avatar" id="userAvatarInitial">?</span>
+                    <span class="user-menu-name" id="userMenuName">...</span>
+                    <i class="bi bi-chevron-down user-menu-chevron"></i>
+                </button>
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="user-dropdown-header">
+                        <span class="user-dropdown-avatar" id="userDropdownAvatar">?</span>
+                        <div>
+                            <div class="user-dropdown-name" id="userDropdownName">...</div>
+                            <div class="user-dropdown-email" id="userDropdownEmail">...</div>
+                        </div>
+                    </div>
+                    <div class="user-dropdown-divider"></div>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="user-dropdown-item user-dropdown-logout">
+                            <i class="bi bi-box-arrow-right"></i> Sair da conta
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </header>

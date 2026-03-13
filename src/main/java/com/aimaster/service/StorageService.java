@@ -3,112 +3,148 @@ package com.aimaster.service;
 import com.aimaster.model.Conversation;
 import com.aimaster.model.GeneratedImage;
 import com.aimaster.model.GeneratedVideo;
+import com.aimaster.repository.ConversationRepository;
+import com.aimaster.repository.GeneratedImageRepository;
+import com.aimaster.repository.GeneratedVideoRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class StorageService {
 
-    private final Map<String, Conversation> conversations = new ConcurrentHashMap<>();
-    private final List<GeneratedImage> imageHistory = Collections.synchronizedList(new ArrayList<>());
-    private final List<GeneratedVideo> videoHistory = Collections.synchronizedList(new ArrayList<>());
+    private final ConversationRepository conversationRepo;
+    private final GeneratedImageRepository imageRepo;
+    private final GeneratedVideoRepository videoRepo;
 
     // ========== CONVERSATIONS ==========
 
+    @Transactional
     public Conversation saveConversation(Conversation conv) {
-        conv.setUpdatedAt(java.time.LocalDateTime.now());
-        conversations.put(conv.getId(), conv);
-        return conv;
+        conv.setUpdatedAt(LocalDateTime.now());
+        // wire back-references so cascade works correctly
+        if (conv.getMessages() != null) {
+            conv.getMessages().forEach(m -> m.setConversation(conv));
+        }
+        return conversationRepo.save(conv);
     }
 
     public Optional<Conversation> findConversation(String id) {
-        return Optional.ofNullable(conversations.get(id));
+        return conversationRepo.findById(id);
+    }
+
+    public Optional<Conversation> findConversationByUser(String id, Long userId) {
+        return conversationRepo.findByIdAndUserId(id, userId);
     }
 
     public List<Conversation> getAllConversations() {
-        return conversations.values().stream()
-                .sorted(Comparator.comparing(Conversation::getUpdatedAt).reversed())
-                .toList();
+        return conversationRepo.findAll();
+    }
+
+    public List<Conversation> getConversationsByUser(Long userId) {
+        return conversationRepo.findByUserIdOrderByUpdatedAtDesc(userId);
     }
 
     public List<Conversation> searchConversations(String query) {
-        String lower = query.toLowerCase();
-        return conversations.values().stream()
-                .filter(c -> c.getTitle().toLowerCase().contains(lower)
-                        || c.getMessages().stream().anyMatch(m -> m.getContent().toLowerCase().contains(lower)))
-                .sorted(Comparator.comparing(Conversation::getUpdatedAt).reversed())
+        return conversationRepo.findAll().stream()
+                .filter(c -> c.getTitle() != null && c.getTitle().toLowerCase().contains(query.toLowerCase()))
                 .toList();
     }
 
-    public void deleteConversation(String id) {
-        conversations.remove(id);
+    public List<Conversation> searchConversationsByUser(String query, Long userId) {
+        return conversationRepo
+                .findByUserIdAndTitleContainingIgnoreCaseOrderByUpdatedAtDesc(userId, query);
     }
 
-    public void clearAllConversations() {
-        conversations.clear();
+    @Transactional
+    public void deleteConversation(String id) {
+        conversationRepo.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteConversationByUser(String id, Long userId) {
+        conversationRepo.deleteByIdAndUserId(id, userId);
     }
 
     // ========== IMAGES ==========
 
+    @Transactional
     public void saveImage(GeneratedImage image) {
-        imageHistory.add(0, image);
+        imageRepo.save(image);
     }
 
     public List<GeneratedImage> getAllImages() {
-        return List.copyOf(imageHistory);
+        return imageRepo.findAll();
+    }
+
+    public List<GeneratedImage> getImagesByUser(Long userId) {
+        return imageRepo.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
     public Optional<GeneratedImage> findImage(String id) {
-        return imageHistory.stream().filter(i -> i.getId().equals(id)).findFirst();
+        return imageRepo.findById(id);
     }
 
+    @Transactional
     public void deleteImage(String id) {
-        imageHistory.removeIf(i -> i.getId().equals(id));
+        imageRepo.deleteById(id);
     }
 
+    @Transactional
     public void toggleImageFavorite(String id) {
-        imageHistory.stream().filter(i -> i.getId().equals(id))
-                .findFirst().ifPresent(i -> i.setFavorite(!i.isFavorite()));
+        imageRepo.findById(id).ifPresent(img -> {
+            img.setFavorite(!img.isFavorite());
+            imageRepo.save(img);
+        });
     }
 
     // ========== VIDEOS ==========
 
+    @Transactional
     public void saveVideo(GeneratedVideo video) {
-        videoHistory.add(0, video);
+        videoRepo.save(video);
     }
 
+    @Transactional
     public void updateVideo(GeneratedVideo video) {
-        for (int i = 0; i < videoHistory.size(); i++) {
-            if (videoHistory.get(i).getId().equals(video.getId())) {
-                videoHistory.set(i, video);
-                return;
-            }
-        }
+        videoRepo.save(video);
     }
 
     public Optional<GeneratedVideo> findVideo(String id) {
-        return videoHistory.stream().filter(v -> v.getId().equals(id)).findFirst();
+        return videoRepo.findById(id);
     }
 
     public Optional<GeneratedVideo> findVideoByJobArn(String jobArn) {
-        return videoHistory.stream().filter(v -> jobArn.equals(v.getJobArn())).findFirst();
+        return videoRepo.findByJobArn(jobArn);
     }
 
-    /** Returns all videos visible in the UI (excludes DOWNLOADED – already consumed). */
     public List<GeneratedVideo> getAllVideos() {
-        return videoHistory.stream()
+        return videoRepo.findAll().stream()
                 .filter(v -> !"DOWNLOADED".equals(v.getStatus()))
                 .toList();
     }
 
-    /** Used internally by VideoCleanupService for lifecycle management. */
-    public List<GeneratedVideo> getAllVideosIncludingDownloaded() {
-        return List.copyOf(videoHistory);
+    public List<GeneratedVideo> getVideosByUser(Long userId) {
+        return videoRepo.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .filter(v -> !"DOWNLOADED".equals(v.getStatus()))
+                .toList();
     }
 
+    public List<GeneratedVideo> getAllVideosIncludingDownloaded() {
+        return videoRepo.findAll();
+    }
+
+    public List<GeneratedVideo> getAllVideosIncludingDownloadedByUser(Long userId) {
+        return videoRepo.findByUserId(userId);
+    }
+
+    @Transactional
     public void deleteVideo(String id) {
-        videoHistory.removeIf(v -> v.getId().equals(id));
+        videoRepo.deleteById(id);
     }
 }

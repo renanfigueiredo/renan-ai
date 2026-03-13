@@ -4,6 +4,7 @@ import com.aimaster.model.GeneratedVideo;
 import com.aimaster.model.VideoGenerationRequest;
 import com.aimaster.service.ModelCatalogService;
 import com.aimaster.service.StorageService;
+import com.aimaster.service.UserService;
 import com.aimaster.service.VideoCleanupService;
 import com.aimaster.service.VideoGenerationService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
-import java.net.URI;
+import java.security.Principal;
 import java.time.Duration;
 import java.util.*;
 
@@ -31,22 +32,29 @@ public class VideoController {
     private final StorageService storageService;
     private final S3Presigner s3Presigner;
     private final VideoCleanupService videoCleanupService;
+    private final UserService userService;
 
     @Value("${aws.s3.output-bucket:}")
     private String defaultBucket;
 
+    private Long getUserId(Principal principal) {
+        return userService.findByEmail(principal.getName()).orElseThrow().getId();
+    }
+
     @GetMapping("/video")
-    public String videoPage(Model model) {
+    public String videoPage(Model model, Principal principal) {
+        Long userId = getUserId(principal);
         model.addAttribute("videoModels", modelCatalog.getVideoModels());
-        model.addAttribute("videoHistory", storageService.getAllVideos());
+        model.addAttribute("videoHistory", storageService.getVideosByUser(userId));
         return "video";
     }
 
     @PostMapping("/api/video/generate")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> generateVideo(@RequestBody VideoGenerationRequest request) {
+    public ResponseEntity<Map<String, Object>> generateVideo(@RequestBody VideoGenerationRequest request, Principal principal) {
         try {
-            GeneratedVideo video = videoGenerationService.startVideoGeneration(request);
+            Long userId = getUserId(principal);
+            GeneratedVideo video = videoGenerationService.startVideoGeneration(request, userId);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("id", video.getId());
@@ -119,17 +127,21 @@ public class VideoController {
 
     @GetMapping("/api/video/history")
     @ResponseBody
-    public ResponseEntity<List<GeneratedVideo>> getHistory() {
-        return ResponseEntity.ok(storageService.getAllVideos());
+    public ResponseEntity<List<GeneratedVideo>> getHistory(Principal principal) {
+        Long userId = getUserId(principal);
+        return ResponseEntity.ok(storageService.getVideosByUser(userId));
     }
 
     @DeleteMapping("/api/video/{id}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> deleteVideo(@PathVariable String id) {
-        storageService.findVideo(id).ifPresentOrElse(
-                videoCleanupService::purge,
-                () -> storageService.deleteVideo(id) // fallback: remove from storage even if not found properly
-        );
-        return ResponseEntity.ok(Map.of("success", true));
+    public ResponseEntity<Map<String, Object>> deleteVideo(@PathVariable String id, Principal principal) {
+        Long userId = getUserId(principal);
+        return storageService.findVideo(id)
+                .filter(v -> userId.equals(v.getUserId()))
+                .map(v -> {
+                    videoCleanupService.purge(v);
+                    return ResponseEntity.ok(Map.<String, Object>of("success", true));
+                })
+                .orElse(ResponseEntity.status(403).body(Map.of("success", false, "error", "Not found or access denied")));
     }
 }

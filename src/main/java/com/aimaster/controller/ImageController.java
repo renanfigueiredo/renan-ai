@@ -6,6 +6,7 @@ import com.aimaster.service.ImageGenerationService;
 import com.aimaster.service.ModelCatalogService;
 import com.aimaster.service.StorageService;
 import com.aimaster.service.TextGenerationService;
+import com.aimaster.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.*;
 
 @Slf4j
@@ -26,35 +28,40 @@ public class ImageController {
     private final ModelCatalogService modelCatalog;
     private final StorageService storageService;
     private final TextGenerationService textGenerationService;
+    private final UserService userService;
+
+    private Long getUserId(Principal principal) {
+        return userService.findByEmail(principal.getName()).orElseThrow().getId();
+    }
 
     @GetMapping("/image")
-    public String imagePage(Model model) {
+    public String imagePage(Model model, Principal principal) {
+        Long userId = getUserId(principal);
         model.addAttribute("imageModels", modelCatalog.getImageModels());
-        model.addAttribute("imageHistory", storageService.getAllImages());
+        model.addAttribute("imageHistory", storageService.getImagesByUser(userId));
         return "image";
     }
 
     @PostMapping("/api/image/generate")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> generateImage(@RequestBody ImageGenerationRequest request) {
+    public ResponseEntity<Map<String, Object>> generateImage(@RequestBody ImageGenerationRequest request, Principal principal) {
         try {
-            // Optionally enhance the prompt
-            if (request.getPrompt() != null && !request.getPrompt().isEmpty()) {
-                GeneratedImage result = imageGenerationService.generateImages(request);
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("id", result.getId());
-                response.put("images", result.getBase64Images());
-                response.put("prompt", result.getPrompt());
-                response.put("modelName", result.getModelName());
-                response.put("width", result.getWidth());
-                response.put("height", result.getHeight());
-                response.put("generationTimeMs", result.getGenerationTimeMs());
-                response.put("seed", result.getSeed());
-                return ResponseEntity.ok(response);
-            } else {
+            Long userId = getUserId(principal);
+            if (request.getPrompt() == null || request.getPrompt().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("success", false, "error", "Prompt is required"));
             }
+            GeneratedImage result = imageGenerationService.generateImages(request, userId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("id", result.getId());
+            response.put("images", result.getBase64Images());
+            response.put("prompt", result.getPrompt());
+            response.put("modelName", result.getModelName());
+            response.put("width", result.getWidth());
+            response.put("height", result.getHeight());
+            response.put("generationTimeMs", result.getGenerationTimeMs());
+            response.put("seed", result.getSeed());
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Image generation error", e);
             return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
@@ -65,8 +72,7 @@ public class ImageController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> enhanceImagePrompt(@RequestBody Map<String, String> body) {
         try {
-            String original = body.get("prompt");
-            String enhanced = textGenerationService.enhancePrompt(original, "image generation");
+            String enhanced = textGenerationService.enhancePrompt(body.get("prompt"), "image generation");
             return ResponseEntity.ok(Map.of("enhanced", enhanced, "success", true));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
@@ -75,8 +81,8 @@ public class ImageController {
 
     @GetMapping("/api/image/history")
     @ResponseBody
-    public ResponseEntity<List<GeneratedImage>> getHistory() {
-        return ResponseEntity.ok(storageService.getAllImages());
+    public ResponseEntity<List<GeneratedImage>> getHistory(Principal principal) {
+        return ResponseEntity.ok(storageService.getImagesByUser(getUserId(principal)));
     }
 
     @DeleteMapping("/api/image/{id}")
@@ -107,3 +113,4 @@ public class ImageController {
         }).orElse(ResponseEntity.notFound().build());
     }
 }
+

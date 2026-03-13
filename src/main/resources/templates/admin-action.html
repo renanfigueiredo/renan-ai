@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Ação Realizada — Renan AI</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+    <style>
+        body { display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg-primary); }
+        .auth-card { background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:16px; padding:48px 40px; width:100%; max-width:440px; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,.3); }
+        .icon { font-size:4rem; margin-bottom:20px; }
+        .auth-title { font-size:1.4rem; font-weight:700; margin-bottom:12px; }
+        .auth-subtitle { color:var(--text-muted); line-height:1.6; }
+    </style>
+</head>
+<body class="dark-mode">
+<script>if(localStorage.getItem('theme')==='light'){document.body.classList.replace('dark-mode','light-mode');}</script>
+<div class="auth-card">
+    <div th:if="${success}">
+        <div class="icon" th:text="${action == 'aprovado'} ? '✅' : '🚫'"></div>
+        <div class="auth-title" th:text="'Usuário ' + ${action} + ' com sucesso.'"></div>
+        <div class="auth-subtitle">O usuário foi notificado por e-mail.</div>
+    </div>
+    <div th:unless="${success}">
+        <div class="icon">❌</div>
+        <div class="auth-title">Link inválido ou expirado.</div>
+        <div class="auth-subtitle">Este link de aprovação já foi utilizado ou não existe.</div>
+    </div>
+</div>
+</body>
+</html>
