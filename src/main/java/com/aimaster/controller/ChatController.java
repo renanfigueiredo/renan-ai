@@ -62,67 +62,14 @@ public class ChatController {
         return "chat";
     }
 
-    @PostMapping("/api/chat/send")
+    /**
+     * Legacy endpoint — cached browsers may still call this.
+     * Delegates to the streaming endpoint so it won't H12 on Heroku.
+     */
+    @PostMapping(value = "/api/chat/send", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> sendMessage(@RequestBody ChatRequest request, Principal principal) {
-        try {
-            Long userId = getUserId(principal);
-
-            Conversation conversation;
-            if (request.getConversationId() != null && !request.getConversationId().isEmpty()) {
-                conversation = storageService.findConversationByUser(request.getConversationId(), userId)
-                        .orElseGet(() -> newConversation(userId));
-            } else {
-                conversation = newConversation(userId);
-                if (request.getModelId() != null) conversation.setModelId(request.getModelId());
-                if (request.getSystemPrompt() != null) conversation.setSystemPrompt(request.getSystemPrompt());
-            }
-
-            String htmlUserContent = "<p>" + escapeHtml(request.getMessage()) + "</p>";
-            Message userMsg = Message.builder()
-                    .role("user")
-                    .content(request.getMessage())
-                    .formattedContent(htmlUserContent)
-                    .timestamp(LocalDateTime.now())
-                    .build();
-            userMsg.setConversation(conversation);
-            conversation.getMessages().add(userMsg);
-
-            if (conversation.getTitle() == null || conversation.getTitle().equals("New Conversation")) {
-                String title = request.getMessage().length() > 60
-                        ? request.getMessage().substring(0, 60) + "..."
-                        : request.getMessage();
-                conversation.setTitle(title);
-            }
-
-            if (request.isEnhancePrompt()) {
-                try {
-                    request.setMessage(textGenerationService.enhancePrompt(request.getMessage(), "chat"));
-                } catch (Exception e) {
-                    log.warn("Prompt enhancement failed, using original", e);
-                }
-            }
-
-            Message assistantMsg = textGenerationService.generateResponse(request, conversation);
-            assistantMsg.setConversation(conversation);
-            conversation.getMessages().add(assistantMsg);
-
-            storageService.saveConversation(conversation);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("conversationId", conversation.getId());
-            response.put("userMessage", userMsg);
-            response.put("assistantMessage", assistantMsg);
-            response.put("conversationTitle", conversation.getTitle());
-            response.put("totalTokens", conversation.getTotalTokensUsed());
-            response.put("estimatedCost", String.format("$%.6f", conversation.getEstimatedCost()));
-            response.put("success", true);
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("Chat error", e);
-            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
-        }
+    public SseEmitter sendMessage(@RequestBody ChatRequest request, Principal principal) {
+        return streamMessage(request, principal);
     }
 
     /**
