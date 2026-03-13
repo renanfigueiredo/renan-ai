@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -19,6 +20,7 @@ public class SecurityConfig {
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final GuestAuthFilter guestAuthFilter;
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -37,12 +39,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authenticationProvider(authenticationProvider())
+            .addFilterBefore(guestAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 // Public routes
                 .requestMatchers("/login", "/register", "/pending",
                                  "/admin/approve/**", "/admin/reject/**",
+                                 "/guest/**",
                                  "/css/**", "/js/**", "/favicon.ico").permitAll()
-                // Everything else requires authentication
+                // Everything else requires authentication (includes ROLE_GUEST)
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -58,7 +62,7 @@ public class SecurityConfig {
             )
             // Keep CSRF enabled but exempt the API endpoints (called via fetch/AJAX)
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/api/**", "/ws/**")
+                .ignoringRequestMatchers("/api/**", "/ws/**", "/guest/**")
             );
         return http.build();
     }

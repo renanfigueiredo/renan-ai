@@ -18,6 +18,18 @@
         .form-group input:focus { outline:none; border-color:var(--purple); }
         .btn-primary { width:100%; padding:13px; background:linear-gradient(135deg,var(--purple),var(--blue)); color:#fff; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; margin-top:6px; }
         .btn-primary:hover { opacity:.9; }
+        .btn-guest {
+            width:100%; padding:12px; margin-top:10px;
+            background:transparent; border:1px solid var(--border-color);
+            border-radius:8px; color:var(--text-secondary); font-size:.9rem;
+            font-weight:500; cursor:pointer; transition:border-color .2s, color .2s;
+            display:flex; align-items:center; justify-content:center; gap:8px;
+        }
+        .btn-guest:hover { border-color:var(--purple); color:var(--text-primary); }
+        .btn-guest:disabled { opacity:.5; cursor:not-allowed; }
+        .divider { display:flex; align-items:center; gap:10px; margin:18px 0 6px; color:var(--text-muted); font-size:.8rem; }
+        .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border-color); }
+        .guest-info { font-size:.78rem; color:var(--text-muted); text-align:center; margin-top:8px; }
         .auth-footer { text-align:center; margin-top:20px; font-size:.85rem; color:var(--text-muted); }
         .auth-footer a { color:var(--purple); text-decoration:none; }
         .alert-error { background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.4); color:#f87171; padding:12px; border-radius:8px; margin-bottom:18px; font-size:.875rem; }
@@ -33,6 +45,7 @@
 
     <div th:if="${error}" class="alert-error" th:text="${error}"></div>
     <div th:if="${message}" class="alert-success" th:text="${message}"></div>
+    <div id="guestError" class="alert-error" style="display:none"></div>
 
     <form th:action="@{/login}" method="post">
         <div class="form-group">
@@ -46,9 +59,100 @@
         <button type="submit" class="btn-primary">Entrar</button>
     </form>
 
+    <div class="divider">ou</div>
+    <button class="btn-guest" id="btnGuest" onclick="startGuestMode()">
+        <i class="bi bi-eye"></i> Explorar como Visitante — 1 hora grátis
+    </button>
+    <p class="guest-info">Sem cadastro. O tempo conta só enquanto você usa a página.</p>
+
     <div class="auth-footer">
         Não tem conta? <a th:href="@{/register}">Solicitar acesso</a>
     </div>
 </div>
+
+<script>
+/* ── Fingerprint do browser (canvas + hardware + tz + língua) ── */
+async function computeFingerprint() {
+    const parts = [
+        navigator.userAgent,
+        navigator.language || '',
+        (navigator.languages || []).join(','),
+        screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
+        new Date().getTimezoneOffset(),
+        navigator.hardwareConcurrency || 0,
+        navigator.platform || '',
+        Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+    ];
+    // Canvas fingerprint — sobrevive ao modo incógnito, troca de cookie, localStorage
+    try {
+        const c = document.createElement('canvas');
+        const ctx = c.getContext('2d');
+        ctx.textBaseline = 'top';
+        ctx.font = '14px "Arial"';
+        ctx.fillStyle = '#7c3aed';
+        ctx.fillRect(0, 0, 200, 30);
+        ctx.fillStyle = '#00d4ff';
+        ctx.fillText('RenanAI\u{1F3A8}fp', 2, 8);
+        ctx.strokeStyle = 'rgba(102,204,0,0.7)';
+        ctx.beginPath(); ctx.arc(100, 15, 12, 0, Math.PI * 2); ctx.stroke();
+        parts.push(c.toDataURL());
+    } catch(_) {}
+    // WebGL renderer
+    try {
+        const gl = document.createElement('canvas').getContext('webgl');
+        if (gl) {
+            const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+            if (dbg) parts.push(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL));
+        }
+    } catch(_) {}
+
+    const raw = parts.join('||');
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function startGuestMode() {
+    const btn = document.getElementById('btnGuest');
+    const errEl = document.getElementById('guestError');
+    btn.disabled = true;
+    btn.textContent = 'Verificando...';
+    errEl.style.display = 'none';
+
+    try {
+        const fp = await computeFingerprint();
+        // Guardar fingerprint no localStorage como camada extra de rastreamento
+        localStorage.setItem('_rfp', fp);
+
+        const resp = await fetch('/guest/start', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({fingerprint: fp})
+        });
+        const data = await resp.json();
+
+        if (data.ok) {
+            window.location.href = '/';
+        } else {
+            errEl.textContent = data.message || 'Não foi possível iniciar o modo visitante.';
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-eye"></i> Explorar como Visitante — 1 hora grátis';
+        }
+    } catch(e) {
+        errEl.textContent = 'Erro de conexão. Tente novamente.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-eye"></i> Explorar como Visitante — 1 hora grátis';
+    }
+}
+
+// Se chegou aqui com ?guest=expired, mostrar mensagem
+const params = new URLSearchParams(location.search);
+if (params.get('guest') === 'expired') {
+    document.getElementById('guestError').textContent =
+        'Seu tempo de visita expirou. Crie uma conta para continuar usando o Renan AI.';
+    document.getElementById('guestError').style.display = 'block';
+}
+</script>
 </body>
 </html>

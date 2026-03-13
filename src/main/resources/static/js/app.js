@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initSidebar();
     initUserMenu();
+    initGuestMode();
     initPageSpecific();
     initHighlightJs();
     checkPendingTemplate();
@@ -1638,3 +1639,110 @@ document.addEventListener('keydown', e => {
         closeLightbox();
     }
 });
+
+// ── Guest Mode Timer ──────────────────────────────────
+function initGuestMode() {
+    const banner = document.getElementById('guestTimerBanner');
+    if (!banner) return; // not a guest session
+
+    let remaining = 3600;
+    let timerInterval = null;
+    let visibleSince = null;
+    let heartbeatTimer = null;
+
+    // Fetch server-side remaining seconds immediately
+    fetch('/guest/status')
+        .then(r => r.json())
+        .then(d => {
+            if (d.expired) { window.location.href = '/login?guest=expired'; return; }
+            remaining = d.remainingSeconds;
+            updateDisplay();
+            if (document.visibilityState === 'visible') startTimer();
+        })
+        .catch(() => { if (document.visibilityState === 'visible') startTimer(); });
+
+    function startTimer() {
+        if (timerInterval) return;
+        visibleSince = Date.now();
+        timerInterval = setInterval(() => {
+            remaining = Math.max(0, remaining - 1);
+            updateDisplay();
+            if (remaining <= 0) expire();
+        }, 1000);
+        // Heartbeat every 25 s while visible
+        heartbeatTimer = setInterval(sendHeartbeat, 25000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        clearInterval(heartbeatTimer);
+        timerInterval = null;
+        heartbeatTimer = null;
+    }
+
+    function updateDisplay() {
+        const el = document.getElementById('guestTimerDisplay');
+        if (!el) return;
+        const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+        const s = (remaining % 60).toString().padStart(2, '0');
+        el.textContent = m + ':' + s;
+
+        // Warning colour classes on banner
+        banner.classList.remove('warn-orange', 'warn-red');
+        if (remaining <= 300) {
+            banner.classList.add('warn-red');
+            el.style.color = '#f87171';
+        } else if (remaining <= 600) {
+            banner.classList.add('warn-orange');
+            el.style.color = '#fbbf24';
+        } else {
+            el.style.color = '';
+        }
+    }
+
+    function sendHeartbeat() {
+        if (document.visibilityState !== 'visible' || !visibleSince) return;
+        const now = Date.now();
+        const delta = Math.round((now - visibleSince) / 1000);
+        visibleSince = now;
+
+        fetch('/guest/heartbeat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ delta })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.expired) expire();
+            else { remaining = d.remainingSeconds; updateDisplay(); }
+        })
+        .catch(() => {});
+    }
+
+    function expire() {
+        stopTimer();
+        window.location.href = '/login?guest=expired';
+    }
+
+    // Visibility API — pause counting when tab hidden
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            visibleSince = Date.now();
+            // Re-sync with server to avoid drift
+            fetch('/guest/status')
+                .then(r => r.json())
+                .then(d => {
+                    if (d.expired) expire();
+                    else { remaining = d.remainingSeconds; updateDisplay(); }
+                })
+                .catch(() => {});
+            startTimer();
+        } else {
+            sendHeartbeat(); // flush elapsed delta before pausing
+            stopTimer();
+            visibleSince = null;
+        }
+    });
+
+    updateDisplay();
+}

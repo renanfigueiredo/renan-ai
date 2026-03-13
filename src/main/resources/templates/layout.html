@@ -131,6 +131,13 @@
         </div>
     </header>
 
+    <!-- Guest Mode Timer Banner -->
+    <div sec:authorize="hasRole('GUEST')" class="guest-timer-banner" id="guestTimerBanner">
+        <i class="bi bi-clock-history"></i>
+        <span>Modo Visitante &mdash; <strong id="guestTimerDisplay">--:--</strong> restantes</span>
+        <a th:href="@{/register}" class="guest-timer-cta">Criar conta gratuita</a>
+    </div>
+
     <!-- Page Content -->
     <div class="page-content" layout:fragment="content">
         <!-- Content injected by child pages -->

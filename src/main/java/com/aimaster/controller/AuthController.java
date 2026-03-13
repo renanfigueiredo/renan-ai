@@ -87,7 +87,12 @@ public class AuthController {
     @ResponseBody
     public ResponseEntity<Map<String, String>> me(Principal principal) {
         return userService.findByEmail(principal.getName())
-                .map(u -> ResponseEntity.ok(Map.of("name", u.getName(), "email", u.getEmail())))
+                .map(u -> {
+                    String displayEmail = u.getEmail().endsWith("@guest.invalid")
+                            ? "Modo Visitante"
+                            : u.getEmail();
+                    return ResponseEntity.ok(Map.of("name", u.getName(), "email", displayEmail));
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 }
