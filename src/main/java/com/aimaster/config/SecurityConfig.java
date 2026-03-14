@@ -44,8 +44,9 @@ public class SecurityConfig {
                 // Public routes
                 .requestMatchers("/login", "/register", "/pending",
                                  "/admin/approve/**", "/admin/reject/**",
+                                 "/forgot-password", "/reset-password",
                                  "/guest/**",
-                                 "/css/**", "/js/**", "/favicon.ico").permitAll()
+                                 "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 // Everything else requires authentication (includes ROLE_GUEST)
                 .anyRequest().authenticated()
             )

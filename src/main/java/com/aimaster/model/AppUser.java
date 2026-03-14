@@ -39,6 +39,13 @@ public class AppUser {
     /** UUID token stored in approval/rejection email links. */
     private String approvalToken;
 
+    /** Token gerado para reset de senha (SHA-256 hex do UUID enviado por e-mail). */
+    @Column(length = 64)
+    private String resetToken;
+
+    /** Expiração do token de reset (1 hora após geração). */
+    private LocalDateTime resetTokenExpiry;
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }

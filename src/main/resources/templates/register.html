@@ -9,26 +9,28 @@
         body { display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg-primary); }
         .auth-card { background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:16px; padding:40px; width:100%; max-width:480px; box-shadow:0 8px 32px rgba(0,0,0,.3); }
         .auth-logo { text-align:center; margin-bottom:32px; }
-        .auth-logo span { font-size:2rem; font-weight:800; background:linear-gradient(135deg,var(--purple),var(--blue)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .auth-logo img { width:130px; height:130px; object-fit:contain; filter:drop-shadow(0 0 24px rgba(0,180,255,.45)); }
         .auth-title { font-size:1.4rem; font-weight:700; margin-bottom:8px; }
         .auth-subtitle { color:var(--text-muted); font-size:.875rem; margin-bottom:28px; }
         .form-group { margin-bottom:18px; }
         .form-group label { display:block; font-size:.875rem; font-weight:500; margin-bottom:6px; }
         .form-group input { width:100%; padding:12px 14px; background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:8px; color:var(--text-primary); font-size:.9rem; box-sizing:border-box; }
-        .form-group input:focus { outline:none; border-color:var(--purple); }
-        .btn-primary { width:100%; padding:13px; background:linear-gradient(135deg,var(--purple),var(--blue)); color:#fff; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; margin-top:6px; }
+        .form-group input:focus { outline:none; border-color:#00b4ff; }
+        .btn-primary { width:100%; padding:13px; background:linear-gradient(135deg,#00b4ff,#0088cc); color:#fff; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; margin-top:6px; }
         .btn-primary:hover { opacity:.9; }
         .auth-footer { text-align:center; margin-top:20px; font-size:.85rem; color:var(--text-muted); }
-        .auth-footer a { color:var(--purple); text-decoration:none; }
+        .auth-footer a { color:#00b4ff; text-decoration:none; }
         .alert-error { background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.4); color:#f87171; padding:12px; border-radius:8px; margin-bottom:18px; font-size:.875rem; }
-        .info-box { background:rgba(124,58,237,.1); border:1px solid rgba(124,58,237,.3); border-radius:8px; padding:12px; margin-bottom:20px; font-size:.85rem; color:var(--text-muted); }
+        .info-box { background:rgba(0,180,255,.1); border:1px solid rgba(0,180,255,.3); border-radius:8px; padding:12px; margin-bottom:20px; font-size:.85rem; color:var(--text-muted); }
         .hint { font-size:.78rem; color:var(--text-muted); margin-top:4px; }
     </style>
 </head>
 <body class="dark-mode">
 <script>if(localStorage.getItem('theme')==='light'){document.body.classList.replace('dark-mode','light-mode');}</script>
 <div class="auth-card">
-    <div class="auth-logo"><span>Renan AI</span></div>
+    <div class="auth-logo">
+        <img th:src="@{/images/logo.png}" alt="Renan AI"/>
+    </div>
     <div class="auth-title">Solicitar Acesso</div>
     <div class="auth-subtitle">Preencha os dados abaixo. O administrador irá avaliar sua solicitação.</div>
 

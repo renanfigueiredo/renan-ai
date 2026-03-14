@@ -5,73 +5,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Login — Renan AI</title>
     <link rel="stylesheet" th:href="@{/css/app.css}"/>
-    <style>
-        body { display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg-primary); }
-        .auth-card { background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:16px; padding:40px; width:100%; max-width:420px; box-shadow:0 8px 32px rgba(0,0,0,.3); }
-        .auth-logo { text-align:center; margin-bottom:32px; }
-        .auth-logo span { font-size:2rem; font-weight:800; background:linear-gradient(135deg,var(--purple),var(--blue)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .auth-title { font-size:1.4rem; font-weight:700; margin-bottom:8px; }
-        .auth-subtitle { color:var(--text-muted); font-size:.875rem; margin-bottom:28px; }
-        .form-group { margin-bottom:18px; }
-        .form-group label { display:block; font-size:.875rem; font-weight:500; margin-bottom:6px; }
-        .form-group input { width:100%; padding:12px 14px; background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:8px; color:var(--text-primary); font-size:.9rem; box-sizing:border-box; }
-        .form-group input:focus { outline:none; border-color:var(--purple); }
-        .btn-primary { width:100%; padding:13px; background:linear-gradient(135deg,var(--purple),var(--blue)); color:#fff; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; margin-top:6px; }
-        .btn-primary:hover { opacity:.9; }
-        .btn-guest {
-            width:100%; padding:12px; margin-top:10px;
-            background:transparent; border:1px solid var(--border-color);
-            border-radius:8px; color:var(--text-secondary); font-size:.9rem;
-            font-weight:500; cursor:pointer; transition:border-color .2s, color .2s;
-            display:flex; align-items:center; justify-content:center; gap:8px;
-        }
-        .btn-guest:hover { border-color:var(--purple); color:var(--text-primary); }
-        .btn-guest:disabled { opacity:.5; cursor:not-allowed; }
-        .divider { display:flex; align-items:center; gap:10px; margin:18px 0 6px; color:var(--text-muted); font-size:.8rem; }
-        .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border-color); }
-        .guest-info { font-size:.78rem; color:var(--text-muted); text-align:center; margin-top:8px; }
-        .auth-footer { text-align:center; margin-top:20px; font-size:.85rem; color:var(--text-muted); }
-        .auth-footer a { color:var(--purple); text-decoration:none; }
-        .alert-error { background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.4); color:#f87171; padding:12px; border-radius:8px; margin-bottom:18px; font-size:.875rem; }
-        .alert-success { background:rgba(22,163,74,.15); border:1px solid rgba(22,163,74,.4); color:#4ade80; padding:12px; border-radius:8px; margin-bottom:18px; font-size:.875rem; }
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/login.css}"/>
 </head>
 <body class="dark-mode">
 <script>if(localStorage.getItem('theme')==='light'){document.body.classList.replace('dark-mode','light-mode');}</script>
-<div class="auth-card">
-    <div class="auth-logo"><span>Renan AI</span></div>
-    <div class="auth-title">Bem-vindo de volta</div>
-    <div class="auth-subtitle">Entre com seu e-mail e senha para continuar</div>
 
-    <div th:if="${error}" class="alert-error" th:text="${error}"></div>
-    <div th:if="${message}" class="alert-success" th:text="${message}"></div>
-    <div id="guestError" class="alert-error" style="display:none"></div>
-
-    <form th:action="@{/login}" method="post">
-        <div class="form-group">
-            <label for="username">E-mail</label>
-            <input type="email" id="username" name="username" required autocomplete="email" placeholder="seu@email.com"/>
-        </div>
-        <div class="form-group">
-            <label for="password">Senha</label>
-            <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••"/>
-        </div>
-        <button type="submit" class="btn-primary">Entrar</button>
-    </form>
-
-    <div class="divider">ou</div>
-    <button class="btn-guest" id="btnGuest" onclick="startGuestMode()">
-        <i class="bi bi-eye"></i> Explorar como Visitante — 1 hora grátis
-    </button>
-    <p class="guest-info">Sem cadastro. O tempo conta só enquanto você usa a página.</p>
-
-    <div class="auth-footer">
-        Não tem conta? <a th:href="@{/register}">Solicitar acesso</a>
-    </div>
+<!-- Animated background orbs -->
+<div class="orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
 </div>
 
+<!-- Theme toggle pill -->
+<button class="lp-theme-btn" onclick="toggleTheme()" title="Alternar tema">
+    <i class="bi bi-circle-half"></i> Tema
+</button>
+
+<div class="lp-root">
+
+    <!-- ═══ LEFT PANEL ═══ -->
+    <div class="lp-left">
+        <img th:src="@{/images/logo.png}" alt="Renan AI" class="lp-logo"/>
+        <h1 class="lp-tagline">Crie com <span>inteligência artificial</span> sem limites</h1>
+        <p class="lp-desc">Chat, geração de imagens, vídeos e muito mais — tudo em um só lugar, otimizado para sua produtividade.</p>
+        <div class="lp-features">
+            <div class="lp-feat">
+                <div class="feat-icon cyan"><i class="bi bi-chat-dots-fill"></i></div>
+                <div class="feat-text"><strong>Chat </strong><span>Conversas inteligentes com streaming em tempo real</span></div>
+            </div>
+            <div class="lp-feat">
+                <div class="feat-icon blue"><i class="bi bi-image-fill"></i></div>
+                <div class="feat-text"><strong>Geração de Imagens</strong><span>Crie imagens incríveis com Stable Diffusion e Titan</span></div>
+            </div>
+            <div class="lp-feat">
+                <div class="feat-icon gold"><i class="bi bi-camera-video-fill"></i></div>
+                <div class="feat-text"><strong>Criação de Vídeos</strong><span>Transforme ideias em vídeos com IA generativa</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lp-divider"></div>
+
+    <!-- ═══ RIGHT PANEL ═══ -->
+    <div class="lp-right">
+        <div class="lp-form-card">
+
+            <div class="lp-mobile-header">
+                <img th:src="@{/images/logo.png}" alt="Renan AI" class="lp-mobile-logo"/>
+            </div>
+            <div class="lp-form-title">Bem-vindo de volta</div>
+            <div class="lp-form-sub">Entre com sua conta para acessar a plataforma</div>
+
+            <!-- Alerts -->
+            <div th:if="${error}" class="lp-alert lp-alert-error">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span th:text="${error}"></span>
+            </div>
+            <div th:if="${message}" class="lp-alert lp-alert-success">
+                <i class="bi bi-check-circle-fill"></i>
+                <span th:text="${message}"></span>
+            </div>
+            <div id="guestError" class="lp-alert lp-alert-error" style="display:none">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span id="guestErrorText"></span>
+            </div>
+
+            <!-- Login form -->
+            <form th:action="@{/login}" method="post" autocomplete="on">
+                <div class="lp-field">
+                    <input type="email" id="username" name="username"
+                           placeholder="E-mail" required autocomplete="email"/>
+                    <label for="username">E-mail</label>
+                    <i class="bi bi-envelope lp-field-icon"></i>
+                </div>
+                <div class="lp-field">
+                    <input type="password" id="password" name="password"
+                           placeholder="Senha" required autocomplete="current-password"/>
+                    <label for="password">Senha</label>
+                    <button type="button" class="lp-pwd-toggle" onclick="togglePwd()" title="Mostrar/ocultar senha" aria-label="Alternar visibilidade da senha">
+                        <i class="bi bi-eye" id="pwdIcon"></i>
+                    </button>
+                </div>
+                <div class="lp-forgot"><a th:href="@{/forgot-password}">Esqueci minha senha</a></div>
+                <button type="submit" class="lp-btn-submit">
+                    <i class="bi bi-box-arrow-in-right" style="margin-right:6px"></i>Entrar
+                </button>
+            </form>
+
+            <div class="lp-sep">ou</div>
+
+            <button class="lp-btn-guest" id="btnGuest" onclick="startGuestMode()">
+                <span class="lp-guest-dot"></span>
+                Explorar como Visitante — 1 hora grátis
+            </button>
+
+            <div class="lp-footer">
+                <span>Não tem conta?</span>
+                <a th:href="@{/register}">Solicitar acesso</a>
+            </div>
+
+        </div>
+    </div>
+
+</div><!-- /.lp-root -->
+
 <script>
-/* ── Fingerprint do browser (canvas + hardware + tz + língua) ── */
+/* ── Theme toggle ── */
+function toggleTheme() {
+    const isDark = document.body.classList.contains('dark-mode');
+    document.body.classList.toggle('dark-mode', !isDark);
+    document.body.classList.toggle('light-mode', isDark);
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+}
+
+/* ── Password visibility ── */
+function togglePwd() {
+    const inp  = document.getElementById('password');
+    const icon = document.getElementById('pwdIcon');
+    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'bi bi-eye-slash'; }
+    else                         { inp.type = 'password'; icon.className = 'bi bi-eye'; }
+}
+
+/* ── Guest error helper ── */
+function showGuestError(msg) {
+    const el = document.getElementById('guestError');
+    document.getElementById('guestErrorText').textContent = msg;
+    el.style.display = 'flex';
+}
+
+/* ── Browser fingerprint (canvas + WebGL + hw + tz) ── */
 async function computeFingerprint() {
     const parts = [
         navigator.userAgent,
@@ -83,7 +147,6 @@ async function computeFingerprint() {
         navigator.platform || '',
         Intl.DateTimeFormat().resolvedOptions().timeZone || '',
     ];
-    // Canvas fingerprint — sobrevive ao modo incógnito, troca de cookie, localStorage
     try {
         const c = document.createElement('canvas');
         const ctx = c.getContext('2d');
@@ -97,7 +160,6 @@ async function computeFingerprint() {
         ctx.beginPath(); ctx.arc(100, 15, 12, 0, Math.PI * 2); ctx.stroke();
         parts.push(c.toDataURL());
     } catch(_) {}
-    // WebGL renderer
     try {
         const gl = document.createElement('canvas').getContext('webgl');
         if (gl) {
@@ -105,22 +167,20 @@ async function computeFingerprint() {
             if (dbg) parts.push(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL));
         }
     } catch(_) {}
-
     const raw = parts.join('||');
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
+/* ── Guest mode ── */
 async function startGuestMode() {
     const btn = document.getElementById('btnGuest');
-    const errEl = document.getElementById('guestError');
+    document.getElementById('guestError').style.display = 'none';
     btn.disabled = true;
-    btn.textContent = 'Verificando...';
-    errEl.style.display = 'none';
+    btn.innerHTML = '<span class="lp-guest-dot" style="background:#f59e0b;box-shadow:0 0 6px #f59e0b"></span> Verificando...';
 
     try {
         const fp = await computeFingerprint();
-        // Guardar fingerprint no localStorage como camada extra de rastreamento
         localStorage.setItem('_rfp', fp);
 
         const resp = await fetch('/guest/start', {
@@ -133,25 +193,20 @@ async function startGuestMode() {
         if (data.ok) {
             window.location.href = '/';
         } else {
-            errEl.textContent = data.message || 'Não foi possível iniciar o modo visitante.';
-            errEl.style.display = 'block';
+            showGuestError(data.message || 'Não foi possível iniciar o modo visitante.');
             btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-eye"></i> Explorar como Visitante — 1 hora grátis';
+            btn.innerHTML = '<span class="lp-guest-dot"></span> Explorar como Visitante — 1 hora grátis';
         }
     } catch(e) {
-        errEl.textContent = 'Erro de conexão. Tente novamente.';
-        errEl.style.display = 'block';
+        showGuestError('Erro de conexão. Tente novamente.');
         btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-eye"></i> Explorar como Visitante — 1 hora grátis';
+        btn.innerHTML = '<span class="lp-guest-dot"></span> Explorar como Visitante — 1 hora grátis';
     }
 }
 
-// Se chegou aqui com ?guest=expired, mostrar mensagem
-const params = new URLSearchParams(location.search);
-if (params.get('guest') === 'expired') {
-    document.getElementById('guestError').textContent =
-        'Seu tempo de visita expirou. Crie uma conta para continuar usando o Renan AI.';
-    document.getElementById('guestError').style.display = 'block';
+/* ── ?guest=expired ── */
+if (new URLSearchParams(location.search).get('guest') === 'expired') {
+    showGuestError('Seu tempo de visita expirou. Crie uma conta para continuar usando o Renan AI.');
 }
 </script>
 </body>

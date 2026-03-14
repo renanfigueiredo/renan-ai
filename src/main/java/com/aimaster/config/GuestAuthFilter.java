@@ -78,6 +78,8 @@ public class GuestAuthFilter extends OncePerRequestFilter {
         return path.equals("/login")
                 || path.equals("/register")
                 || path.equals("/pending")
+                || path.equals("/forgot-password")
+                || path.equals("/reset-password")
                 || path.startsWith("/admin/")
                 || path.startsWith("/css/")
                 || path.startsWith("/js/")

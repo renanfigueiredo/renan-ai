@@ -15,6 +15,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.LocalDateTime;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -112,5 +116,80 @@ public class UserService implements UserDetailsService {
 
     public Optional<AppUser> findByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    // ── Password reset ────────────────────────────────────────────────────────
+
+    /**
+     * Gera um token de reset de senha para o e-mail informado.
+     *
+     * Boas práticas seguidas:
+     * - UUID criptograficamente aleatório enviado ao usuário (URL-safe)
+     * - Apenas o SHA-256 do UUID é armazenado no banco (token não reversível)
+     * - Expira em 1 hora
+     * - Responde sempre com a mesma mensagem, não revelando se o e-mail existe
+     */
+    @Transactional
+    public void requestPasswordReset(String email) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            if (user.getStatus() != UserStatus.ACTIVE) return; // ignora contas pendentes/rejeitadas
+
+            String rawToken  = UUID.randomUUID().toString();   // enviado ao usuário no link
+            String tokenHash = sha256Hex(rawToken);            // armazenado no banco
+
+            user.setResetToken(tokenHash);
+            user.setResetTokenExpiry(LocalDateTime.now().plusHours(1));
+            userRepository.save(user);
+
+            try {
+                emailService.sendPasswordReset(user, rawToken);
+            } catch (Exception e) {
+                log.error("Falha ao enviar e-mail de reset para {}", email, e);
+            }
+            log.info("Token de reset gerado para {}", email);
+        });
+    }
+
+    /**
+     * Valida o token e retorna o e-mail do usuário para pré-preencher o formulário.
+     * Retorna empty se o token for inválido ou expirado.
+     */
+    public Optional<String> validateResetToken(String rawToken) {
+        String tokenHash = sha256Hex(rawToken);
+        return userRepository.findByResetToken(tokenHash)
+                .filter(u -> u.getResetTokenExpiry() != null
+                          && u.getResetTokenExpiry().isAfter(LocalDateTime.now()))
+                .map(AppUser::getEmail);
+    }
+
+    /**
+     * Aplica a nova senha, invalida o token e desbloqueia o acesso.
+     * Lança IllegalArgumentException se o token for inválido/expirado.
+     */
+    @Transactional
+    public void resetPassword(String rawToken, String newPassword) {
+        String tokenHash = sha256Hex(rawToken);
+        AppUser user = userRepository.findByResetToken(tokenHash)
+                .filter(u -> u.getResetTokenExpiry() != null
+                          && u.getResetTokenExpiry().isAfter(LocalDateTime.now()))
+                .orElseThrow(() -> new IllegalArgumentException("Link de reset inválido ou expirado."));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetToken(null);           // token de uso único — revogado imediatamente
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
+
+        log.info("Senha redefinida com sucesso para {}", user.getEmail());
+    }
+
+    /** SHA-256 do token em hexadecimal minúsculo (64 chars). */
+    private static String sha256Hex(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(input.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hash);
+        } catch (Exception e) {
+            throw new RuntimeException("SHA-256 indisponível", e);
+        }
     }
 }

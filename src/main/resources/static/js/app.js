@@ -946,7 +946,7 @@ function initImage() {
     // Reference image drag & drop
     const uploadArea = document.getElementById('refImageUploadArea');
     if (uploadArea) {
-        uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = 'var(--purple)'; });
+        uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = 'var(--accent)'; });
         uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; });
         uploadArea.addEventListener('drop', e => {
             e.preventDefault();

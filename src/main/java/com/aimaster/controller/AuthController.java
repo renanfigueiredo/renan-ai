@@ -95,4 +95,63 @@ public class AuthController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    // ── Esqueci minha senha ────────────────────────────────────────
+
+    @GetMapping("/forgot-password")
+    public String forgotPasswordPage() {
+        return "forgot-password";
+    }
+
+    @PostMapping("/forgot-password")
+    public String forgotPassword(@RequestParam @Email @NotBlank String email,
+                                 RedirectAttributes redirectAttrs) {
+        // Sempre responde com a mesma mensagem — não revela se o e-mail existe
+        try {
+            userService.requestPasswordReset(email);
+        } catch (Exception e) {
+            log.error("Erro ao processar reset para {}", email, e);
+        }
+        redirectAttrs.addFlashAttribute("message",
+                "Se esse e-mail estiver cadastrado, você receberá as instruções em breve.");
+        return "redirect:/forgot-password";
+    }
+
+    @GetMapping("/reset-password")
+    public String resetPasswordPage(@RequestParam String token, Model model) {
+        return userService.validateResetToken(token)
+                .map(email -> {
+                    model.addAttribute("token", token);
+                    model.addAttribute("email", email);
+                    return "reset-password";
+                })
+                .orElseGet(() -> {
+                    model.addAttribute("error", "Link inválido ou expirado. Solicite um novo reset.");
+                    return "reset-password";
+                });
+    }
+
+    @PostMapping("/reset-password")
+    public String resetPassword(@RequestParam String token,
+                                @RequestParam @Size(min = 8) String password,
+                                @RequestParam String confirmPassword,
+                                RedirectAttributes redirectAttrs,
+                                Model model) {
+        if (!password.equals(confirmPassword)) {
+            model.addAttribute("token", token);
+            model.addAttribute("error", "As senhas não coincidem.");
+            // Re-validate token to re-populate email
+            userService.validateResetToken(token).ifPresent(e -> model.addAttribute("email", e));
+            return "reset-password";
+        }
+
+        try {
+            userService.resetPassword(token, password);
+            redirectAttrs.addFlashAttribute("message", "Senha redefinida com sucesso! Faça login com sua nova senha.");
+            return "redirect:/login";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            return "reset-password";
+        }
+    }
 }

@@ -73,6 +73,31 @@ public class EmailService {
         send(user.getEmail(), "Renan AI – Seu acesso foi aprovado!", html);
     }
 
+    /**
+     * Envia link de reset de senha.
+     * @param user usuário que solicitou o reset
+     * @param rawToken token em texto puro (UUID) — não o hash armazenado no banco
+     */
+    public void sendPasswordReset(AppUser user, String rawToken) {
+        String resetUrl = baseUrl + "/reset-password?token=" + rawToken;
+        String html = """
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+                  <h2 style="color:#7c3aed">Renan AI — Redefinição de Senha</h2>
+                  <p>Olá, <strong>%s</strong>!</p>
+                  <p>Recebemos uma solicitação para redefinir a senha da sua conta.</p>
+                  <p>Clique no botão abaixo para criar uma nova senha. O link é válido por <strong>1 hora</strong> e só pode ser usado uma vez.</p>
+                  <p style="margin:24px 0">
+                    <a href="%s" style="background:#7c3aed;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none">Redefinir minha senha</a>
+                  </p>
+                  <p style="color:#6b7280;font-size:.85rem">Se você não solicitou este reset, ignore este e-mail. Sua senha permanece a mesma.</p>
+                  <hr style="border:none;border-top:1px solid #374151;margin:24px 0">
+                  <p style="color:#6b7280;font-size:.8rem">Link completo: <a href="%s" style="color:#7c3aed">%s</a></p>
+                </div>
+                """.formatted(user.getName(), resetUrl, resetUrl, resetUrl);
+
+        send(user.getEmail(), "Renan AI – Redefinição de senha", html);
+    }
+
     private void send(String to, String subject, String htmlBody) {
         String url = "https://api.mailgun.net/v3/" + mailgunDomain + "/messages";
 
