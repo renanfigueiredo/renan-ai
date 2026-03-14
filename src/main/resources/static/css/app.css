@@ -296,14 +296,17 @@ body {
     text-decoration: none;
     letter-spacing: 0.02em;
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
     display: flex;
     align-items: center;
+    justify-content: center;
     transition: opacity 0.2s;
 }
 .topbar-brand:hover { opacity: 0.8; }
 .topbar-logo-img {
     height: 42px;
-    width: auto;
+    max-width: 100%;
     object-fit: contain;
     filter: drop-shadow(0 0 10px rgba(0,180,255,0.35));
     transition: filter 0.3s;
@@ -3182,6 +3185,12 @@ textarea#messageInput {
 }
 
 @media (max-width: 768px) {
+    /* Topbar: logo adapta ao espaço disponível */
+    .topbar { padding: 0 12px; gap: 10px; }
+    .topbar-logo-img { height: 34px; }
+    .status-text { display: none; }
+    .user-menu-name { display: none; }
+
     /* Layouts de imagem/vídeo */
     .image-layout, .video-layout { flex-direction: column; }
     .image-controls-panel, .video-controls-panel { width: 100%; height: auto; }
