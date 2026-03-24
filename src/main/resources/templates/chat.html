@@ -4,7 +4,7 @@
       layout:decorate="~{layout}"
       lang="pt-BR">
 <head>
-    <title>Chat - Renan AI</title>
+    <title>Chat - EVJ AI</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -125,8 +125,11 @@
 
             <!-- Welcome message if no messages -->
             <div th:if="${#lists.isEmpty(conversation.messages)}" class="welcome-message" id="welcomeMessage">
-                <div class="welcome-icon">🧠</div>
-                <h2>Como posso ajudar você hoje?</h2>
+                <div class="welcome-icon">✝️</div>
+                <h2>Olá! Sou a EVJ AI — com fome e sede de Jesus.</h2>
+                <p style="color:var(--text-secondary);max-width:480px;text-align:center;margin-top:8px;line-height:1.6">
+                    Estou aqui para te ajudar com orientação espiritual, estudos bíblicos, aconselhamento cristão e muito mais — sempre fundamentada na Palavra de Deus e no caráter de Jesus Cristo.
+                </p>
             </div>
 
             <!-- Existing messages -->
@@ -140,11 +143,11 @@
                     </div>
                 </div>
                 <div th:if="${msg.role == 'assistant'}" class="message assistant-message">
-                    <div class="message-avatar">🧠</div>
+                    <div class="message-avatar">✝️</div>
                     <div class="message-body">
                         <div class="message-content prose" th:utext="${msg.formattedContent}">Resposta</div>
                         <div class="message-meta">
-                            <span class="meta-model" th:text="${msg.modelId}">model</span>
+                            <span class="meta-model">EVJ AI</span>
                             <span class="meta-tokens" th:if="${msg.outputTokens > 0}"
                                   th:text="${msg.outputTokens} + ' tokens'">0 tokens</span>
                             <span class="meta-latency" th:if="${msg.latencyMs > 0}"
@@ -159,7 +162,7 @@
 
             <!-- Typing indicator -->
             <div class="typing-indicator" id="typingIndicator" style="display:none">
-                <div class="message-avatar">🧠</div>
+                <div class="message-avatar">✝️</div>
                 <div class="typing-dots">
                     <span></span><span></span><span></span>
                 </div>

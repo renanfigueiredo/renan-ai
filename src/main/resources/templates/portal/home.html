@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EVJ — Estação Vida Jovem 2026</title>
+  <meta name="description" content="Amor em Ação 2026 — Sermões, EBD, Cursos e EVJ AI. Portal oficial da Estação Vida Jovem." />
+  <link rel="canonical" href="https://www.evj.app.br" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300ccff'/%3E%3Cstop offset='100%25' stop-color='%2300e05a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='40' height='40' rx='10' fill='%230e0a1a'/%3E%3Ctext x='4' y='28' font-family='Arial' font-weight='900' font-size='22' fill='url(%23g)'%3EEVJ%3C/text%3E%3C/svg%3E">
+
+  <!-- External -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    /* ─── CSS Variables ─── */
+    :root {
+      --bg:       #0e0a1a;
+      --bg2:      #140f24;
+      --bg3:      #1c1530;
+      --cyan:     #00ccff;
+      --green:    #00e05a;
+      --purple:   #7c3aed;
+      --text:     #e8eaf0;
+      --muted:    #8892a4;
+      --glass:    rgba(255,255,255,0.04);
+      --glass-bd: rgba(255,255,255,0.1);
+      --radius:   14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ─── Background orbs ─── */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::before {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,204,255,0.07) 0%, transparent 70%);
+      top: -200px; right: -200px;
+    }
+    body::after {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(0,224,90,0.06) 0%, transparent 70%);
+      bottom: -200px; left: -200px;
+    }
+
+    /* ─── Header / Nav ─── */
+    .portal-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(14,10,26,0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--glass-bd);
+      padding: 0 24px;
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-family: Montserrat, sans-serif; font-weight: 900; font-size: 20px;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-brand img { width: 36px; height: 36px; object-fit: contain; border-radius: 8px; }
+    .nav-links {
+      display: flex; align-items: center; gap: 4px;
+      list-style: none;
+    }
+    .nav-links a {
+      padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      color: var(--muted); transition: all .2s;
+    }
+    .nav-links a:hover { color: var(--cyan); background: rgba(0,204,255,0.08); }
+    .nav-cta {
+      background: linear-gradient(135deg, var(--cyan), var(--green)) !important;
+      color: #0e0a1a !important;
+      font-weight: 700 !important;
+      padding: 6px 18px !important;
+      border-radius: 20px !important;
+    }
+    .nav-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+    .nav-hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      color: var(--text); font-size: 22px; padding: 4px;
+    }
+    .nav-mobile { display: none; }
+
+    @media (max-width: 680px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: block; }
+      .nav-mobile.open {
+        display: flex; flex-direction: column; gap: 2px;
+        position: fixed; top: 60px; left: 0; right: 0;
+        background: var(--bg2); border-bottom: 1px solid var(--glass-bd);
+        padding: 12px 16px; z-index: 99;
+      }
+      .nav-mobile a {
+        display: block; padding: 10px 12px; border-radius: 8px;
+        font-size: 14px; font-weight: 500; color: var(--muted); transition: all .2s;
+      }
+      .nav-mobile a:hover { color: var(--cyan); background: rgba(0,204,255,0.08); }
+      .nav-mobile .nav-cta {
+        background: linear-gradient(135deg, var(--cyan), var(--green)) !important;
+        color: #0e0a1a !important;
+        font-weight: 700 !important;
+        text-align: center; border-radius: 20px !important; margin-top: 6px;
+      }
+    }
+
+    /* ─── Hero ─── */
+    .hero {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 80px 24px 60px;
+      max-width: 760px; margin: 0 auto;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(0,204,255,0.1); border: 1px solid rgba(0,204,255,0.25);
+      color: var(--cyan); font-size: 12px; font-weight: 600; letter-spacing: .5px;
+      padding: 5px 14px; border-radius: 20px; margin-bottom: 24px;
+    }
+    .hero-year {
+      font-size: clamp(13px,3vw,16px); color: var(--muted);
+      font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .hero-title {
+      font-family: Montserrat, sans-serif; font-weight: 900;
+      font-size: clamp(40px, 8vw, 78px); line-height: 1.05;
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--green) 60%, #fff 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .hero-verse-ref {
+      font-size: 15px; color: var(--cyan); font-weight: 600; margin-bottom: 10px;
+    }
+    .hero-verse {
+      font-size: clamp(15px, 2vw, 17px); line-height: 1.6; color: var(--muted);
+      font-style: italic; max-width: 560px; margin: 0 auto 32px;
+    }
+    .hero-actions {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    }
+    .btn-primary-portal {
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      color: #0e0a1a; font-weight: 700; padding: 12px 28px;
+      border-radius: 30px; font-size: 14px; border: none; cursor: pointer;
+      transition: all .25s; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary-portal:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,204,255,0.3); }
+    .btn-secondary-portal {
+      border: 1px solid rgba(0,204,255,0.3); color: var(--cyan);
+      background: rgba(0,204,255,0.06); font-weight: 600; padding: 12px 28px;
+      border-radius: 30px; font-size: 14px; cursor: pointer;
+      transition: all .25s; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-secondary-portal:hover { background: rgba(0,204,255,0.12); border-color: var(--cyan); }
+
+    /* ─── Sections ─── */
+    .portal-section {
+      position: relative; z-index: 1;
+      max-width: 1080px; margin: 0 auto; padding: 56px 24px;
+    }
+    .portal-section + .portal-section {
+      border-top: 1px solid var(--glass-bd);
+    }
+    .section-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--cyan);
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-family: Montserrat, sans-serif; font-weight: 800;
+      font-size: clamp(22px, 4vw, 30px); margin-bottom: 6px;
+    }
+    .section-sub {
+      color: var(--muted); font-size: 14px; margin-bottom: 36px; line-height: 1.6;
+    }
+
+    /* ─── Pillar Cards ─── */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 18px;
+    }
+    .pillar-card {
+      background: var(--glass); border: 1px solid var(--glass-bd);
+      border-radius: var(--radius); padding: 26px 22px;
+      transition: all .3s; position: relative; overflow: hidden;
+    }
+    .pillar-card::before {
+      content: ''; position: absolute; inset: 0; opacity: 0;
+      transition: opacity .3s;
+    }
+    .pillar-card:hover { transform: translateY(-4px); border-color: rgba(0,204,255,0.3); }
+    .pillar-card:hover::before { opacity: 1; }
+    .pillar-card.c1::before { background: radial-gradient(circle at top left, rgba(0,204,255,0.06), transparent 60%); }
+    .pillar-card.c2::before { background: radial-gradient(circle at top left, rgba(0,224,90,0.06), transparent 60%); }
+    .pillar-card.c3::before { background: radial-gradient(circle at top left, rgba(124,58,237,0.08), transparent 60%); }
+    .pillar-icon {
+      width: 46px; height: 46px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 16px;
+    }
+    .ic1 { background: rgba(0,204,255,0.12); color: var(--cyan); }
+    .ic2 { background: rgba(0,224,90,0.12); color: var(--green); }
+    .ic3 { background: rgba(124,58,237,0.12); color: #a78bfa; }
+    .pillar-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .pillar-card p { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 6px; }
+
+    /* ─── Content Grid (sermons/EBD/courses) ─── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .content-card {
+      background: var(--glass); border: 1px solid var(--glass-bd);
+      border-radius: var(--radius); padding: 18px 16px;
+      transition: all .25s; display: flex; flex-direction: column; gap: 6px;
+    }
+    .content-card:hover {
+      border-color: rgba(0,204,255,0.3); background: rgba(0,204,255,0.04);
+      transform: translateY(-2px);
+    }
+    .card-num {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(0,204,255,0.1); display: flex;
+      align-items: center; justify-content: center; color: var(--cyan);
+      font-size: 16px; margin-bottom: 6px; flex-shrink: 0;
+    }
+    .card-title { font-size: 13px; font-weight: 600; line-height: 1.4; }
+    .card-sub { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+    /* ─── EVJ AI Promo ─── */
+    .ai-promo {
+      position: relative; z-index: 1;
+      background: linear-gradient(135deg, rgba(0,204,255,0.07) 0%, rgba(0,224,90,0.05) 50%, rgba(124,58,237,0.07) 100%);
+      border: 1px solid rgba(0,204,255,0.2);
+      border-radius: 20px;
+      padding: 52px 36px;
+      text-align: center;
+      overflow: hidden;
+      max-width: 1080px; margin: 0 auto 56px;
+    }
+    .ai-promo::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% -20%, rgba(0,204,255,0.1), transparent 60%);
+      pointer-events: none;
+    }
+    .ai-promo-icon {
+      font-size: 52px; margin-bottom: 16px; display: block; line-height: 1;
+    }
+    .ai-promo h2 {
+      font-family: Montserrat, sans-serif; font-weight: 900;
+      font-size: clamp(22px, 4vw, 34px); margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .ai-promo p {
+      color: var(--muted); font-size: 15px; line-height: 1.7;
+      max-width: 580px; margin: 0 auto 28px;
+    }
+    .ai-features {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .ai-feature {
+      background: rgba(0,204,255,0.08); border: 1px solid rgba(0,204,255,0.15);
+      border-radius: 20px; padding: 5px 14px;
+      font-size: 12px; font-weight: 600; color: var(--cyan);
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ─── Divider ─── */
+    .divider {
+      border: none; border-top: 1px solid var(--glass-bd);
+      margin: 0;
+    }
+
+    /* ─── Footer ─── */
+    footer {
+      position: relative; z-index: 1;
+      background: var(--bg2); border-top: 1px solid var(--glass-bd);
+      padding: 28px 24px; text-align: center;
+      color: var(--muted); font-size: 13px;
+    }
+    footer strong { color: var(--cyan); }
+    footer a { color: var(--cyan); }
+    footer a:hover { text-decoration: underline; }
+
+    /* ─── Smooth scroll ─── */
+    html { scroll-behavior: smooth; }
+
+    /* ─── Hero 2-column layout ─── */
+    .hero-wrap {
+      position: relative; z-index: 1;
+      display: grid; grid-template-columns: 1fr 420px;
+      gap: 48px; align-items: start;
+      max-width: 1080px; margin: 0 auto;
+      padding: 72px 24px 60px;
+    }
+    .hero-left .hero-title { font-size: clamp(36px, 5vw, 60px); }
+    .hero-left .hero-verse  { margin: 0 0 28px; }
+    .hero-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; }
+    .pill {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--glass); border: 1px solid var(--glass-bd);
+      border-radius: 12px; padding: 10px 16px; font-size: 13px;
+    }
+    .pill i { font-size: 16px; }
+    .pill-cyan  { border-color: rgba(0,204,255,.2); }
+    .pill-cyan  i { color: var(--cyan); }
+    .pill-green { border-color: rgba(0,224,90,.2); }
+    .pill-green i { color: var(--green); }
+    .pill-purple { border-color: rgba(124,58,237,.2); }
+    .pill-purple i { color: #a78bfa; }
+    .hero-nav-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-out {
+      border: 1px solid rgba(0,204,255,.3); color: var(--cyan);
+      background: rgba(0,204,255,.06); padding: 10px 22px;
+      border-radius: 24px; font-size: 13px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 7px; transition: all .25s;
+    }
+    .btn-out:hover { background: rgba(0,204,255,.12); border-color: var(--cyan); }
+
+    /* ─── Login card (right column) ─── */
+    .login-card {
+      background: rgba(20,15,36,.95); border: 1px solid var(--glass-bd);
+      border-radius: 20px; padding: 36px 32px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 0 60px rgba(0,204,255,.06);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      position: sticky; top: 80px;
+    }
+    .login-card-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .login-card-logo img { width: 40px; height: 40px; object-fit: contain; border-radius: 10px; }
+    .login-card-logo span {
+      font-family: Montserrat, sans-serif; font-weight: 900; font-size: 18px;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .login-title { font-size: 20px; font-weight: 700; margin-bottom: 5px; }
+    .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+    .lc-alert {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 14px;
+    }
+    .lc-alert-err { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25); color: #fca5a5; }
+    .lc-alert-ok  { background: rgba(0,224,90,.1);  border: 1px solid rgba(0,224,90,.25);  color: #6ee7b7; }
+    .lc-field { position: relative; margin-bottom: 14px; }
+    .lc-field input {
+      width: 100%; background: rgba(255,255,255,.05); border: 1px solid var(--glass-bd);
+      border-radius: 10px; padding: 13px 42px 13px 14px;
+      color: var(--text); font-size: 14px; font-family: inherit;
+      transition: border-color .2s, box-shadow .2s; outline: none;
+    }
+    .lc-field input::placeholder { color: var(--muted); }
+    .lc-field input:focus { border-color: rgba(0,204,255,.5); box-shadow: 0 0 0 3px rgba(0,204,255,.1); }
+    .lc-field-icon {
+      position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+      color: var(--muted); font-size: 16px; pointer-events: none;
+    }
+    .lc-pwd-btn {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--muted);
+      font-size: 16px; padding: 4px; transition: color .2s;
+    }
+    .lc-pwd-btn:hover { color: var(--cyan); }
+    .lc-forgot { text-align: right; margin-bottom: 18px; }
+    .lc-forgot a { font-size: 12px; color: var(--muted); transition: color .2s; }
+    .lc-forgot a:hover { color: var(--cyan); }
+    .lc-submit {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      color: #0e0a1a; font-weight: 700; font-size: 15px;
+      border: none; border-radius: 12px; cursor: pointer;
+      transition: all .25s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .lc-submit:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 8px 25px rgba(0,204,255,.3); }
+    .lc-sep {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--muted); font-size: 12px; margin: 16px 0;
+    }
+    .lc-sep::before, .lc-sep::after { content: ''; flex: 1; border-top: 1px solid var(--glass-bd); }
+    .lc-guest {
+      width: 100%; padding: 12px;
+      background: var(--glass); border: 1px solid var(--glass-bd);
+      color: var(--text); font-size: 13px; font-weight: 600;
+      border-radius: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px; transition: all .25s;
+    }
+    .lc-guest:hover { border-color: rgba(0,204,255,.3); background: rgba(0,204,255,.05); color: var(--cyan); }
+    .guest-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green); box-shadow: 0 0 6px var(--green);
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+    .lc-register { text-align: center; font-size: 12px; color: var(--muted); margin-top: 16px; }
+    .lc-register a { color: var(--cyan); font-weight: 600; }
+    .lc-register a:hover { text-decoration: underline; }
+    @media (max-width: 960px) {
+      .hero-wrap { grid-template-columns: 1fr; }
+      .login-card { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAVIGATION ─── -->
+<nav class="portal-nav">
+  <a href="/" class="nav-brand" aria-label="EVJ">
+    EVJ
+  </a>
+
+  <!-- Desktop links -->
+  <ul class="nav-links">
+    <li><a href="#pilares">Nosso Ministério</a></li>
+    <li><a href="#ebd">EBD</a></li>
+    <li><a href="#cursos">Cursos</a></li>
+    <li><a href="#evjai">EVJ AI</a></li>
+    <li>
+      <a th:href="@{/dashboard}" sec:authorize="isAuthenticated()" class="nav-cta">
+        <i class="bi bi-chat-dots-fill"></i> Ir para EVJ AI
+      </a>
+      <a th:href="@{/login}" sec:authorize="!isAuthenticated()" class="nav-cta">
+        <i class="bi bi-box-arrow-in-right"></i> Entrar na EVJ AI
+      </a>
+    </li>
+  </ul>
+
+  <!-- Mobile hamburger -->
+  <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+    <i class="bi bi-list"></i>
+  </button>
+</nav>
+
+<!-- Mobile nav drawer -->
+<div class="nav-mobile" id="mobileNav">
+  <a href="#pilares">Nosso Ministério</a>
+  <a href="#ebd">EBD</a>
+  <a href="#cursos">Cursos</a>
+  <a href="#evjai">EVJ AI</a>
+  <a th:href="@{/dashboard}" sec:authorize="isAuthenticated()" class="nav-cta">
+    <i class="bi bi-chat-dots-fill"></i> Ir para EVJ AI
+  </a>
+  <a th:href="@{/login}" sec:authorize="!isAuthenticated()" class="nav-cta">
+    <i class="bi bi-box-arrow-in-right"></i> Entrar na EVJ AI
+  </a>
+</div>
+
+<!-- ─── HERO ─── -->
+<div class="hero-wrap">
+
+  <!-- Left: EVJ identity -->
+  <div class="hero-left">
+    <h1 class="hero-title">Estação Vida Jovem</h1>
+    <div class="hero-pills">
+      <div class="pill pill-cyan"><i class="bi bi-heart-fill"></i><span>GCG — Gente Cuidando de Gente</span></div>
+      <div class="pill pill-green"><i class="bi bi-calendar-event"></i><span>Eventos e Atividades</span></div>
+      <div class="pill pill-purple"><i class="bi bi-broadcast"></i><span>Mídias e Comunicação</span></div>
+    </div>
+    <div class="hero-nav-btns">
+      <a href="#pilares" class="btn-out"><i class="bi bi-compass"></i> Ver Ministério</a>
+      <a href="#ebd" class="btn-out"><i class="bi bi-book-open"></i> EBD</a>
+      <a href="#cursos" class="btn-out"><i class="bi bi-journal-bookmark-fill"></i> Cursos</a>
+    </div>
+  </div>
+
+  <!-- Right: Login card (conditional) -->
+  <div class="login-card">
+    <div class="login-card-logo">
+      <img th:src="@{/images/logo_evj.jpg}" alt="EVJ AI"/>
+      <span>EVJ AI</span>
+    </div>
+
+    <!-- Authenticated: dashboard shortcut -->
+    <div sec:authorize="isAuthenticated()">
+      <p class="login-title">Bem-vindo de volta!</p>
+      <p class="login-sub">Continue sua jornada na EVJ AI.</p>
+      <a th:href="@{/dashboard}" class="lc-submit" style="text-decoration:none; margin-top:8px">
+        <i class="bi bi-chat-dots-fill"></i> Entrar na EVJ AI
+      </a>
+    </div>
+
+    <!-- Not authenticated: login form -->
+    <div sec:authorize="!isAuthenticated()">
+      <p class="login-title">Entrar na EVJ AI</p>
+      <div id="guestError" class="lc-alert lc-alert-err" style="display:none">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span id="guestErrorText"></span>
+      </div>
+      <form th:action="@{/login}" method="post" autocomplete="on">
+        <div class="lc-field">
+          <input type="email" id="username" name="username" placeholder="E-mail" required autocomplete="email"/>
+          <i class="bi bi-envelope lc-field-icon"></i>
+        </div>
+        <div class="lc-field">
+          <input type="password" id="password" name="password" placeholder="Senha" required autocomplete="current-password"/>
+          <button type="button" class="lc-pwd-btn" onclick="togglePwd()" aria-label="Mostrar/ocultar senha">
+            <i class="bi bi-eye" id="pwdIcon"></i>
+          </button>
+        </div>
+        <div class="lc-forgot"><a th:href="@{/forgot-password}">Esqueci minha senha</a></div>
+        <button type="submit" class="lc-submit"><i class="bi bi-box-arrow-in-right"></i> Entrar</button>
+      </form>
+      <div class="lc-sep">ou</div>
+      <button class="lc-guest" id="btnGuest" onclick="startGuestMode()">
+        <span class="guest-dot"></span>
+        Explorar como Visitante
+      </button>
+      <div class="lc-register">
+        <span>Não tem conta?</span>
+        <a th:href="@{/register}"> Solicitar acesso</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.hero-wrap -->
+
+<hr class="divider" />
+
+<!-- ─── PILARES ─── -->
+<section class="portal-section" id="pilares">
+  <p class="section-label"><i class="bi bi-columns-gap"></i> Fundamentos</p>
+  <h2 class="section-title">Nosso Ministério</h2>
+
+  <div class="pillars-grid">
+    <div class="pillar-card c1">
+      <div class="pillar-icon ic1"><i class="bi bi-heart-fill"></i></div>
+      <h3>GCG — Gente Cuidando de Gente</h3>
+      <p>Ninguém foi criado para caminhar sozinho. Construímos vínculos verdadeiros através da Palavra e da comunhão.</p>
+      <p><strong style="color:var(--cyan)">Palavra e Ensino:</strong> Fundamento sólido, não modismos passageiros.</p>
+      <p><strong style="color:var(--cyan)">Relacionamento:</strong> Grupos onde crescemos e cuidamos uns dos outros.</p>
+      <p><strong style="color:var(--cyan)">EBD:</strong> Escola Bíblica Dominical — Todo domingo, 08h45.</p>
+    </div>
+
+    <div class="pillar-card c2">
+      <div class="pillar-icon ic2"><i class="bi bi-calendar-event"></i></div>
+      <h3>Eventos e Atividades</h3>
+      <p>Momentos que marcam nossa história e nos unem em propósito.</p>
+      <p>Cultos, encontros especiais e ciclos de crescimento que fortalecem a fé e criam memórias eternas.</p>
+    </div>
+
+    <div class="pillar-card c3">
+      <div class="pillar-icon ic3"><i class="bi bi-broadcast"></i></div>
+      <h3>Mídias e Comunicação</h3>
+      <p>Levando esperança onde estão as pessoas: nas redes, nas telas, no digital.</p>
+      <p>Conteúdo que inspira, conecta e transforma — com conversa real que vira presença.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ─── EBD ─── -->
+<section class="portal-section" id="ebd">
+  <p class="section-label"><i class="bi bi-book-open"></i> Domingo — 08h45</p>
+  <h2 class="section-title">EBD — Escola Bíblica Dominical</h2>
+  <p class="section-sub">Palavra, reflexão e aplicação para a vida real. Uma hora que transforma.</p>
+
+  <div class="content-grid">
+    <a href="/portal/contents/ebd/licao-01-hebreus-profeta.html" class="content-card">
+      <div class="card-num"><i class="bi bi-book-half"></i></div>
+      <span class="card-title">Lição 01 — Jesus como Profeta</span>
+      <span class="card-sub">Hebreus: Deus fala pelo Filho</span>
+    </a>
+    <a href="/portal/contents/ebd/licao-02-hebreus-sacerdote.html" class="content-card">
+      <div class="card-num"><i class="bi bi-heart-pulse"></i></div>
+      <span class="card-title">Lição 02 — Jesus como Sacerdote</span>
+      <span class="card-sub">Acesso, perdão e socorro real</span>
+    </a>
+    <a href="/portal/contents/ebd/licao-03-hebreus-rei.html" class="content-card">
+      <div class="card-num"><i class="bi bi-people"></i></div>
+      <span class="card-title">Lição 03 — Jesus como Rei</span>
+      <span class="card-sub">Reino inabalável e vida sob Cristo</span>
+    </a>
+    <a href="/portal/contents/ebd/licao-04-hebreus-fe.html" class="content-card">
+      <div class="card-num"><i class="bi bi-stars"></i></div>
+      <span class="card-title">Lição 04 — Fé</span>
+      <span class="card-sub">Fundamento, evidência e perseverança</span>
+    </a>
+    <a href="/portal/contents/ebd/licao-05-carater-atitudes.html" class="content-card">
+      <div class="card-num"><i class="bi bi-person-check"></i></div>
+      <span class="card-title">Lição 05 — Caráter</span>
+      <span class="card-sub">Fé viva e exemplo cristão</span>
+    </a>
+    <a href="/portal/contents/ebd/licao-06-proposito.html" class="content-card">
+      <div class="card-num"><i class="bi bi-compass"></i></div>
+      <span class="card-title">Lição 06 — Propósito</span>
+      <span class="card-sub">Glorificar, parecer-se, servir</span>
+    </a>
+    <a href="/portal/contents/ebd/licao-07-conviccao-defender-fe.html" class="content-card">
+      <div class="card-num"><i class="bi bi-shield-check"></i></div>
+      <span class="card-title">Lição 07 — Convicção</span>
+      <span class="card-sub">Firmeza para defender a fé</span>
+    </a>
+  </div>
+</section>
+<hr class="divider" />
+<!-- ─── CURSOS ─── -->
+<section class="portal-section" id="cursos">
+  <p class="section-label"><i class="bi bi-mortarboard-fill"></i> Formação</p>
+  <h2 class="section-title">Curso — Namoro com Propósito - Em BREVE</h2>
+  <p class="section-sub">Aulas sobre família, aliança, limites e vida financeira para jovens cristãos.</p>
+
+  <!--<div class="content-grid">
+    <a href="/portal/contents/cursos/namoro-com-proposito.html" class="content-card">
+      <div class="card-num" style="background:rgba(0,204,255,0.12);color:var(--cyan)"><i class="bi bi-journal-richtext"></i></div>
+      <span class="card-title">Visão Geral do Curso</span>
+      <span class="card-sub">Objetivos e apresentação das 4 aulas</span>
+    </a>
+    <a href="/portal/contents/cursos/namoro-com-proposito-01-familia-namoro-casamento.html" class="content-card">
+      <div class="card-num"><i class="bi bi-house-heart"></i></div>
+      <span class="card-title">Aula 01 — Família, Namoro e Casamento</span>
+      <span class="card-sub">O propósito da família e da aliança</span>
+    </a>
+    <a href="/portal/contents/cursos/namoro-com-proposito-02-deveres-dos-conjuges.html" class="content-card">
+      <div class="card-num"><i class="bi bi-people-fill"></i></div>
+      <span class="card-title">Aula 02 — Deveres dos Cônjuges</span>
+      <span class="card-sub">Papéis, honra, amor e responsabilidade</span>
+    </a>
+    <a href="/portal/contents/cursos/namoro-com-proposito-03-influencia-dos-pais.html" class="content-card">
+      <div class="card-num"><i class="bi bi-diagram-3"></i></div>
+      <span class="card-title">Aula 03 — Influência dos Pais</span>
+      <span class="card-sub">Como honrar sem abrir mão da aliança</span>
+    </a>
+    <a href="/portal/contents/cursos/namoro-com-proposito-04-vida-financeira.html" class="content-card">
+      <div class="card-num"><i class="bi bi-cash-coin"></i></div>
+      <span class="card-title">Aula 04 — Vida Financeira</span>
+      <span class="card-sub">Mordomia e alinhamento para o futuro</span>
+    </a>
+  </div>-->
+</section>
+
+<hr class="divider" />
+
+<!-- ─── METODOLOGIA ─── -->
+<section class="portal-section">
+  <p class="section-label"><i class="bi bi-diagram-3-fill"></i> Guia Prático</p>
+  <h2 class="section-title">Nosso Guia Prático</h2>
+  <p class="section-sub">Ritmo, discipulado, liderança e comunicação — guia completo de prática e multiplicação.</p>
+
+  <div class="content-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+    <a href="/portal/contents/metodologia.html" class="content-card" style="border-color:rgba(0,204,255,0.25)">
+      <div class="card-num" style="background:rgba(0,204,255,0.12);color:var(--cyan);width:48px;height:48px;font-size:22px;"><i class="bi bi-compass-fill"></i></div>
+      <span class="card-title" style="font-size:15px;">Abrir Metodologia Completa</span>
+      <span class="card-sub">Guia de discipulado, grupos, liderança e comunicação</span>
+    </a>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ─── EVJ AI PROMO ─── -->
+<div class="ai-promo" id="evjai">
+  <span class="ai-promo-icon">✝️</span>
+  <h2>EVJ AI — Inteligência Artificial Cristã</h2>
+  
+  <div class="ai-features">
+    <span class="ai-feature"><i class="bi bi-book-fill"></i> Baseada na Bíblia</span>
+  </div>
+  <a th:href="@{/dashboard}" sec:authorize="isAuthenticated()" class="btn-primary-portal">
+    <i class="bi bi-chat-dots-fill"></i> Acessar EVJ AI
+  </a>
+  <a th:href="@{/login}" sec:authorize="!isAuthenticated()" class="btn-primary-portal">
+    <i class="bi bi-box-arrow-in-right"></i> Entrar na EVJ AI
+  </a>
+  <a th:href="@{/register}" sec:authorize="!isAuthenticated()" class="btn-secondary-portal" style="margin-left:10px">
+    <i class="bi bi-person-plus"></i> Criar Conta
+  </a>
+</div>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <p>© <span id="yr"></span>  &mdash; <strong>EVJ — Estação Vida Jovem</strong></p>
+  <p style="margin-top:6px;">
+    <a href="/portal">Portal</a>
+    &nbsp;·&nbsp;
+    <a th:href="@{/login}">EVJ AI</a>
+  </p>
+</footer>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  document.getElementById('hamburger').addEventListener('click', function() {
+    var m = document.getElementById('mobileNav');
+    m.classList.toggle('open');
+  });
+  // Smooth scroll anchor
+  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      var id = this.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      document.getElementById('mobileNav').classList.remove('open');
+    });
+  });
+
+  /* Password toggle */
+  function togglePwd() {
+    var inp  = document.getElementById('password');
+    var icon = document.getElementById('pwdIcon');
+    if (!inp) return;
+    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'bi bi-eye-slash'; }
+    else { inp.type = 'password'; icon.className = 'bi bi-eye'; }
+  }
+
+  /* Guest error */
+  function showGuestError(msg) {
+    var el = document.getElementById('guestError');
+    if (!el) return;
+    document.getElementById('guestErrorText').textContent = msg;
+    el.style.display = 'flex';
+  }
+
+  /* Fingerprint */
+  async function computeFingerprint() {
+    var parts = [
+      navigator.userAgent, navigator.language || '',
+      (navigator.languages || []).join(','),
+      screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
+      new Date().getTimezoneOffset(), navigator.hardwareConcurrency || 0,
+      navigator.platform || '', Intl.DateTimeFormat().resolvedOptions().timeZone || ''
+    ];
+    try {
+      var c = document.createElement('canvas'); var ctx = c.getContext('2d');
+      ctx.textBaseline = 'top'; ctx.font = '14px Arial';
+      ctx.fillStyle = '#0e0a1a'; ctx.fillRect(0,0,200,30);
+      ctx.fillStyle = '#00ccff'; ctx.fillText('EVJAI\u270Ffp', 2, 8);
+      parts.push(c.toDataURL());
+    } catch(_) {}
+    try {
+      var gl = document.createElement('canvas').getContext('webgl');
+      if (gl) { var dbg = gl.getExtension('WEBGL_debug_renderer_info'); if (dbg) parts.push(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)); }
+    } catch(_) {}
+    var raw = parts.join('||');
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
+    return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+  }
+
+  /* Guest mode */
+  async function startGuestMode() {
+    var btn = document.getElementById('btnGuest');
+    if (!btn) return;
+    var errEl = document.getElementById('guestError');
+    if (errEl) errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="guest-dot" style="background:#f59e0b;box-shadow:0 0 6px #f59e0b"></span> Verificando...';
+    try {
+      var fp = await computeFingerprint();
+      localStorage.setItem('_rfp', fp);
+      var resp = await fetch('/guest/start', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({fingerprint: fp})
+      });
+      var data = await resp.json();
+      if (data.ok) {
+        window.location.href = '/dashboard';
+      } else {
+        showGuestError(data.message || 'Não foi possível iniciar o modo visitante.');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="guest-dot"></span> Explorar como Visitante — 1 hora grátis';
+      }
+    } catch(e) {
+      showGuestError('Erro de conexão. Tente novamente.');
+      btn.disabled = false;
+      btn.innerHTML = '<span class="guest-dot"></span> Explorar como Visitante — 1 hora grátis';
+    }
+  }
+</script>
+</body>
+</html>

@@ -42,23 +42,24 @@ public class SecurityConfig {
             .addFilterBefore(guestAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 // Public routes
-                .requestMatchers("/login", "/register", "/pending",
+                .requestMatchers("/", "/login", "/register", "/pending",
                                  "/admin/approve/**", "/admin/reject/**",
                                  "/forgot-password", "/reset-password",
                                  "/guest/**",
+                                 "/portal", "/portal/**",
                                  "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 // Everything else requires authentication (includes ROLE_GUEST)
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/", true)
+                .defaultSuccessUrl("/dashboard", true)
                 .failureUrl("/login?error")
                 .permitAll()
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout")
+                .logoutSuccessUrl("/")
                 .permitAll()
             )
             // Keep CSRF enabled but exempt the API endpoints (called via fetch/AJAX)

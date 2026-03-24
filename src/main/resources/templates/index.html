@@ -4,7 +4,7 @@
       layout:decorate="~{layout}"
       lang="pt-BR">
 <head>
-    <title>Dashboard - Renan AI</title>
+    <title>Dashboard - EVJ AI</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -14,18 +14,15 @@
         <div class="hero-section">
             <div class="hero-content">
                 <h1 class="hero-title">
-                    <span class="gradient-text">Renan AI</span>
+                    <span class="gradient-text">EVJ AI</span>
                 </h1>
-                <p class="hero-subtitle">A plataforma de IA mais completa. Texto, Imagens e Vídeos com os melhores modelos do mundo.</p>
+                <p class="hero-subtitle">A inteligência artificial baseada na Bíblia e fundamentada no caráter de Jesus.</p>
                 <div class="hero-actions">
                     <a href="/chat" class="btn-primary-hero">
                         <i class="bi bi-chat-dots-fill"></i> Iniciar Chat
                     </a>
-                    <a href="/image" class="btn-secondary-hero">
-                        <i class="bi bi-image-fill"></i> Gerar Imagem
-                    </a>
-                    <a href="/video" class="btn-secondary-hero">
-                        <i class="bi bi-film"></i> Criar Vídeo
+                    <a href="/portal" class="btn-secondary-hero">
+                        <i class="bi bi-globe"></i> Portal EVJ
                     </a>
                 </div>
             </div>
@@ -49,31 +46,33 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon text-purple"><i class="bi bi-image-fill"></i></div>
+                <div class="stat-icon text-green"><i class="bi bi-book-fill"></i></div>
                 <div class="stat-info">
-                    <span class="stat-number" th:text="${totalImages}">0</span>
-                    <span class="stat-label">Imagens Geradas</span>
+                    <span class="stat-number">66</span>
+                    <span class="stat-label">Livros da Bíblia</span>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon text-red"><i class="bi bi-film"></i></div>
+                <div class="stat-icon" style="color:var(--accent)"><i class="bi bi-stars"></i></div>
                 <div class="stat-info">
-                    <span class="stat-number" th:text="${totalVideos}">0</span>
-                    <span class="stat-label">Vídeos Criados</span>
+                    <span class="stat-number">EVJ AI</span>
+                    
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon text-green"><i class="bi bi-cpu-fill"></i></div>
+                <div class="stat-icon text-green"><i class="bi bi-globe"></i></div>
                 <div class="stat-info">
-                    <span class="stat-number">3</span>
-                    <span class="stat-label">Modelos de Chat</span>
+                    <a href="/portal" style="color:inherit;text-decoration:none">
+                        <span class="stat-number" style="font-size:0.95rem">Portal EVJ</span>
+                        
+                    </a>
                 </div>
             </div>
         </div>
 
         <!-- Quick Access Grid -->
         <div class="section-title">
-            <h2>🚀 Início Rápido</h2>
+            <h2>✝️ Comece sua Jornada</h2>
         </div>
 
         <div class="quick-access-grid">
@@ -81,50 +80,32 @@
             <a href="/chat" class="feature-card feature-chat">
                 <div class="feature-card-header">
                     <div class="feature-icon"><i class="bi bi-chat-dots-fill"></i></div>
-                    <span class="feature-tag">TEXTO</span>
+                    <span class="feature-tag">EVJ AI</span>
                 </div>
-                <h3>Chat Inteligente</h3>
-                <p>Converse com os melhores modelos de IA. Claude, Nova, Llama, Mistral e muito mais.</p>
-                <div class="feature-highlights">
-                    <span><i class="bi bi-check-circle-fill"></i> Histórico de conversas</span>
-                    <span><i class="bi bi-check-circle-fill"></i> Multimodal (texto+imagem)</span>
-                    <span><i class="bi bi-check-circle-fill"></i> Comparação de modelos</span>
-                    <span><i class="bi bi-check-circle-fill"></i> Export PDF/Markdown</span>
-                </div>
+                <h3>Chat Cristão</h3>
+                <p>Converse com a EVJ AI.</p>
                 <div class="feature-arrow"><i class="bi bi-arrow-right-circle-fill"></i></div>
             </a>
 
-            <!-- Image Card -->
-            <a href="/image" class="feature-card feature-image">
+            <!-- EVJ Site Card -->
+            <a href="/portal" class="feature-card feature-image">
                 <div class="feature-card-header">
-                    <div class="feature-icon"><i class="bi bi-image-fill"></i></div>
-                    <span class="feature-tag">IMAGEM</span>
+                    <div class="feature-icon"><i class="bi bi-globe2"></i></div>
+                    <span class="feature-tag">EVJ</span>
                 </div>
-                <h3>Geração de Imagens</h3>
-                <p>Crie imagens incríveis com Stable Diffusion XL, Nova Canvas e Titan Image.</p>
-                <div class="feature-highlights">
-                    <span><i class="bi bi-check-circle-fill"></i> Múltiplos estilos</span>
-                    <span><i class="bi bi-check-circle-fill"></i> Image-to-Image</span>
-                    <span><i class="bi bi-check-circle-fill"></i> Prompt enhancement</span>
-                    <span><i class="bi bi-check-circle-fill"></i> Galeria HD</span>
-                </div>
+                <h3>Site Oficial EVJ</h3>
+                <p>Acesse o site oficial da Estação Vida Jovem com eventos, estudos bíblicos e mais.</p>
                 <div class="feature-arrow"><i class="bi bi-arrow-right-circle-fill"></i></div>
             </a>
 
-            <!-- Video Card -->
-            <a href="/video" class="feature-card feature-video">
+            <!-- History Card -->
+            <a href="/history" class="feature-card feature-video">
                 <div class="feature-card-header">
-                    <div class="feature-icon"><i class="bi bi-film"></i></div>
-                    <span class="feature-tag">VÍDEO</span>
+                    <div class="feature-icon"><i class="bi bi-clock-history"></i></div>
+                    <span class="feature-tag">HISTÓRICO</span>
                 </div>
-                <h3>Geração de Vídeos</h3>
-                <p>Crie vídeos com Amazon Nova Reel. Do texto ou imagem ao vídeo em minutos.</p>
-                <div class="feature-highlights">
-                    <span><i class="bi bi-check-circle-fill"></i> Texto para vídeo</span>
-                    <span><i class="bi bi-check-circle-fill"></i> Imagem para vídeo</span>
-                    <span><i class="bi bi-check-circle-fill"></i> Status em tempo real</span>
-                    <span><i class="bi bi-check-circle-fill"></i> Resolução HD</span>
-                </div>
+                <h3>Minhas Conversas</h3>
+                <p>Acesse o histórico de todas as suas conversas com a EVJ AI e retome onde parou.</p>
                 <div class="feature-arrow"><i class="bi bi-arrow-right-circle-fill"></i></div>
             </a>
         </div>

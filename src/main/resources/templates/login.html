@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Login — Renan AI</title>
+    <title>Login — EVJ AI</title>
     <link rel="stylesheet" th:href="@{/css/app.css}"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
     <link rel="stylesheet" th:href="@{/css/login.css}"/>
@@ -27,21 +27,16 @@
 
     <!-- ═══ LEFT PANEL ═══ -->
     <div class="lp-left">
-        <img th:src="@{/images/logo.png}" alt="Renan AI" class="lp-logo"/>
-        <h1 class="lp-tagline">Crie com <span>inteligência artificial</span> sem limites</h1>
-        <p class="lp-desc">Chat, geração de imagens, vídeos e muito mais — tudo em um só lugar, otimizado para sua produtividade.</p>
+        <img th:src="@{/images/logo_evj.jpg}" alt="EVJ AI" class="lp-logo"/>
+        <h1 class="lp-tagline">Uma IA <span>baseada na bíblia</span> e direcionada para Jovens</h1>
         <div class="lp-features">
             <div class="lp-feat">
                 <div class="feat-icon cyan"><i class="bi bi-chat-dots-fill"></i></div>
-                <div class="feat-text"><strong>Chat </strong><span>Conversas inteligentes com streaming em tempo real</span></div>
+                <div class="feat-text"><strong>Chat Cristão</strong><span>Respostas sábias fundamentadas na Palavra de Deus</span></div>
             </div>
             <div class="lp-feat">
-                <div class="feat-icon blue"><i class="bi bi-image-fill"></i></div>
-                <div class="feat-text"><strong>Geração de Imagens</strong><span>Crie imagens incríveis com Stable Diffusion e Titan</span></div>
-            </div>
-            <div class="lp-feat">
-                <div class="feat-icon gold"><i class="bi bi-camera-video-fill"></i></div>
-                <div class="feat-text"><strong>Criação de Vídeos</strong><span>Transforme ideias em vídeos com IA generativa</span></div>
+                <div class="feat-icon blue"><i class="bi bi-book-fill"></i></div>
+                <div class="feat-text"><strong>Baseada na Bíblia</strong><span>66 livros, discernimento espiritual e identidade em Cristo</span></div>
             </div>
         </div>
     </div>
@@ -53,7 +48,7 @@
         <div class="lp-form-card">
 
             <div class="lp-mobile-header">
-                <img th:src="@{/images/logo.png}" alt="Renan AI" class="lp-mobile-logo"/>
+                <img th:src="@{/images/logo_evj.jpg}" alt="EVJ AI" class="lp-mobile-logo"/>
             </div>
             <div class="lp-form-title">Bem-vindo de volta</div>
             <div class="lp-form-sub">Entre com sua conta para acessar a plataforma</div>
@@ -98,7 +93,7 @@
 
             <button class="lp-btn-guest" id="btnGuest" onclick="startGuestMode()">
                 <span class="lp-guest-dot"></span>
-                Explorar como Visitante — 1 hora grátis
+                Explorar como Visitante
             </button>
 
             <div class="lp-footer">
@@ -152,11 +147,11 @@ async function computeFingerprint() {
         const ctx = c.getContext('2d');
         ctx.textBaseline = 'top';
         ctx.font = '14px "Arial"';
-        ctx.fillStyle = '#7c3aed';
+        ctx.fillStyle = '#0e0a1a';
         ctx.fillRect(0, 0, 200, 30);
-        ctx.fillStyle = '#00d4ff';
-        ctx.fillText('RenanAI\u{1F3A8}fp', 2, 8);
-        ctx.strokeStyle = 'rgba(102,204,0,0.7)';
+        ctx.fillStyle = '#00ccff';
+        ctx.fillText('EVJAI\u{270F}fp', 2, 8);
+        ctx.strokeStyle = 'rgba(0,224,90,0.7)';
         ctx.beginPath(); ctx.arc(100, 15, 12, 0, Math.PI * 2); ctx.stroke();
         parts.push(c.toDataURL());
     } catch(_) {}
@@ -206,7 +201,7 @@ async function startGuestMode() {
 
 /* ── ?guest=expired ── */
 if (new URLSearchParams(location.search).get('guest') === 'expired') {
-    showGuestError('Seu tempo de visita expirou. Crie uma conta para continuar usando o Renan AI.');
+    showGuestError('Seu tempo de visita expirou. Crie uma conta para continuar usando o EVJ AI.');
 }
 </script>
 </body>

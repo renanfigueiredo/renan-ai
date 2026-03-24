@@ -25,7 +25,7 @@ public class EmailService {
     @Value("${app.admin-email:renan.figueiredo.05@gmail.com}")
     private String adminEmail;
 
-    @Value("${app.mail-from:Renan AI <postmaster@renan-ai.com.br>}")
+    @Value("${app.mail-from:EVJ AI <postmaster@renan-ai.com.br>}")
     private String mailFrom;
 
     @Value("${mailgun.api-key}")
@@ -41,7 +41,7 @@ public class EmailService {
 
         String html = """
                 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-                  <h2 style="color:#7c3aed">Renan AI — Nova Solicitação de Acesso</h2>
+                  <h2 style="color:#00ccff">EVJ AI — Nova Solicitação de Acesso</h2>
                   <p>Um novo usuário solicitou acesso à plataforma:</p>
                   <table style="border-collapse:collapse;width:100%%">
                     <tr><td style="padding:8px;font-weight:bold">Nome</td><td style="padding:8px">%s</td></tr>
@@ -54,7 +54,7 @@ public class EmailService {
                 </div>
                 """.formatted(user.getName(), user.getEmail(), approveUrl, rejectUrl);
 
-        send(adminEmail, "Renan AI – Solicitação de acesso: " + user.getName(), html);
+        send(adminEmail, "EVJ AI – Solicitação de acesso: " + user.getName(), html);
     }
 
     /** Notifica o usuário de que sua conta foi aprovada. */
@@ -62,15 +62,15 @@ public class EmailService {
         String loginUrl = baseUrl + "/login";
         String html = """
                 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-                  <h2 style="color:#7c3aed">Renan AI — Acesso Aprovado! 🎉</h2>
+                  <h2 style="color:#00ccff">EVJ AI — Acesso Aprovado! 🎉</h2>
                   <p>Olá, <strong>%s</strong>!</p>
                   <p>Sua solicitação de acesso foi <strong style="color:#16a34a">aprovada</strong>.</p>
                   <p>Você já pode fazer login e começar a usar a plataforma:</p>
-                  <p><a href="%s" style="background:#7c3aed;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none">Acessar Renan AI</a></p>
+                  <p><a href="%s" style="background:#00ccff;color:#0e0a1a;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:700">Acessar EVJ AI</a></p>
                 </div>
                 """.formatted(user.getName(), loginUrl);
 
-        send(user.getEmail(), "Renan AI – Seu acesso foi aprovado!", html);
+        send(user.getEmail(), "EVJ AI – Seu acesso foi aprovado!", html);
     }
 
     /**
@@ -82,7 +82,7 @@ public class EmailService {
         String resetUrl = baseUrl + "/reset-password?token=" + rawToken;
         String html = """
                 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-                  <h2 style="color:#7c3aed">Renan AI — Redefinição de Senha</h2>
+                  <h2 style="color:#00ccff">EVJ AI — Redefinição de Senha</h2>
                   <p>Olá, <strong>%s</strong>!</p>
                   <p>Recebemos uma solicitação para redefinir a senha da sua conta.</p>
                   <p>Clique no botão abaixo para criar uma nova senha. O link é válido por <strong>1 hora</strong> e só pode ser usado uma vez.</p>
@@ -95,7 +95,7 @@ public class EmailService {
                 </div>
                 """.formatted(user.getName(), resetUrl, resetUrl, resetUrl);
 
-        send(user.getEmail(), "Renan AI – Redefinição de senha", html);
+        send(user.getEmail(), "EVJ AI – Redefinição de senha", html);
     }
 
     private void send(String to, String subject, String htmlBody) {

@@ -16,13 +16,23 @@ public class MainController {
     private final StorageService storageService;
     private final UserService userService;
 
+    /** Public home page — shown to unauthenticated visitors */
     @GetMapping("/")
-    public String index(Model model, Principal principal) {
+    public String home(Principal principal) {
+        if (principal != null) {
+            return "redirect:/dashboard";
+        }
+        return "portal/home";
+    }
+
+    /** Private dashboard — requires authentication */
+    @GetMapping("/dashboard")
+    public String dashboard(Model model, Principal principal) {
         Long userId = userService.findByEmail(principal.getName())
                 .orElseThrow().getId();
         model.addAttribute("totalConversations", storageService.getConversationsByUser(userId).size());
-        model.addAttribute("totalImages", storageService.getImagesByUser(userId).size());
-        model.addAttribute("totalVideos", storageService.getVideosByUser(userId).size());
+        model.addAttribute("activeTab", "home");
         return "index";
     }
+
 }

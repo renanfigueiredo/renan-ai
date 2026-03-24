@@ -19,8 +19,14 @@ public class WwwRedirectFilter implements Filter {
 
         String host = req.getHeader("host");
 
+        if ("evj.app.br".equals(host)) {
+            res.sendRedirect("https://www.evj.app.br" + req.getRequestURI());
+            return;
+        }
+
+        // Também mantém compatibilidade com domínio legado durante transição
         if ("renan-ai.com.br".equals(host)) {
-            res.sendRedirect("https://www.renan-ai.com.br" + req.getRequestURI());
+            res.sendRedirect("https://www.evj.app.br" + req.getRequestURI());
             return;
         }
 
