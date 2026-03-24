@@ -16,12 +16,10 @@ public class MainController {
     private final StorageService storageService;
     private final UserService userService;
 
-    /** Public home page — shown to unauthenticated visitors */
+    /** Public home page — shown to all visitors; sec:authorize in the template handles the authenticated/unauthenticated views */
     @GetMapping("/")
-    public String home(Principal principal) {
-        if (principal != null) {
-            return "redirect:/dashboard";
-        }
+    public String home(Model model) {
+        model.addAttribute("activeTab", "portal");
         return "portal/home";
     }
 
