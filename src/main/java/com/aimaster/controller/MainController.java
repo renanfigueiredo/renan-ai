@@ -16,10 +16,10 @@ public class MainController {
     private final StorageService storageService;
     private final UserService userService;
 
-    /** Public home page — shown to all visitors; sec:authorize in the template handles the authenticated/unauthenticated views */
+    /** Public home page — shown to all visitors; loggedIn attribute controls conditional blocks in template */
     @GetMapping("/")
-    public String home(Model model) {
-        model.addAttribute("activeTab", "portal");
+    public String home(Model model, Principal principal) {
+        model.addAttribute("loggedIn", principal != null);
         return "portal/home";
     }
 

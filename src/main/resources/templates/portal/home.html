@@ -445,10 +445,10 @@
     <li><a href="#cursos">Cursos</a></li>
     <li><a href="#evjai">EVJ AI</a></li>
     <li>
-      <a th:href="@{/dashboard}" sec:authorize="isAuthenticated()" class="nav-cta">
+      <a th:href="@{/dashboard}" th:if="${loggedIn}" class="nav-cta">
         <i class="bi bi-chat-dots-fill"></i> Ir para EVJ AI
       </a>
-      <a th:href="@{/login}" sec:authorize="!isAuthenticated()" class="nav-cta">
+      <a th:href="@{/login}" th:if="${!loggedIn}" class="nav-cta">
         <i class="bi bi-box-arrow-in-right"></i> Entrar na EVJ AI
       </a>
     </li>
@@ -466,10 +466,10 @@
   <a href="#ebd">EBD</a>
   <a href="#cursos">Cursos</a>
   <a href="#evjai">EVJ AI</a>
-  <a th:href="@{/dashboard}" sec:authorize="isAuthenticated()" class="nav-cta">
+  <a th:href="@{/dashboard}" th:if="${loggedIn}" class="nav-cta">
     <i class="bi bi-chat-dots-fill"></i> Ir para EVJ AI
   </a>
-  <a th:href="@{/login}" sec:authorize="!isAuthenticated()" class="nav-cta">
+  <a th:href="@{/login}" th:if="${!loggedIn}" class="nav-cta">
     <i class="bi bi-box-arrow-in-right"></i> Entrar na EVJ AI
   </a>
 </div>
@@ -500,7 +500,7 @@
     </div>
 
     <!-- Authenticated: dashboard shortcut -->
-    <div sec:authorize="isAuthenticated()">
+    <div th:if="${loggedIn}">
       <p class="login-title">Bem-vindo de volta!</p>
       <p class="login-sub">Continue sua jornada na EVJ AI.</p>
       <a th:href="@{/dashboard}" class="lc-submit" style="text-decoration:none; margin-top:8px">
@@ -509,7 +509,7 @@
     </div>
 
     <!-- Not authenticated: login form -->
-    <div sec:authorize="!isAuthenticated()">
+    <div th:if="${!loggedIn}">
       <p class="login-title">Entrar na EVJ AI</p>
       <div id="guestError" class="lc-alert lc-alert-err" style="display:none">
         <i class="bi bi-exclamation-circle-fill"></i>
@@ -685,13 +685,13 @@
   <div class="ai-features">
     <span class="ai-feature"><i class="bi bi-book-fill"></i> Baseada na Bíblia</span>
   </div>
-  <a th:href="@{/dashboard}" sec:authorize="isAuthenticated()" class="btn-primary-portal">
+  <a th:href="@{/dashboard}" th:if="${loggedIn}" class="btn-primary-portal">
     <i class="bi bi-chat-dots-fill"></i> Acessar EVJ AI
   </a>
-  <a th:href="@{/login}" sec:authorize="!isAuthenticated()" class="btn-primary-portal">
+  <a th:href="@{/login}" th:if="${!loggedIn}" class="btn-primary-portal">
     <i class="bi bi-box-arrow-in-right"></i> Entrar na EVJ AI
   </a>
-  <a th:href="@{/register}" sec:authorize="!isAuthenticated()" class="btn-secondary-portal" style="margin-left:10px">
+  <a th:href="@{/register}" th:if="${!loggedIn}" class="btn-secondary-portal" style="margin-left:10px">
     <i class="bi bi-person-plus"></i> Criar Conta
   </a>
 </div>
