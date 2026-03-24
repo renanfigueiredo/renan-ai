@@ -25,7 +25,9 @@ public class AuthController {
     @GetMapping("/login")
     public String loginPage(@RequestParam(required = false) String error,
                             @RequestParam(required = false) String logout,
-                            Model model) {
+                            Model model,
+                            Principal principal) {
+        if (principal != null) return "redirect:/dashboard";
         if (error != null) model.addAttribute("error", "E-mail ou senha inválidos. Verifique se sua conta foi aprovada.");
         if (logout != null) model.addAttribute("message", "Você saiu com sucesso.");
         return "login";

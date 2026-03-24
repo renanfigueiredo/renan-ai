@@ -16,11 +16,10 @@ public class MainController {
     private final StorageService storageService;
     private final UserService userService;
 
-    /** Public home page — shown to all visitors; loggedIn attribute controls conditional blocks in template */
+    /** Public home page — fast redirect to static HTML (no Thymeleaf processing) */
     @GetMapping("/")
-    public String home(Model model, Principal principal) {
-        model.addAttribute("loggedIn", principal != null);
-        return "portal/home";
+    public String home() {
+        return "redirect:/portal/index.html";
     }
 
     /** Private dashboard — requires authentication */

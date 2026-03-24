@@ -75,7 +75,9 @@ public class GuestAuthFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.equals("/login")
+        return path.equals("/")
+                || path.startsWith("/portal")
+                || path.equals("/login")
                 || path.equals("/register")
                 || path.equals("/pending")
                 || path.equals("/forgot-password")
@@ -83,6 +85,7 @@ public class GuestAuthFilter extends OncePerRequestFilter {
                 || path.startsWith("/admin/")
                 || path.startsWith("/css/")
                 || path.startsWith("/js/")
+                || path.startsWith("/images/")
                 || path.startsWith("/guest/start")
                 || path.equals("/favicon.ico");
     }
