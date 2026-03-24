@@ -9,7 +9,6 @@ class IndexApp {
     }
 
     initializeApp() {
-        this.setupThemeToggle();
         this.setupScrollEffects();
         this.setupCardAnimations();
         this.setupRippleEffect();
@@ -45,38 +44,7 @@ class IndexApp {
         });
     }
 
-    setupThemeToggle() {
-        const themeToggle = document.getElementById('theme-toggle');
-        
-        // Aplicar tema salvo
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'light') {
-            document.body.classList.add('light');
-            if (themeToggle) {
-                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-            }
-        }
-
-        // Toggle do tema
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('light');
-                const isLight = document.body.classList.contains('light');
-                
-                // Salvar preferência
-                localStorage.setItem('theme', isLight ? 'light' : 'dark');
-                
-                // Atualizar ícone
-                themeToggle.innerHTML = isLight ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
-                
-                // Adicionar efeito visual
-                themeToggle.style.transform = 'rotate(180deg)';
-                setTimeout(() => {
-                    themeToggle.style.transform = 'rotate(0deg)';
-                }, 300);
-            });
-        }
-    }
+    // setupThemeToggle removed (dark-only theme)
 
     setupScrollEffects() {
         let lastScrollTop = 0;

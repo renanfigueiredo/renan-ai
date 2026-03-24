@@ -12,12 +12,7 @@
     --lp-text: #eeeeff; --lp-muted: #7a6baa; --lp-label: #8878b8;
     --lp-orb1: #00ccff; --lp-orb2: #1a0a3d; --lp-orb3: #00e05a;
 }
-.light-mode {
-    --lp-bg: #f0f2f7; --lp-card: rgba(255,255,255,.92); --lp-border: rgba(0,153,204,.2);
-    --lp-input-bg: rgba(0,0,0,.03); --lp-input-border: rgba(0,0,0,.12);
-    --lp-text: #1a1030; --lp-muted: #556677; --lp-label: #556677;
-    --lp-orb1: #00ccff; --lp-orb2: #3b82f6; --lp-orb3: #00e05a;
-}
+/* light-mode removed (dark-only) */
 
 html, body { height: 100%; overflow: hidden; font-family: 'Inter', system-ui, sans-serif; }
 
@@ -67,7 +62,7 @@ html, body { height: 100%; overflow: hidden; font-family: 'Inter', system-ui, sa
     transition: border-color .25s, transform .25s;
     animation: slide-in-left .6s ease both;
 }
-.light-mode .lp-feat { background: rgba(255,255,255,.6); border-color: rgba(0,0,0,.07); }
+/* light-mode .lp-feat removed */
 .lp-feat:hover { border-color: rgba(0,204,255,.4); transform: translateX(4px); }
 .lp-feat:nth-child(1) { animation-delay: .1s; }
 .lp-feat:nth-child(2) { animation-delay: .2s; }
@@ -203,17 +198,11 @@ html, body { height: 100%; overflow: hidden; font-family: 'Inter', system-ui, sa
 .lp-footer a { color:#00ccff; text-decoration:none; font-weight:500; transition:color .2s; }
 .lp-footer a:hover { color:#33c4ff; }
 
-/* Theme toggle pill */
-.lp-theme-btn {
-    position: fixed; top: 20px; right: 20px; z-index: 10;
-    background: var(--lp-card); border: 1px solid var(--lp-border);
-    border-radius: 30px; padding: 7px 14px; font-size: .82rem; color: var(--lp-muted);
-    cursor: pointer; display: flex; align-items: center; gap: 6px;
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    transition: border-color .2s, color .2s;
-}
-.lp-theme-btn:hover { border-color: rgba(0,204,255,.5); color: var(--lp-text); }
+/* Theme toggle pill removed (dark-only) */
 
 /* Scrollbar */
 .lp-right::-webkit-scrollbar { width: 4px; }
 .lp-right::-webkit-scrollbar-thumb { background: rgba(0,204,255,.3); border-radius: 2px; }
+
+/* Icon before button text */
+.btn-icon-left { margin-right: 6px; }

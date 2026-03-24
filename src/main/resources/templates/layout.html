@@ -22,8 +22,6 @@
     <link rel="canonical" th:href="@{https://www.evj.app.br}" />
 </head>
 <body class="dark-mode">
-<!-- Anti-FOUC: apply saved theme before first paint -->
-<script>if(localStorage.getItem('theme')==='light'){document.body.classList.replace('dark-mode','light-mode');}</script>
 
 <!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
@@ -62,10 +60,6 @@
     </div>
 
     <div class="sidebar-footer">
-        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">
-            <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
-            <span id="themeLabel">Modo Escuro</span>
-        </button>
     </div>
 </aside>
 
@@ -84,10 +78,6 @@
         </a>
         </a>
         <div class="topbar-actions">
-            <!-- Theme toggle -->
-            <button class="topbar-theme-btn" id="topbarThemeBtn" onclick="toggleTheme()" title="Modo Claro">
-                <i class="bi bi-brightness-high"></i>
-            </button>
             <div class="status-indicator online" title="AWS Bedrock Conectado">
                 <span class="status-dot"></span>
                 <span class="status-text">EVJ Online</span>

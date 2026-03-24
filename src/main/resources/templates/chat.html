@@ -14,7 +14,7 @@
     <div class="conv-sidebar" id="convSidebar">
         <div class="conv-sidebar-header">
             <h3>Conversas</h3>
-            <div style="display:flex;gap:6px;align-items:center">
+            <div class="conv-sidebar-actions">
                 <button class="btn-new-chat" id="btnNewChat" title="Nova Conversa">
                     <i class="bi bi-plus-circle-fill"></i>
                 </button>
@@ -127,7 +127,7 @@
             <div th:if="${#lists.isEmpty(conversation.messages)}" class="welcome-message" id="welcomeMessage">
                 <div class="welcome-icon">✝️</div>
                 <h2>Olá! Sou a EVJ AI — com fome e sede de Jesus.</h2>
-                <p style="color:var(--text-secondary);max-width:480px;text-align:center;margin-top:8px;line-height:1.6">
+                <p>
                     Estou aqui para te ajudar com orientação espiritual, estudos bíblicos, aconselhamento cristão e muito mais — sempre fundamentada na Palavra de Deus e no caráter de Jesus Cristo.
                 </p>
             </div>

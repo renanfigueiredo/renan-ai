@@ -61,15 +61,15 @@
             <textarea id="videoPrompt" rows="5" maxlength="512"
                       oninput="updatePromptCounter()"
                       placeholder="Descreva o vídeo que você quer criar... Ex: 'A cinematic drone shot flying over a dense rainforest at golden hour, misty valleys below, birds in flight'"></textarea>
-            <div style="text-align:right;font-size:0.78rem;margin-top:4px;">
-                <span id="promptCharCount" style="color:var(--text-muted)">0</span><span style="color:var(--text-muted)">&nbsp;/ 512 caracteres</span>
+            <div class="prompt-char-counter">
+                <span id="promptCharCount">0</span>&nbsp;/ 512 caracteres
             </div>
         </div>
 
         <!-- Duration -->
         <div class="control-section">
             <label class="control-label">Duração</label>
-            <div class="config-note" style="margin:0">
+            <div class="config-note mt-0">
                 <i class="bi bi-info-circle"></i> O Amazon Nova Reel gera vídeos de <strong>6 segundos</strong> (única duração suportada atualmente).
             </div>
         </div>

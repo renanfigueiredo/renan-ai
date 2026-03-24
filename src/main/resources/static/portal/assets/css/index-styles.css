@@ -9,10 +9,7 @@ body.ios-device {
   background-image: none !important;
 }
 
-body.ios-device.light {
-  background: #f8fafc !important;
-  background-image: none !important;
-}
+/* light mode removed — ios-device.light */
 
 /* VARIÁVEIS CSS */
 :root {
@@ -47,11 +44,7 @@ body {
     background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%) !important;
   }
   
-  body.light {
-    background: #f1f5f9 !important;
-    background: -webkit-linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #ffffff 100%) !important;
-    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #ffffff 100%) !important;
-  }
+  /* light mode removed — @supports body.light */
 }
 
 /* ELEMENTOS DE FUNDO ANIMADOS */
@@ -449,37 +442,7 @@ body::before {
   }
 }
 
-/* TEMA CLARO */
-body.light {
-  color: #1a202c;
-}
-
-body.light .hero-verse-text,
-body.light .verse-content {
-  color: #2d3748;
-}
-
-body.light .month-card,
-body.light .sermon-card,
-body.light .hero-verse {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: #1a202c;
-}
-
-body.light .sermon-card:hover {
-  color: #1a202c;
-}
-
-body.light .month-subtitle,
-body.light .sermon-verse,
-body.light .sermon-description {
-  color: #4a5568;
-}
-
-body.light .modern-header {
-  background: rgba(255, 255, 255, 0.1);
-}
+/* light mode removed — TEMA CLARO section */
 
 /* iOS SAFARI ESPECÍFICO */
 @supports (-webkit-appearance: none) {
@@ -489,10 +452,7 @@ body.light .modern-header {
     -webkit-text-fill-color: #4facfe !important;
   }
   
-  body.light .hero-title {
-    color: #2563eb !important;
-    -webkit-text-fill-color: #2563eb !important;
-  }
+  /* light mode removed — body.light .hero-title */
 }
 
 /* ==========================================
@@ -845,23 +805,7 @@ body.light .modern-header {
   }
 }
 
-/* Modo claro */
-body.light .premium-pillar-card {
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-body.light .pillar-title {
-  color: #1a202c;
-}
-
-body.light .pillar-description {
-  color: #4a5568;
-}
-
-body.light .pillar-icon-circle {
-  background: rgba(0, 0, 0, 0.05);
-}
+/* light mode removed — pillar cards */
 
 /* Estilos para versículos dos pilares */
 .pillar-verse-content {
@@ -892,13 +836,7 @@ body.light .pillar-icon-circle {
   margin: 0;
 }
 
-body.light .verse-text {
-  color: #2d3748;
-}
-
-body.light .verse-reference {
-  color: #2563eb;
-}
+/* light mode removed — verse-text, verse-reference */
 
 /* AJUSTES DE ESPAÇAMENTO ENTRE SEÇÕES */
 /* Reduzir espaçamento excessivo entre seções */
@@ -962,7 +900,7 @@ body.light .verse-reference {
    ========================================== */
 
 /* Bootstrap .text-muted é escuro por padrão; forçar claro no tema dark */
-body:not(.light) .text-muted {
+.text-muted {
   color: rgba(180, 200, 220, 0.75) !important;
 }
 
@@ -980,28 +918,60 @@ body:not(.light) .text-muted {
   padding-bottom: 0.75rem;
 }
 
-body.light .section-title {
-  color: #1a56db;
-  border-color: rgba(26, 86, 219, 0.2);
-}
+/* light mode removed — section-title */
 
 /* Garantir que parágrafos e listas dentro de sermon-card sejam legíveis no dark mode */
-body:not(.light) .sermon-card p,
-body:not(.light) .sermon-card li,
-body:not(.light) .sermon-card ul,
-body:not(.light) .sermon-card ol {
+.sermon-card p,
+.sermon-card li,
+.sermon-card ul,
+.sermon-card ol {
   color: rgba(210, 225, 240, 0.85);
 }
 
 /* Listas dentro de content-section no tema dark */
-body:not(.light) .content-section ul li,
-body:not(.light) .content-section ol li,
-body:not(.light) .content-section p {
+.content-section ul li,
+.content-section ol li,
+.content-section p {
   color: rgba(210, 225, 240, 0.82);
 }
 
-body.light .content-section ul li,
-body.light .content-section ol li,
-body.light .content-section p {
-  color: #2d3748;
+/* light mode removed — content-section light */
+
+/* ── EVJ AI Fixed Footer Banner ── */
+.evj-ai-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: linear-gradient(90deg, #0e0a1a, #140f24);
+  border-top: 1px solid rgba(0, 204, 255, 0.3);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.evj-ai-banner-text {
+  color: #b0b8c8;
+  font-size: 13px;
+  font-family: Inter, sans-serif;
+}
+.evj-ai-banner-text strong {
+  color: #00ccff;
+}
+.evj-ai-banner-cta {
+  background: linear-gradient(135deg, #00ccff, #00e05a);
+  color: #0e0a1a;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 7px 18px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-family: Inter, sans-serif;
+  white-space: nowrap;
+}
+.evj-ai-banner-spacer {
+  height: 56px;
 }

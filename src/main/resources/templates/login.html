@@ -9,7 +9,6 @@
     <link rel="stylesheet" th:href="@{/css/login.css}"/>
 </head>
 <body class="dark-mode">
-<script>if(localStorage.getItem('theme')==='light'){document.body.classList.replace('dark-mode','light-mode');}</script>
 
 <!-- Animated background orbs -->
 <div class="orbs">
@@ -17,11 +16,6 @@
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
 </div>
-
-<!-- Theme toggle pill -->
-<button class="lp-theme-btn" onclick="toggleTheme()" title="Alternar tema">
-    <i class="bi bi-circle-half"></i> Tema
-</button>
 
 <div class="lp-root">
 
@@ -85,7 +79,7 @@
                 </div>
                 <div class="lp-forgot"><a th:href="@{/forgot-password}">Esqueci minha senha</a></div>
                 <button type="submit" class="lp-btn-submit">
-                    <i class="bi bi-box-arrow-in-right" style="margin-right:6px"></i>Entrar
+                    <i class="bi bi-box-arrow-in-right btn-icon-left"></i>Entrar
                 </button>
             </form>
 
@@ -107,14 +101,6 @@
 </div><!-- /.lp-root -->
 
 <script>
-/* ── Theme toggle ── */
-function toggleTheme() {
-    const isDark = document.body.classList.contains('dark-mode');
-    document.body.classList.toggle('dark-mode', !isDark);
-    document.body.classList.toggle('light-mode', isDark);
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-}
-
 /* ── Password visibility ── */
 function togglePwd() {
     const inp  = document.getElementById('password');

@@ -1,0 +1,262 @@
+/* =====================================================
+   AUTH PAGES — EVJ AI  (shared CSS)
+   register, pending, forgot-password, reset-password, admin-action
+   ===================================================== */
+
+/* ── Page layout: centred card ── */
+body.auth-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--bg-primary);
+    overflow: auto;
+    padding: 24px 16px;
+}
+
+/* ── Card ── */
+.auth-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.3);
+    animation: authFadeUp .4s ease both;
+}
+@keyframes authFadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Logo ── */
+.auth-logo {
+    text-align: center;
+    margin-bottom: 24px;
+}
+.auth-logo img {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 24px rgba(0,204,255,.45));
+}
+.auth-logo span {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #00ccff, #00e05a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ── Typography ── */
+.auth-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+.auth-subtitle {
+    color: var(--text-muted);
+    font-size: .875rem;
+    margin-bottom: 28px;
+    line-height: 1.6;
+}
+
+/* ── Icon (emoji-based) ── */
+.icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+.icon-lock {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+/* ── Form elements ── */
+.auth-card .form-group {
+    margin-bottom: 18px;
+}
+.auth-card .form-group label {
+    display: block;
+    font-size: .875rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+}
+.auth-card .form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: .9rem;
+    box-sizing: border-box;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .2s;
+}
+.auth-card .form-group input:focus {
+    border-color: #00ccff;
+    box-shadow: 0 0 0 2px rgba(0,204,255,.15);
+}
+.hint {
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+/* ── Buttons ── */
+.auth-card .btn-primary {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, #00ccff, #0099bb);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 6px;
+    font-family: inherit;
+    transition: opacity .2s, transform .15s, box-shadow .2s;
+    box-shadow: 0 4px 20px rgba(0,204,255,.25);
+}
+.auth-card .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(0,204,255,.35);
+}
+.auth-card .btn-primary:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ── Footer ── */
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: .85rem;
+    color: var(--text-muted);
+}
+.auth-footer a {
+    color: #00ccff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color .2s;
+}
+.auth-footer a:hover {
+    color: #33d9ff;
+}
+
+/* ── Alerts ── */
+.alert-error {
+    background: rgba(239,68,68,.15);
+    border: 1px solid rgba(239,68,68,.4);
+    color: #f87171;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    font-size: .875rem;
+    line-height: 1.45;
+}
+.alert-success {
+    background: rgba(22,163,74,.15);
+    border: 1px solid rgba(22,163,74,.4);
+    color: #4ade80;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    font-size: .875rem;
+    line-height: 1.45;
+}
+
+/* ── Info box (register page) ── */
+.info-box {
+    background: rgba(0,204,255,.08);
+    border: 1px solid rgba(0,204,255,.25);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+    font-size: .85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* ── Email display (reset-password) ── */
+.email-display {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: .9rem;
+    color: var(--text-secondary);
+    margin-bottom: 18px;
+}
+
+/* ── Password strength bar (reset-password) ── */
+.strength-bar-wrap {
+    height: 4px;
+    background: var(--bg-tertiary);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+.strength-bar {
+    height: 100%;
+    width: 0;
+    border-radius: 2px;
+    transition: width .3s, background .3s;
+}
+.strength-label {
+    font-size: .75rem;
+    margin-top: 4px;
+    color: var(--text-muted);
+}
+
+/* ── Expired card (reset-password) ── */
+.card-expired {
+    text-align: center;
+    padding: 12px 0;
+}
+.card-expired p {
+    color: var(--text-muted);
+    margin: 12px 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 28px 20px;
+        border-radius: 14px;
+    }
+    .auth-logo img {
+        width: 100px;
+        height: 100px;
+    }
+    .auth-title {
+        font-size: 1.25rem;
+    }
+}
+
+/* ── Utility: centred card content ── */
+.auth-card.text-center { text-align: center; }
+
+/* ── Link styled as primary button (block) ── */
+a.btn-primary-block {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    padding: 13px;
+    margin-top: 8px;
+}
+
+/* ── Hidden helper field (password-manager context) ── */
+.sr-hidden {
+    display: none;
+}

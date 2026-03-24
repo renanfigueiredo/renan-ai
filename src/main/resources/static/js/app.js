@@ -6,7 +6,6 @@
 
 // ── Global State ──────────────────────────────────────
 const App = {
-    theme: localStorage.getItem('theme') || 'dark',
     sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
     currentConversationId: null,
     currentModel: null,
@@ -20,7 +19,6 @@ const App = {
 
 // ── Init ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
     initSidebar();
     initUserMenu();
     initGuestMode();
@@ -35,20 +33,7 @@ function initHighlightJs() {
     }
 }
 
-// ── Theme ─────────────────────────────────────────────
-function initTheme() {
-    if (App.theme === 'light') {
-        document.body.classList.add('light-mode');
-    }
-    updateThemeIcon();
-}
-
-function toggleTheme() {
-    App.theme = App.theme === 'dark' ? 'light' : 'dark';
-    document.body.classList.toggle('light-mode', App.theme === 'light');
-    localStorage.setItem('theme', App.theme);
-    updateThemeIcon();
-}
+// ── Theme removed (dark-only) ─────────────────────────
 
 // ── User Menu ─────────────────────────────────────────
 function initUserMenu() {
@@ -74,26 +59,6 @@ function initUserMenu() {
 
     document.addEventListener('click', () => menu.classList.remove('open'));
     document.getElementById('userDropdown')?.addEventListener('click', e => e.stopPropagation());
-}
-
-function updateThemeIcon() {
-    const btn = document.querySelector('.theme-toggle');
-    const topbarBtn = document.getElementById('topbarThemeBtn');
-    const isDark = App.theme === 'dark';
-
-    // Sidebar button
-    if (btn) {
-        const icon = btn.querySelector('i');
-        const span = btn.querySelector('span');
-        if (icon) icon.className = isDark ? 'bi bi-brightness-high' : 'bi bi-moon-stars';
-        if (span) span.textContent = isDark ? 'Modo Claro' : 'Modo Escuro';
-    }
-    // Topbar button (icon only)
-    if (topbarBtn) {
-        const icon = topbarBtn.querySelector('i');
-        if (icon) icon.className = isDark ? 'bi bi-brightness-high' : 'bi bi-moon-stars-fill';
-        topbarBtn.title = isDark ? 'Modo Claro' : 'Modo Escuro';
-    }
 }
 
 // ── Sidebar ───────────────────────────────────────────

@@ -58,28 +58,7 @@
     --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Light Mode Variables */
-.light-mode {
-    --bg-primary: #f0f2f7;
-    --bg-secondary: #ffffff;
-    --bg-tertiary: #f8f9fc;
-    --bg-card: #ffffff;
-    --bg-hover: #f0f2f7;
-    --border: #e2e8f0;
-    --border-light: #cbd5e1;
-
-    --text-primary: #1e293b;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
-
-    --accent: #0099cc;
-    --accent-glow: rgba(0, 153, 204, 0.12);
-    --accent2: #00b347;
-    --accent2-glow: rgba(0, 179, 71, 0.12);
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-    --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
-}
+/* (Dark-only theme — light mode removed) */
 
 /* ── Reset & Base ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -259,23 +238,7 @@ body {
 }
 .sidebar.collapsed .sidebar-logo-showcase { display: none; }
 
-.theme-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 10px 12px;
-    background: none;
-    border: none;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    font-family: var(--font-sans);
-    transition: var(--transition);
-}
-.theme-toggle:hover { color: var(--text-primary); background: var(--bg-hover); }
-.theme-toggle i { font-size: 1.1rem; }
+/* theme-toggle removed (dark-only) */
 
 /* ── Main Content ── */
 .main-content {
@@ -451,19 +414,7 @@ body {
     color: var(--text-primary);
 }
 
-/* Theme button in topbar — hidden on desktop (sidebar has it), visible on mobile */
-.topbar-theme-btn {
-    display: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.3rem;
-    color: var(--text-secondary);
-    padding: 6px 8px;
-    border-radius: 8px;
-    transition: background 0.2s, color 0.2s;
-}
-.topbar-theme-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+/* topbar-theme-btn removed (dark-only) */
 
 /* ── Page Content ── */
 .page-content {
@@ -647,11 +598,14 @@ body {
 .text-green { color: var(--green); }
 .text-red { color: var(--red); }
 .text-yellow { color: var(--yellow); }
+.text-accent { color: var(--accent); }
 .text-success { color: var(--green); }
 .text-danger { color: var(--red); }
 
 .stat-info { display: flex; flex-direction: column; }
 .stat-number { font-size: 1.8rem; font-weight: 800; color: var(--text-primary); }
+.stat-number-sm { font-size: 0.95rem; }
+.link-unstyled { color: inherit; text-decoration: none; }
 .stat-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
 
 /* Section Title */
@@ -925,6 +879,7 @@ body {
 }
 
 .conv-sidebar-header h3 { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+.conv-sidebar-actions { display: flex; gap: 6px; align-items: center; }
 
 .btn-new-chat {
     background: var(--accent);
@@ -1204,7 +1159,7 @@ body {
     background-clip: text;
 }
 
-.welcome-message p { font-size: 1rem; color: var(--text-secondary); max-width: 480px; line-height: 1.6; }
+.welcome-message p { font-size: 1rem; color: var(--text-secondary); max-width: 480px; line-height: 1.6; margin-top: 8px; }
 
 .welcome-suggestions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
 
@@ -2498,6 +2453,15 @@ textarea#messageInput {
     line-height: 1.5;
     margin-bottom: 8px;
 }
+.config-note.mt-0 { margin: 0; }
+
+/* Prompt char counter */
+.prompt-char-counter {
+    text-align: right;
+    font-size: 0.78rem;
+    margin-top: 4px;
+    color: var(--text-muted);
+}
 
 /* Video Queue */
 .video-queue {
@@ -3190,7 +3154,6 @@ textarea#messageInput {
     .sidebar.mobile-open { transform: translateX(0); }
     .main-content { margin-left: 0; }
     .mobile-menu-btn { display: flex; }
-    .topbar-theme-btn { display: flex; }
     .stats-bar { grid-template-columns: repeat(2, 1fr); }
     .quick-access-grid { grid-template-columns: 1fr; }
 
