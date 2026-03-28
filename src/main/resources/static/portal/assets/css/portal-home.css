@@ -228,6 +228,57 @@ body::after {
 .card-title.lg { font-size: 15px; }
 .card-sub { font-size: 11px; color: var(--muted); line-height: 1.4; }
 
+/* ─── Cycle headers (EBD cycles) ─── */
+.cycle-header {
+  margin: 32px 0 14px;
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  background: var(--glass);
+  border: 1px solid var(--glass-bd);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.cycle-header--active {
+  border-color: rgba(0,224,90,0.25);
+  background: rgba(0,224,90,0.04);
+}
+.cycle-header:first-of-type { margin-top: 8px; }
+.cycle-badge {
+  font-size: 11px; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px;
+  display: inline-flex; align-items: center;
+  width: fit-content;
+}
+.cycle-badge--done {
+  background: rgba(136,146,164,0.15);
+  color: var(--muted);
+  border: 1px solid rgba(136,146,164,0.2);
+}
+.cycle-badge--active {
+  background: rgba(0,224,90,0.12);
+  color: var(--green);
+  border: 1px solid rgba(0,224,90,0.25);
+}
+.cycle-title {
+  font-family: Montserrat, sans-serif;
+  font-size: 15px; font-weight: 800;
+  color: var(--text); margin: 0;
+}
+.cycle-sub {
+  font-size: 12px; color: var(--muted); margin: 0;
+}
+.content-card--active {
+  border-color: rgba(0,224,90,0.3);
+}
+.content-card--active .card-num {
+  background: rgba(0,224,90,0.12);
+  color: var(--green);
+}
+.content-card--active:hover {
+  border-color: rgba(0,224,90,0.5);
+  background: rgba(0,224,90,0.05);
+}
+
 /* ─── EVJ AI Promo ─── */
 .ai-promo {
   position: relative; z-index: 1;
