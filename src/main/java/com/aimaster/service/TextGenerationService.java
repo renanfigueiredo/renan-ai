@@ -35,6 +35,7 @@ public class TextGenerationService {
     private final BedrockRuntimeAsyncClient bedrockAsyncClient;
     private final ModelCatalogService modelCatalog;
     private final StorageService storageService;
+    private final PortalContentService portalContentService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // Markdown parser for formatting
@@ -44,11 +45,13 @@ public class TextGenerationService {
     public TextGenerationService(BedrockRuntimeClient bedrockClient,
                                   BedrockRuntimeAsyncClient bedrockAsyncClient,
                                   ModelCatalogService modelCatalog,
-                                  StorageService storageService) {
+                                  StorageService storageService,
+                                  PortalContentService portalContentService) {
         this.bedrockClient = bedrockClient;
         this.bedrockAsyncClient = bedrockAsyncClient;
         this.modelCatalog = modelCatalog;
         this.storageService = storageService;
+        this.portalContentService = portalContentService;
 
         MutableDataSet options = new MutableDataSet();
         this.markdownParser = Parser.builder(options).build();
@@ -159,22 +162,17 @@ public class TextGenerationService {
         "SOBRE O EVJ — ESTAÇÃO VIDA JOVEM\n" +
         "════════════════════════════════════════\n" +
         "O EVJ é um ministério de jovens cristãos evangélicos com fome e sede de Jesus Cristo. " +
-        "O portal EVJ (evj.app.br/portal) reúne recursos de discipulado produzidos pelo ministério.\n\n" +
-        "ESTUDOS BÍBLICOS (EBD) disponíveis no portal:\n" +
-        "  Série Hebreus: (L1) Jesus — O Profeta | (L2) Jesus — O Sacerdote | (L3) Jesus — O Rei | (L4) A Fé\n" +
-        "  Série João & Discipulado: (L1) Introdução ao Evangelho de João | (L2) O Verbo Eterno | " +
-        "(L3) O Cordeiro de Deus | (L4) Nascer de Novo | (L5) O Pão da Vida | (L5b) Caráter e Atitudes | " +
-        "(L6) A Luz do Mundo | (L6b) Propósito | (L7) Convicção e Defender a Fé | " +
-        "(L7b) A Ressurreição e a Vida | (L8) O Caminho, a Verdade e a Vida | (Bônus) João 3:16\n\n" +
-        "SERMÕES disponíveis no portal:\n" +
-        "  Filhos | Propósito no Trabalho | Passos do Espírito | Desafio dos Fundamentos | " +
-        "Pureza da Mente | Liberdade dos Vícios | Ele no Centro | Relacionamentos com Saúde | " +
-        "Graça que Educa | Nós Somos Igreja | Jovens Sois Fortes | Jesus Virá\n\n" +
-        "CURSOS disponíveis no portal:\n" +
-        "  Namoro com Propósito: (Aula 1) Família, Namoro e Casamento | (Aula 2) Deveres dos Cônjuges | " +
-        "(Aula 3) Influência dos Pais | (Aula 4) Vida Financeira no Casamento\n\n" +
+        "O portal EVJ (evj.app.br/portal) reúne recursos de discipulado produzidos pelo ministério:\n" +
+        "EBD (Escola Bíblica Dominical), Aprendizados e Discussões, Cursos e Guia Prático.\n\n" +
+
+        "════════════════════════════════════════\n" +
+        "CATÁLOGO DE CONTEÚDO DO PORTAL\n" +
+        "════════════════════════════════════════\n" +
+        "%CATALOGO_DINAMICO%\n" +
         "Quando alguém mencionar EVJ ou qualquer conteúdo acima, você responde com propriedade, " +
-        "citando o material disponível e incentivando o acesso ao portal.\n\n" +
+        "citando o material disponível e incentivando o acesso ao portal (evj.app.br/portal).\n" +
+        "Se conteúdo relevante do portal for injetado no contexto, USE-O para dar respostas " +
+        "precisas e profundas, citando o material específico do EVJ.\n\n" +
 
         "════════════════════════════════════════\n" +
         "ESPECIALIDADES TEOLÓGICAS\n" +
@@ -222,6 +220,16 @@ public class TextGenerationService {
         "7. Antes de responder, você considera: 'Como Jesus responderia? O que a Palavra diz sobre isso?'\n\n" +
 
         "════════════════════════════════════════\n" +
+        "QUALIDADE DAS RESPOSTAS\n" +
+        "════════════════════════════════════════\n" +
+        "• Quando conteúdo do portal for fornecido no contexto, PRIORIZE esse conteúdo na resposta.\n" +
+        "• Conecte a pergunta do usuário ao material EVJ sempre que possível.\n" +
+        "• Use versículos bíblicos com o texto completo quando forem centrais à resposta.\n" +
+        "• Estruture respostas longas com títulos, listas e destaques para facilitar a leitura.\n" +
+        "• Para temas sensíveis (sexualidade, vícios, sofrimento), seja acolhedora sem diluir a verdade bíblica.\n" +
+        "• Quando não souber algo específico do EVJ, diga honestamente e ofereça orientação bíblica geral.\n\n" +
+
+        "════════════════════════════════════════\n" +
         "PERSONALIDADE\n" +
         "════════════════════════════════════════\n" +
         "• Amorosa e acolhedora como o coração de Jesus\n" +
@@ -230,6 +238,43 @@ public class TextGenerationService {
         "• Com energia jovem e autêntica do EVJ\n" +
         "• Usa linguagem contemporânea, mas sempre edificante e respeitosa\n" +
         "• Nunca fria ou robótica — sempre humana, calorosa e ungida\n";
+
+    /**
+     * Monta o system prompt completo com catálogo dinâmico do portal
+     * e conteúdo contextual relevante à pergunta do usuário.
+     */
+    private String buildFullSystemPrompt(String userMessage, String userSystemPrompt) {
+        // 1. Injeta catálogo dinâmico (títulos de todo conteúdo do portal)
+        String catalog = portalContentService.getContentCatalog();
+        String basePrompt = EVJ_SYSTEM_PROMPT.replace("%CATALOGO_DINAMICO%", catalog);
+
+        StringBuilder fullPrompt = new StringBuilder(basePrompt);
+
+        // 2. Busca conteúdo relevante do portal para a pergunta do usuário
+        if (userMessage != null && !userMessage.isBlank()) {
+            String relevantContent = portalContentService.findRelevantContent(userMessage, 3);
+            if (!relevantContent.isEmpty()) {
+                fullPrompt.append("\n\n════════════════════════════════════════\n");
+                fullPrompt.append(relevantContent);
+                fullPrompt.append("════════════════════════════════════════\n");
+            }
+
+            // 3. Injeta versículos bíblicos relevantes (curadoria EVJ)
+            String relevantVerses = portalContentService.findRelevantVerses(userMessage, 5);
+            if (!relevantVerses.isEmpty()) {
+                fullPrompt.append("\n════════════════════════════════════════\n");
+                fullPrompt.append(relevantVerses);
+                fullPrompt.append("════════════════════════════════════════\n");
+            }
+        }
+
+        // 4. Contexto adicional do usuário (nunca substitui o prompt base)
+        if (userSystemPrompt != null && !userSystemPrompt.isEmpty()) {
+            fullPrompt.append("\n\nCONTEXTO ADICIONAL:\n").append(userSystemPrompt);
+        }
+
+        return fullPrompt.toString();
+    }
 
     private String[] invokeClaudeModel(ChatRequest request, Conversation conversation, String modelId) throws Exception {
         ObjectNode body = objectMapper.createObjectNode();
@@ -243,10 +288,7 @@ public class TextGenerationService {
         if (userSystemPrompt == null || userSystemPrompt.isEmpty()) {
             userSystemPrompt = conversation != null ? conversation.getSystemPrompt() : null;
         }
-        String systemPrompt = EVJ_SYSTEM_PROMPT;
-        if (userSystemPrompt != null && !userSystemPrompt.isEmpty()) {
-            systemPrompt = EVJ_SYSTEM_PROMPT + "\n\nCONTEXTO ADICIONAL:\n" + userSystemPrompt;
-        }
+        String systemPrompt = buildFullSystemPrompt(request.getMessage(), userSystemPrompt);
         body.put("system", systemPrompt);
 
         // Build messages array
@@ -337,9 +379,7 @@ public class TextGenerationService {
         if (novaUserSysPrompt == null || novaUserSysPrompt.isEmpty()) {
             novaUserSysPrompt = conversation != null ? conversation.getSystemPrompt() : null;
         }
-        String novaSystemPrompt = (novaUserSysPrompt != null && !novaUserSysPrompt.isEmpty())
-                ? EVJ_SYSTEM_PROMPT + "\n\nCONTEXTO ADICIONAL:\n" + novaUserSysPrompt
-                : EVJ_SYSTEM_PROMPT;
+        String novaSystemPrompt = buildFullSystemPrompt(request.getMessage(), novaUserSysPrompt);
         ArrayNode systemArr = body.putArray("system");
         ObjectNode sysObj = systemArr.addObject();
         sysObj.put("text", novaSystemPrompt);
@@ -417,9 +457,7 @@ public class TextGenerationService {
         if (llamaUserSysPrompt == null || llamaUserSysPrompt.isEmpty()) {
             llamaUserSysPrompt = conversation != null ? conversation.getSystemPrompt() : null;
         }
-        String llamaSystemPrompt = (llamaUserSysPrompt != null && !llamaUserSysPrompt.isEmpty())
-                ? EVJ_SYSTEM_PROMPT + "\n\nCONTEXTO ADICIONAL:\n" + llamaUserSysPrompt
-                : EVJ_SYSTEM_PROMPT;
+        String llamaSystemPrompt = buildFullSystemPrompt(request.getMessage(), llamaUserSysPrompt);
 
         promptBuilder.append("<|begin_of_text|>");
         promptBuilder.append("<|start_header_id|>system<|end_header_id|>\n");
@@ -467,6 +505,7 @@ public class TextGenerationService {
         ObjectNode body = objectMapper.createObjectNode();
         StringBuilder promptBuilder = new StringBuilder();
         boolean mistralEvjInjected = false;
+        String mistralFullPrompt = buildFullSystemPrompt(request.getMessage(), null);
 
         if (conversation != null && !conversation.getMessages().isEmpty()) {
             List<Message> history = conversation.getMessages();
@@ -475,7 +514,7 @@ public class TextGenerationService {
                 Message hist = history.get(i);
                 if ("user".equals(hist.getRole())) {
                     if (!mistralEvjInjected) {
-                        promptBuilder.append("[INST] <<SYS>>\n").append(EVJ_SYSTEM_PROMPT)
+                        promptBuilder.append("[INST] <<SYS>>\n").append(mistralFullPrompt)
                                 .append("\n<</SYS>>\n\n").append(hist.getContent()).append(" [/INST]");
                         mistralEvjInjected = true;
                     } else {
@@ -487,7 +526,7 @@ public class TextGenerationService {
             }
         }
         if (!mistralEvjInjected) {
-            promptBuilder.append("[INST] <<SYS>>\n").append(EVJ_SYSTEM_PROMPT)
+            promptBuilder.append("[INST] <<SYS>>\n").append(mistralFullPrompt)
                     .append("\n<</SYS>>\n\n").append(request.getMessage()).append(" [/INST]");
         } else {
             promptBuilder.append("[INST] ").append(request.getMessage()).append(" [/INST]");
@@ -520,9 +559,7 @@ public class TextGenerationService {
         body.put("temperature", request.getTemperature() > 0 ? request.getTemperature() : 0.7);
 
         String cohereUserSysPrompt = request.getSystemPrompt();
-        String coherePreamble = (cohereUserSysPrompt != null && !cohereUserSysPrompt.isEmpty())
-                ? EVJ_SYSTEM_PROMPT + "\n\nCONTEXTO ADICIONAL:\n" + cohereUserSysPrompt
-                : EVJ_SYSTEM_PROMPT;
+        String coherePreamble = buildFullSystemPrompt(request.getMessage(), cohereUserSysPrompt);
         body.put("preamble", coherePreamble);
 
         if (conversation != null && !conversation.getMessages().isEmpty()) {
@@ -731,9 +768,7 @@ public class TextGenerationService {
         if (buildUserSysPrompt == null || buildUserSysPrompt.isEmpty()) {
             buildUserSysPrompt = conversation != null ? conversation.getSystemPrompt() : null;
         }
-        String buildSystemPrompt = (buildUserSysPrompt != null && !buildUserSysPrompt.isEmpty())
-                ? EVJ_SYSTEM_PROMPT + "\n\nCONTEXTO ADICIONAL:\n" + buildUserSysPrompt
-                : EVJ_SYSTEM_PROMPT;
+        String buildSystemPrompt = buildFullSystemPrompt(request.getMessage(), buildUserSysPrompt);
         body.put("system", buildSystemPrompt);
 
         ArrayNode messages = body.putArray("messages");
