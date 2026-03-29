@@ -33,7 +33,7 @@ public class PortalContentService {
             "esse", "essa", "aqui", "ali", "sobre", "entre", "qual", "quais", "pode", "ser",
             "foi", "sao", "tem", "ter", "muito", "bem", "tambem", "quando", "onde", "porque",
             "nao", "sim", "voce", "gente", "cada", "todos", "todas", "toda", "todo",
-            "ainda", "assim", "ate", "aos", "ela", "eles", "elas", "pelo", "pela",
+            "ainda", "assim", "ate", "aos", "eles", "elas", "pelo", "pela",
             "pelos", "pelas", "num", "numa", "deste", "desta", "desse", "dessa"
     );
 
@@ -100,7 +100,8 @@ public class PortalContentService {
                     .lines().collect(Collectors.joining("\n"));
 
             // Extrai pares "referência": "texto" do objeto JavaScript
-            Pattern pattern = Pattern.compile("\"([^\"]+)\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
+            // Usa quantificadores possessivos (*+) para evitar catastrophic backtracking
+            Pattern pattern = Pattern.compile("\"([^\"]+)\"\\s*:\\s*\"((?:[^\"\\\\]++|\\\\.)*+)\"");
             Matcher matcher = pattern.matcher(js);
 
             while (matcher.find()) {
