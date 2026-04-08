@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -750,6 +751,77 @@ public class TextGenerationService {
         }
 
         return emitter;
+    }
+
+    /**
+     * Async generation that uses the streaming Bedrock client (never times out)
+     * and collects the full response into a CompletableFuture.
+     */
+    public CompletableFuture<String> generateResponseAsync(ChatRequest request) {
+        var future = new CompletableFuture<String>();
+
+        var modelId = request.getModelId();
+        if (modelId == null || modelId.isEmpty()) modelId = "us.anthropic.claude-sonnet-4-6";
+        final var finalModelId = modelId;
+
+        boolean isClaude = modelId.contains("anthropic") || modelId.contains("claude");
+
+        if (isClaude) {
+            Thread.ofVirtual().start(() -> {
+                try {
+                    var body = buildClaudeRequestBody(request, null, finalModelId);
+                    var bodyString = objectMapper.writeValueAsString(body);
+
+                    var streamReq = InvokeModelWithResponseStreamRequest.builder()
+                            .modelId(finalModelId)
+                            .body(SdkBytes.fromString(bodyString, StandardCharsets.UTF_8))
+                            .contentType("application/json")
+                            .accept("application/json")
+                            .build();
+
+                    var fullText = new StringBuilder();
+
+                    var handler = InvokeModelWithResponseStreamResponseHandler.builder()
+                            .subscriber(InvokeModelWithResponseStreamResponseHandler.Visitor.builder()
+                                    .onChunk(payloadPart -> {
+                                        try {
+                                            var chunk = payloadPart.bytes().asUtf8String();
+                                            var node = objectMapper.readTree(chunk);
+                                            if ("content_block_delta".equals(node.path("type").asText(""))) {
+                                                fullText.append(node.path("delta").path("text").asText(""));
+                                            }
+                                        } catch (Exception ex) {
+                                            log.warn("Error parsing async stream chunk: {}", ex.getMessage());
+                                        }
+                                    })
+                                    .build())
+                            .onComplete(() -> future.complete(fullText.toString()))
+                            .onError(future::completeExceptionally)
+                            .build();
+
+                    bedrockAsyncClient.invokeModelWithResponseStream(streamReq, handler).get();
+
+                } catch (Exception ex) {
+                    future.completeExceptionally(ex);
+                }
+            });
+        } else {
+            // Non-Claude: fall back to sync call on virtual thread
+            Thread.ofVirtual().start(() -> {
+                try {
+                    var msg = generateResponse(request, null);
+                    if (msg.getContent().startsWith("\u274C")) {
+                        future.completeExceptionally(new RuntimeException(msg.getContent()));
+                    } else {
+                        future.complete(msg.getContent());
+                    }
+                } catch (Exception ex) {
+                    future.completeExceptionally(ex);
+                }
+            });
+        }
+
+        return future;
     }
 
     /** Extracts the Claude request body construction into a reusable method. */

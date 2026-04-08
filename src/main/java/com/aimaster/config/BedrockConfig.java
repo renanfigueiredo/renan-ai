@@ -5,12 +5,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeAsyncClient;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
 import software.amazon.awssdk.services.bedrock.BedrockClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+
+import java.time.Duration;
 
 /**
  * AWS Bedrock / S3 beans — now using the AwsProperties record
@@ -31,11 +34,19 @@ public class BedrockConfig {
         return Region.of(aws.region());
     }
 
+    private ClientOverrideConfiguration clientConfig() {
+        return ClientOverrideConfiguration.builder()
+                .apiCallTimeout(Duration.ofMinutes(5))
+                .apiCallAttemptTimeout(Duration.ofMinutes(3))
+                .build();
+    }
+
     @Bean
     public BedrockRuntimeClient bedrockRuntimeClient() {
         return BedrockRuntimeClient.builder()
                 .region(region())
                 .credentialsProvider(credentials())
+                .overrideConfiguration(clientConfig())
                 .build();
     }
 
@@ -44,6 +55,7 @@ public class BedrockConfig {
         return BedrockRuntimeAsyncClient.builder()
                 .region(region())
                 .credentialsProvider(credentials())
+                .overrideConfiguration(clientConfig())
                 .build();
     }
 

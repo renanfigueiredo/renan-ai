@@ -47,6 +47,9 @@ public class SecurityConfig {
                                  "/guest/**",
                                  "/portal", "/portal/**",
                                  "/api/portal/chat",
+                                 "/api/v1/**",
+                                 "/swagger-ui/**", "/swagger-ui.html",
+                                 "/v3/api-docs/**",
                                  "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 // Everything else requires authentication (includes ROLE_GUEST)
                 .anyRequest().authenticated()
