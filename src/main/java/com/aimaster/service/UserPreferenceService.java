@@ -46,11 +46,11 @@ public class UserPreferenceService {
      */
     public String buildAiContext(Long userId) {
         if (userId == null) return "";
-        Optional<UserPreference> opt = repo.findById(userId);
+        var opt = repo.findById(userId);
         if (opt.isEmpty()) return "";
 
-        UserPreference p = opt.get();
-        StringBuilder sb = new StringBuilder();
+        var p = opt.get();
+        var sb = new StringBuilder();
 
         if (p.getFavoriteTopics() != null && !p.getFavoriteTopics().isBlank()) {
             sb.append("• Tópicos favoritos do usuário: ").append(p.getFavoriteTopics()).append("\n");

@@ -1,6 +1,6 @@
 package com.aimaster.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -12,27 +12,29 @@ import software.amazon.awssdk.services.bedrock.BedrockClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
+/**
+ * AWS Bedrock / S3 beans — now using the AwsProperties record
+ * instead of scattered @Value annotations.
+ */
 @Configuration
+@RequiredArgsConstructor
 public class BedrockConfig {
 
-    @Value("${aws.access-key-id}")
-    private String accessKeyId;
-
-    @Value("${aws.secret-access-key}")
-    private String secretAccessKey;
-
-    @Value("${aws.region}")
-    private String region;
+    private final AwsProperties aws;
 
     private StaticCredentialsProvider credentials() {
         return StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(accessKeyId, secretAccessKey));
+                AwsBasicCredentials.create(aws.accessKeyId(), aws.secretAccessKey()));
+    }
+
+    private Region region() {
+        return Region.of(aws.region());
     }
 
     @Bean
     public BedrockRuntimeClient bedrockRuntimeClient() {
         return BedrockRuntimeClient.builder()
-                .region(Region.of(region))
+                .region(region())
                 .credentialsProvider(credentials())
                 .build();
     }
@@ -40,7 +42,7 @@ public class BedrockConfig {
     @Bean
     public BedrockRuntimeAsyncClient bedrockRuntimeAsyncClient() {
         return BedrockRuntimeAsyncClient.builder()
-                .region(Region.of(region))
+                .region(region())
                 .credentialsProvider(credentials())
                 .build();
     }
@@ -48,7 +50,7 @@ public class BedrockConfig {
     @Bean
     public BedrockClient bedrockClient() {
         return BedrockClient.builder()
-                .region(Region.of(region))
+                .region(region())
                 .credentialsProvider(credentials())
                 .build();
     }
@@ -56,7 +58,7 @@ public class BedrockConfig {
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
-                .region(Region.of(region))
+                .region(region())
                 .credentialsProvider(credentials())
                 .build();
     }
@@ -64,7 +66,7 @@ public class BedrockConfig {
     @Bean
     public S3Presigner s3Presigner() {
         return S3Presigner.builder()
-                .region(Region.of(region))
+                .region(region())
                 .credentialsProvider(credentials())
                 .build();
     }

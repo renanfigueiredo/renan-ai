@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -103,14 +102,11 @@ public class GuestController {
     // ── Util ──────────────────────────────────────────────────────────────────
 
     private static Map<String, Object> sessionMap(boolean expired, int remaining) {
-        Map<String, Object> m = new HashMap<>();
-        m.put("expired", expired);
-        m.put("remainingSeconds", remaining);
-        return m;
+        return Map.of("expired", expired, "remainingSeconds", remaining);
     }
 
     private String extractIp(HttpServletRequest request) {
-        String xff = request.getHeader("X-Forwarded-For");
+        var xff = request.getHeader("X-Forwarded-For");
         if (xff != null && !xff.isBlank()) return xff.split(",")[0].trim();
         return request.getRemoteAddr();
     }

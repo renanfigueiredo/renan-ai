@@ -2,9 +2,6 @@ package com.aimaster.controller;
 
 import com.aimaster.model.*;
 import com.aimaster.service.*;
-import com.vladsch.flexmark.html.HtmlRenderer;
-import com.vladsch.flexmark.parser.Parser;
-import com.vladsch.flexmark.util.data.MutableDataSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -57,7 +54,7 @@ public class ChatController {
         uiModel.addAttribute("conversation", conversation);
         uiModel.addAttribute("textModels", modelCatalog.getTextModels());
         uiModel.addAttribute("defaultModelName", modelCatalog.getModelById(conversation.getModelId())
-                .map(m -> m.getName()).orElse("Claude Sonnet 4.6"));
+                .map(ModelInfo::name).orElse("Claude Sonnet 4.6"));
         uiModel.addAttribute("conversations", storageService.getConversationsByUser(userId));
         return "chat";
     }
@@ -129,7 +126,7 @@ public class ChatController {
             try {
                 errorEmitter.send(SseEmitter.event()
                         .data("{\"type\":\"error\",\"message\":\"" + e.getMessage() + "\"}"));
-            } catch (Exception ignored) {}
+            } catch (Exception _) {}
             errorEmitter.complete();
             return errorEmitter;
         }

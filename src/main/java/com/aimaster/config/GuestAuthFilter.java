@@ -18,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Lê o cookie GUEST_TOKEN, valida a sessão visitante no banco e, se válida,
@@ -44,9 +45,9 @@ public class GuestAuthFilter extends OncePerRequestFilter {
                 && !(existing instanceof AnonymousAuthenticationToken);
 
         if (!alreadyAuth) {
-            Cookie[] cookies = request.getCookies();
+            var cookies = request.getCookies();
             if (cookies != null) {
-                for (Cookie c : cookies) {
+                for (var c : cookies) {
                     if ("GUEST_TOKEN".equals(c.getName())) {
                         processGuestCookie(c.getValue());
                         break;
@@ -61,8 +62,8 @@ public class GuestAuthFilter extends OncePerRequestFilter {
     private void processGuestCookie(String token) {
         guestSessionService.findValid(token).ifPresent(session ->
                 userRepository.findById(session.getAppUserId()).ifPresent(user -> {
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                            user.getEmail(), // principal.getName() retorna o email do guest user
+                    var auth = new UsernamePasswordAuthenticationToken(
+                            user.getEmail(),
                             null,
                             List.of(new SimpleGrantedAuthority("ROLE_GUEST"))
                     );
@@ -71,22 +72,14 @@ public class GuestAuthFilter extends OncePerRequestFilter {
         );
     }
 
-    /** Não processar rotas públicas — Spring Security já as libera antes */
+    private static final Set<String> EXACT_SKIP  = Set.of("/", "/login", "/register", "/pending",
+            "/forgot-password", "/reset-password", "/favicon.ico");
+    private static final List<String> PREFIX_SKIP = List.of("/portal", "/admin/", "/css/", "/js/",
+            "/images/", "/guest/start");
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-        return path.equals("/")
-                || path.startsWith("/portal")
-                || path.equals("/login")
-                || path.equals("/register")
-                || path.equals("/pending")
-                || path.equals("/forgot-password")
-                || path.equals("/reset-password")
-                || path.startsWith("/admin/")
-                || path.startsWith("/css/")
-                || path.startsWith("/js/")
-                || path.startsWith("/images/")
-                || path.startsWith("/guest/start")
-                || path.equals("/favicon.ico");
+        var path = request.getServletPath();
+        return EXACT_SKIP.contains(path) || PREFIX_SKIP.stream().anyMatch(path::startsWith);
     }
 }

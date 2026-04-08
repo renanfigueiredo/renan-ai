@@ -1,5 +1,6 @@
 package com.aimaster.controller;
 
+import com.aimaster.config.AwsProperties;
 import com.aimaster.model.GeneratedVideo;
 import com.aimaster.model.VideoGenerationRequest;
 import com.aimaster.service.ModelCatalogService;
@@ -9,7 +10,6 @@ import com.aimaster.service.VideoCleanupService;
 import com.aimaster.service.VideoGenerationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,9 +33,7 @@ public class VideoController {
     private final S3Presigner s3Presigner;
     private final VideoCleanupService videoCleanupService;
     private final UserService userService;
-
-    @Value("${aws.s3.output-bucket:}")
-    private String defaultBucket;
+    private final AwsProperties awsProperties;
 
     private Long getUserId(Principal principal) {
         return userService.findByEmail(principal.getName()).orElseThrow().getId();
@@ -100,7 +98,7 @@ public class VideoController {
                 String s3Uri = video.getS3Uri();
                 String withoutScheme = s3Uri.replace("s3://", "");
                 int slashIdx = withoutScheme.indexOf('/');
-                String bucket = slashIdx > 0 ? withoutScheme.substring(0, slashIdx) : defaultBucket;
+                String bucket = slashIdx > 0 ? withoutScheme.substring(0, slashIdx) : awsProperties.s3().outputBucket();
                 String prefix = slashIdx > 0 ? withoutScheme.substring(slashIdx + 1) : "";
                 if (!prefix.endsWith("/")) prefix += "/";
                 String key = prefix + "output.mp4";

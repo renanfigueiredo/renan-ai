@@ -1,15 +1,14 @@
 package com.aimaster.service;
 
+import com.aimaster.config.AwsProperties;
 import com.aimaster.model.GeneratedVideo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * Manages the full lifecycle of generated videos:
@@ -28,9 +27,7 @@ public class VideoCleanupService {
 
     private final StorageService storageService;
     private final S3Client s3Client;
-
-    @Value("${aws.s3.output-bucket:}")
-    private String defaultBucket;
+    private final AwsProperties awsProperties;
 
     /** Immediately deletes the video from S3 and removes it from the in-memory store. */
     public void purge(GeneratedVideo video) {
@@ -59,9 +56,8 @@ public class VideoCleanupService {
      */
     @Scheduled(fixedDelay = 5 * 60 * 1000)
     public void purgeExpiredVideos() {
-        LocalDateTime now = LocalDateTime.now();
-
-        List<GeneratedVideo> all = storageService.getAllVideosIncludingDownloaded();
+        var now = LocalDateTime.now();
+        var all = storageService.getAllVideosIncludingDownloaded();
 
         // ① DOWNLOADED with passed expiresAt
         all.stream()
@@ -88,9 +84,9 @@ public class VideoCleanupService {
     private void deleteFromS3(GeneratedVideo video) {
         if (video.getS3Uri() == null || video.getS3Uri().isBlank()) return;
         try {
-            String[] parts = parseS3Uri(video.getS3Uri());
-            String bucket = parts[0];
-            String key    = parts[1] + "output.mp4";
+            var parts = parseS3Uri(video.getS3Uri());
+            var bucket = parts[0];
+            var key    = parts[1] + "output.mp4";
 
             s3Client.deleteObject(b -> b.bucket(bucket).key(key));
             log.info("Deleted from S3: s3://{}/{}", bucket, key);
@@ -102,10 +98,10 @@ public class VideoCleanupService {
 
     /** Returns [bucket, prefix] where prefix ends with '/'. */
     private String[] parseS3Uri(String s3Uri) {
-        String withoutScheme = s3Uri.replace("s3://", "");
+        var withoutScheme = s3Uri.replace("s3://", "");
         int slashIdx = withoutScheme.indexOf('/');
-        String bucket = slashIdx > 0 ? withoutScheme.substring(0, slashIdx) : defaultBucket;
-        String prefix = slashIdx > 0 ? withoutScheme.substring(slashIdx + 1) : "";
+        var bucket = slashIdx > 0 ? withoutScheme.substring(0, slashIdx) : awsProperties.s3().outputBucket();
+        var prefix = slashIdx > 0 ? withoutScheme.substring(slashIdx + 1) : "";
         if (!prefix.endsWith("/")) prefix += "/";
         return new String[]{bucket, prefix};
     }

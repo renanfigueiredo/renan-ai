@@ -28,7 +28,7 @@ public class ImageGenerationService {
     private final BedrockRuntimeClient bedrockClient;
     private final ModelCatalogService modelCatalog;
     private final StorageService storageService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     public GeneratedImage generateImages(ImageGenerationRequest request, Long userId) {
         long startTime = System.currentTimeMillis();
@@ -60,7 +60,7 @@ public class ImageGenerationService {
                     .prompt(request.getPrompt())
                     .negativePrompt(request.getNegativePrompt())
                     .modelId(modelId)
-                    .modelName(model != null ? model.getName() : modelId)
+                    .modelName(model != null ? model.name() : modelId)
                     .base64Images(base64Images)
                     .userId(userId)
                     .width(request.getWidth() > 0 ? request.getWidth() : 1024)

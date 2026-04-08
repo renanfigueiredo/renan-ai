@@ -1,45 +1,36 @@
 package com.aimaster.service;
 
+import com.aimaster.config.AppProperties;
+import com.aimaster.config.MailgunProperties;
 import com.aimaster.model.AppUser;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.util.Base64;
 
+/**
+ * E-mail service using Mailgun HTTP API with Spring Boot 4's RestClient
+ * and type-safe configuration via Java 25 records.
+ */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EmailService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
-
-    @Value("${app.base-url:http://localhost:8080}")
-    private String baseUrl;
-
-    @Value("${app.admin-email:renan.figueiredo.05@gmail.com}")
-    private String adminEmail;
-
-    @Value("${app.mail-from:EVJ AI <postmaster@renan-ai.com.br>}")
-    private String mailFrom;
-
-    @Value("${mailgun.api-key}")
-    private String mailgunApiKey;
-
-    @Value("${mailgun.domain:renan-ai.com.br}")
-    private String mailgunDomain;
+    private final RestClient restClient = RestClient.create();
+    private final AppProperties appProperties;
+    private final MailgunProperties mailgunProperties;
 
     /** Notifica o administrador de que um novo usuário solicitou acesso. */
     public void sendApprovalRequest(AppUser user) {
-        String approveUrl = baseUrl + "/admin/approve/" + user.getApprovalToken();
-        String rejectUrl  = baseUrl + "/admin/reject/"  + user.getApprovalToken();
+        var approveUrl = appProperties.baseUrl() + "/admin/approve/" + user.getApprovalToken();
+        var rejectUrl  = appProperties.baseUrl() + "/admin/reject/"  + user.getApprovalToken();
 
-        String html = """
+        var html = """
                 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
                   <h2 style="color:#00ccff">EVJ AI — Nova Solicitação de Acesso</h2>
                   <p>Um novo usuário solicitou acesso à plataforma:</p>
@@ -54,13 +45,13 @@ public class EmailService {
                 </div>
                 """.formatted(user.getName(), user.getEmail(), approveUrl, rejectUrl);
 
-        send(adminEmail, "EVJ AI – Solicitação de acesso: " + user.getName(), html);
+        send(appProperties.adminEmail(), "EVJ AI – Solicitação de acesso: " + user.getName(), html);
     }
 
     /** Notifica o usuário de que sua conta foi aprovada. */
     public void sendAccountApproved(AppUser user) {
-        String loginUrl = baseUrl + "/login";
-        String html = """
+        var loginUrl = appProperties.baseUrl() + "/login";
+        var html = """
                 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
                   <h2 style="color:#00ccff">EVJ AI — Acesso Aprovado! 🎉</h2>
                   <p>Olá, <strong>%s</strong>!</p>
@@ -73,14 +64,9 @@ public class EmailService {
         send(user.getEmail(), "EVJ AI – Seu acesso foi aprovado!", html);
     }
 
-    /**
-     * Envia link de reset de senha.
-     * @param user usuário que solicitou o reset
-     * @param rawToken token em texto puro (UUID) — não o hash armazenado no banco
-     */
     public void sendPasswordReset(AppUser user, String rawToken) {
-        String resetUrl = baseUrl + "/reset-password?token=" + rawToken;
-        String html = """
+        var resetUrl = appProperties.baseUrl() + "/reset-password?token=" + rawToken;
+        var html = """
                 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
                   <h2 style="color:#00ccff">EVJ AI — Redefinição de Senha</h2>
                   <p>Olá, <strong>%s</strong>!</p>
@@ -99,21 +85,23 @@ public class EmailService {
     }
 
     private void send(String to, String subject, String htmlBody) {
-        String url = "https://api.mailgun.net/v3/" + mailgunDomain + "/messages";
+        var url = "https://api.mailgun.net/v3/" + mailgunProperties.domain() + "/messages";
+        var auth = Base64.getEncoder().encodeToString(("api:" + mailgunProperties.apiKey()).getBytes());
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        String auth = Base64.getEncoder().encodeToString(("api:" + mailgunApiKey).getBytes());
-        headers.set("Authorization", "Basic " + auth);
-
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("from", mailFrom);
+        var body = new LinkedMultiValueMap<String, String>();
+        body.add("from", appProperties.mailFrom());
         body.add("to", to);
         body.add("subject", subject);
         body.add("html", htmlBody);
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-        restTemplate.postForEntity(url, request, String.class);
+        restClient.post()
+                .uri(url)
+                .header("Authorization", "Basic " + auth)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(body)
+                .retrieve()
+                .toBodilessEntity();
+
         log.info("E-mail enviado para {}: {}", to, subject);
     }
 }

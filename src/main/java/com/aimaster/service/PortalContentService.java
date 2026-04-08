@@ -303,7 +303,7 @@ public class PortalContentService {
             if (uri.contains("/sermoes/")) return "sermoes";
             if (uri.contains("/cursos/")) return "cursos";
             if (uri.contains("metodologia")) return "metodologia";
-        } catch (Exception ignored) {}
+        } catch (Exception _) {}
         return "outro";
     }
 

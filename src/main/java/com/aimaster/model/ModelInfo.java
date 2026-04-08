@@ -1,28 +1,26 @@
 package com.aimaster.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
+/**
+ * Immutable model descriptor — Java 25 record replaces @Data/@NoArgsConstructor/@AllArgsConstructor.
+ * Lombok @Builder still works on records since Lombok 1.18.20+.
+ */
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ModelInfo {
-    private String id;
-    private String name;
-    private String provider;
-    private String category; // TEXT, IMAGE, VIDEO, MULTIMODAL
-    private String description;
-    private int maxTokens;
-    private boolean supportsStreaming;
-    private boolean supportsImages;
-    private boolean supportsDocuments;
-    private boolean supportsSystemPrompt;
-    private double inputCostPer1K;
-    private double outputCostPer1K;
-    private String badgeColor;
-    private String icon;
-    private boolean available;
-}
+public record ModelInfo(
+        String id,
+        String name,
+        String provider,
+        String category,
+        String description,
+        int maxTokens,
+        boolean supportsStreaming,
+        boolean supportsImages,
+        boolean supportsDocuments,
+        boolean supportsSystemPrompt,
+        double inputCostPer1K,
+        double outputCostPer1K,
+        String badgeColor,
+        String icon,
+        boolean available
+) {}

@@ -60,6 +60,10 @@
 
         <!-- JSON -->
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
@@ -115,11 +119,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Spring Boot Mail -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
-        </dependency>
+        <!-- spring-boot-starter-mail REMOVED: app uses Mailgun HTTP API, not SMTP -->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

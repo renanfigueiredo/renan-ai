@@ -14,12 +14,9 @@ public class HttpsRedirectFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse res = (HttpServletResponse) response;
-
-        String proto = req.getHeader("x-forwarded-proto");
-
-        if (proto != null && proto.equals("http")) {
+        if (request instanceof HttpServletRequest req
+                && response instanceof HttpServletResponse res
+                && "http".equals(req.getHeader("x-forwarded-proto"))) {
             res.sendRedirect("https://" + req.getServerName() + req.getRequestURI());
             return;
         }

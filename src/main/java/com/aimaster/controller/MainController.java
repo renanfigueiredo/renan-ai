@@ -29,22 +29,22 @@ public class MainController {
     /** Private dashboard — requires authentication */
     @GetMapping("/dashboard")
     public String dashboard(Model model, Principal principal) {
-        Long userId = userService.findByEmail(principal.getName())
+        var userId = userService.findByEmail(principal.getName())
                 .orElseThrow().getId();
 
-        List<Conversation> convs = storageService.getConversationsByUser(userId);
+        var convs = storageService.getConversationsByUser(userId);
         model.addAttribute("totalConversations", convs.size());
 
         // Last conversation for the "resume" card
         if (!convs.isEmpty()) {
-            Conversation last = convs.get(0); // already sorted by updatedAt DESC
+            var last = convs.getFirst(); // already sorted by updatedAt DESC — Java 21+ SequencedCollection
             model.addAttribute("lastConversation", last);
             // Find last AI message preview
             last.getMessages().stream()
                     .filter(m -> "assistant".equals(m.getRole()))
-                    .reduce((a, b) -> b) // last element
+                    .reduce((_, b) -> b) // last element — unnamed variable (Java 22+)
                     .ifPresent(m -> {
-                        String preview = m.getContent();
+                        var preview = m.getContent();
                         if (preview != null && preview.length() > 180) {
                             preview = preview.substring(0, 180) + "…";
                         }

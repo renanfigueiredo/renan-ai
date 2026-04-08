@@ -1,10 +1,10 @@
 package com.aimaster.service;
 
+import com.aimaster.config.AwsProperties;
 import com.aimaster.model.GeneratedVideo;
 import com.aimaster.model.VideoGenerationRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -14,21 +14,19 @@ public class VideoGenerationService {
 
     private final StorageService storageService;
     private final AsyncVideoWorker asyncVideoWorker;
-
-    @Value("${aws.s3.output-bucket:}")
-    private String defaultBucket;
+    private final AwsProperties awsProperties;
 
     public GeneratedVideo startVideoGeneration(VideoGenerationRequest request, Long userId) {
-        String modelId = request.getModelId();
+        var modelId = request.getModelId();
         if (modelId == null || modelId.isEmpty()) modelId = "amazon.nova-reel-v1:0";
 
-        String bucket = request.getS3OutputBucket();
-        if (bucket == null || bucket.isEmpty()) bucket = defaultBucket;
+        var bucket = request.getS3OutputBucket();
+        if (bucket == null || bucket.isEmpty()) bucket = awsProperties.s3().outputBucket();
         if (bucket == null || bucket.isEmpty()) {
             throw new IllegalArgumentException("S3 bucket e obrigatorio para geracao de video (Nova Reel)");
         }
 
-        GeneratedVideo video = GeneratedVideo.builder()
+        var video = GeneratedVideo.builder()
                 .prompt(request.getPrompt())
                 .modelId(modelId)
                 .modelName("Amazon Nova Reel")
@@ -40,7 +38,7 @@ public class VideoGenerationService {
 
         storageService.saveVideo(video);
 
-        String prefix = "ai-master-videos/" + video.getId() + "/";
+        var prefix = "ai-master-videos/" + video.getId() + "/";
         asyncVideoWorker.execute(video, request, modelId, bucket, prefix);
 
         return video;

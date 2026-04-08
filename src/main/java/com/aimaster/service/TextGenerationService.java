@@ -31,13 +31,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class TextGenerationService {
 
+    /** Type-safe return from model invocations — replaces fragile String[] */
+    private record InvocationResult(String text, int inputTokens, int outputTokens) {}
+
     private final BedrockRuntimeClient bedrockClient;
     private final BedrockRuntimeAsyncClient bedrockAsyncClient;
     private final ModelCatalogService modelCatalog;
     private final StorageService storageService;
     private final PortalContentService portalContentService;
     private final UserPreferenceService userPreferenceService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     // Markdown parser for formatting
     private final Parser markdownParser;
@@ -48,15 +51,17 @@ public class TextGenerationService {
                                   ModelCatalogService modelCatalog,
                                   StorageService storageService,
                                   PortalContentService portalContentService,
-                                  UserPreferenceService userPreferenceService) {
+                                  UserPreferenceService userPreferenceService,
+                                  ObjectMapper objectMapper) {
         this.bedrockClient = bedrockClient;
         this.bedrockAsyncClient = bedrockAsyncClient;
         this.modelCatalog = modelCatalog;
         this.storageService = storageService;
         this.portalContentService = portalContentService;
         this.userPreferenceService = userPreferenceService;
+        this.objectMapper = objectMapper;
 
-        MutableDataSet options = new MutableDataSet();
+        var options = new MutableDataSet();
         this.markdownParser = Parser.builder(options).build();
         this.htmlRenderer = HtmlRenderer.builder(options).build();
     }
@@ -65,75 +70,51 @@ public class TextGenerationService {
         long startTime = System.currentTimeMillis();
 
         try {
-            String modelId = request.getModelId();
+            var modelId = request.getModelId();
             if (modelId == null || modelId.isEmpty()) {
                 modelId = "us.anthropic.claude-sonnet-4-6";
             }
-            final String finalModelId = modelId;
+            final var finalModelId = modelId;
 
-            ModelInfo model = modelCatalog.getModelById(modelId)
+            var model = modelCatalog.getModelById(modelId)
                     .orElseThrow(() -> new RuntimeException("Model not found: " + finalModelId));
 
-            // Build the request body based on model provider
-            String responseText;
-            int inputTokens = 0;
-            int outputTokens = 0;
-
-            if (modelId.contains("anthropic") || modelId.contains("claude")) {
-                var result = invokeClaudeModel(request, conversation, modelId);
-                responseText = result[0];
-                inputTokens = Integer.parseInt(result[1]);
-                outputTokens = Integer.parseInt(result[2]);
-            } else if (modelId.contains("amazon.nova") || modelId.contains("titan")) {
-                var result = invokeNovaModel(request, conversation, modelId);
-                responseText = result[0];
-                inputTokens = Integer.parseInt(result[1]);
-                outputTokens = Integer.parseInt(result[2]);
-            } else if (modelId.contains("meta") || modelId.contains("llama")) {
-                var result = invokeLlamaModel(request, conversation, modelId);
-                responseText = result[0];
-                inputTokens = Integer.parseInt(result[1]);
-                outputTokens = Integer.parseInt(result[2]);
-            } else if (modelId.contains("mistral")) {
-                var result = invokeMistralModel(request, conversation, modelId);
-                responseText = result[0];
-                inputTokens = Integer.parseInt(result[1]);
-                outputTokens = Integer.parseInt(result[2]);
-            } else if (modelId.contains("cohere")) {
-                var result = invokeCohereModel(request, conversation, modelId);
-                responseText = result[0];
-                inputTokens = Integer.parseInt(result[1]);
-                outputTokens = Integer.parseInt(result[2]);
-            } else {
-                // Fallback generic
-                var result = invokeClaudeModel(request, conversation, modelId);
-                responseText = result[0];
-                inputTokens = Integer.parseInt(result[1]);
-                outputTokens = Integer.parseInt(result[2]);
-            }
+            // Dispatch to the correct provider — InvocationResult record replaces String[]
+            var result = switch (modelId) {
+                case String id when id.contains("anthropic") || id.contains("claude")
+                        -> invokeClaudeModel(request, conversation, modelId);
+                case String id when id.contains("amazon.nova") || id.contains("titan")
+                        -> invokeNovaModel(request, conversation, modelId);
+                case String id when id.contains("meta") || id.contains("llama")
+                        -> invokeLlamaModel(request, conversation, modelId);
+                case String id when id.contains("mistral")
+                        -> invokeMistralModel(request, conversation, modelId);
+                case String id when id.contains("cohere")
+                        -> invokeCohereModel(request, conversation, modelId);
+                default -> invokeClaudeModel(request, conversation, modelId);
+            };
 
             long latency = System.currentTimeMillis() - startTime;
+            var htmlContent = markdownToHtml(result.text());
 
-            // Convert markdown to HTML
-            String htmlContent = markdownToHtml(responseText);
-
-            Message assistantMsg = Message.builder()
+            var assistantMsg = Message.builder()
                     .id(UUID.randomUUID().toString())
                     .role("assistant")
-                    .content(responseText)
+                    .content(result.text())
                     .formattedContent(htmlContent)
                     .timestamp(LocalDateTime.now())
-                    .inputTokens(inputTokens)
-                    .outputTokens(outputTokens)
+                    .inputTokens(result.inputTokens())
+                    .outputTokens(result.outputTokens())
                     .latencyMs(latency)
                     .modelId(modelId)
                     .build();
 
             // Update conversation stats (conversation may be null for one-off calls like enhancePrompt)
             if (conversation != null) {
-                conversation.setTotalTokensUsed(conversation.getTotalTokensUsed() + inputTokens + outputTokens);
-                double cost = (inputTokens / 1000.0 * model.getInputCostPer1K())
-                        + (outputTokens / 1000.0 * model.getOutputCostPer1K());
+                conversation.setTotalTokensUsed(
+                        conversation.getTotalTokensUsed() + result.inputTokens() + result.outputTokens());
+                double cost = (result.inputTokens() / 1000.0 * model.inputCostPer1K())
+                        + (result.outputTokens() / 1000.0 * model.outputCostPer1K());
                 conversation.setEstimatedCost(conversation.getEstimatedCost() + cost);
             }
 
@@ -288,23 +269,22 @@ public class TextGenerationService {
         return userContext.isEmpty() ? base : base + userContext;
     }
 
-    private String[] invokeClaudeModel(ChatRequest request, Conversation conversation, String modelId) throws Exception {
-        ObjectNode body = objectMapper.createObjectNode();
+    private InvocationResult invokeClaudeModel(ChatRequest request, Conversation conversation, String modelId) throws Exception {
+        var body = objectMapper.createObjectNode();
         body.put("anthropic_version", "bedrock-2023-05-31");
         body.put("max_tokens", request.getMaxTokens() > 0 ? request.getMaxTokens() : 4096);
         // Claude API rejects requests with both temperature and top_p — send only temperature
         body.put("temperature", request.getTemperature() > 0 ? request.getTemperature() : 0.7);
 
-        // System prompt — EVJ Christian identity is always the base, can be extended but never replaced
         String userSystemPrompt = request.getSystemPrompt();
         if (userSystemPrompt == null || userSystemPrompt.isEmpty()) {
             userSystemPrompt = conversation != null ? conversation.getSystemPrompt() : null;
         }
-        String systemPrompt = buildFullSystemPrompt(request.getMessage(), userSystemPrompt, conversation != null ? conversation.getUserId() : null);
+        var systemPrompt = buildFullSystemPrompt(request.getMessage(), userSystemPrompt, conversation != null ? conversation.getUserId() : null);
         body.put("system", systemPrompt);
 
         // Build messages array
-        ArrayNode messages = body.putArray("messages");
+        var messages = body.putArray("messages");
 
         // Add conversation history (last 20 messages)
         if (conversation != null && !conversation.getMessages().isEmpty()) {
@@ -380,10 +360,10 @@ public class TextGenerationService {
         int inputTokens = responseNode.path("usage").path("input_tokens").asInt(0);
         int outputTokens = responseNode.path("usage").path("output_tokens").asInt(0);
 
-        return new String[]{text, String.valueOf(inputTokens), String.valueOf(outputTokens)};
+        return new InvocationResult(text, inputTokens, outputTokens);
     }
 
-    private String[] invokeNovaModel(ChatRequest request, Conversation conversation, String modelId) throws Exception {
+    private InvocationResult invokeNovaModel(ChatRequest request, Conversation conversation, String modelId) throws Exception {
         ObjectNode body = objectMapper.createObjectNode();
 
         // System prompt for Nova — EVJ identity is always the base
@@ -459,10 +439,10 @@ public class TextGenerationService {
         int inputTokens = responseNode.path("usage").path("inputTokens").asInt(0);
         int outputTokens = responseNode.path("usage").path("outputTokens").asInt(0);
 
-        return new String[]{text, String.valueOf(inputTokens), String.valueOf(outputTokens)};
+        return new InvocationResult(text, inputTokens, outputTokens);
     }
 
-    private String[] invokeLlamaModel(ChatRequest request, Conversation conversation, String modelId) throws Exception {
+    private InvocationResult invokeLlamaModel(ChatRequest request, Conversation conversation, String modelId) throws Exception {
         StringBuilder promptBuilder = new StringBuilder();
 
         String llamaUserSysPrompt = request.getSystemPrompt();
@@ -510,10 +490,10 @@ public class TextGenerationService {
         int tokensGenerated = responseNode.path("generation_token_count").asInt(0);
         int promptTokens = responseNode.path("prompt_token_count").asInt(0);
 
-        return new String[]{text, String.valueOf(promptTokens), String.valueOf(tokensGenerated)};
+        return new InvocationResult(text, promptTokens, tokensGenerated);
     }
 
-    private String[] invokeMistralModel(ChatRequest request, Conversation conversation, String modelId) throws Exception {
+    private InvocationResult invokeMistralModel(ChatRequest request, Conversation conversation, String modelId) throws Exception {
         ObjectNode body = objectMapper.createObjectNode();
         StringBuilder promptBuilder = new StringBuilder();
         boolean mistralEvjInjected = false;
@@ -561,10 +541,10 @@ public class TextGenerationService {
         JsonNode responseNode = objectMapper.readTree(response.body().asUtf8String());
 
         String text = responseNode.path("outputs").get(0).path("text").asText();
-        return new String[]{text, "0", "0"};
+        return new InvocationResult(text, 0, 0);
     }
 
-    private String[] invokeCohereModel(ChatRequest request, Conversation conversation, String modelId) throws Exception {
+    private InvocationResult invokeCohereModel(ChatRequest request, Conversation conversation, String modelId) throws Exception {
         ObjectNode body = objectMapper.createObjectNode();
         body.put("message", request.getMessage());
         body.put("max_tokens", request.getMaxTokens() > 0 ? request.getMaxTokens() : 2048);
@@ -601,7 +581,7 @@ public class TextGenerationService {
         int inputTokens = responseNode.path("meta").path("billed_units").path("input_tokens").asInt(0);
         int outputTokens = responseNode.path("meta").path("billed_units").path("output_tokens").asInt(0);
 
-        return new String[]{text, String.valueOf(inputTokens), String.valueOf(outputTokens)};
+        return new InvocationResult(text, inputTokens, outputTokens);
     }
 
     // ── Streaming response (SSE) ──────────────────────────────────────────────
@@ -620,11 +600,11 @@ public class TextGenerationService {
     }
 
     public SseEmitter streamResponse(ChatRequest request, Conversation conversation, boolean persist) {
-        SseEmitter emitter = new SseEmitter(0L); // no timeout — kept alive by streaming
+        var emitter = new SseEmitter(0L); // no timeout — kept alive by streaming
 
-        String modelId = request.getModelId();
+        var modelId = request.getModelId();
         if (modelId == null || modelId.isEmpty()) modelId = "us.anthropic.claude-sonnet-4-6";
-        final String finalModelId = modelId;
+        final var finalModelId = modelId;
 
         boolean isClaude = modelId.contains("anthropic") || modelId.contains("claude");
 
@@ -632,8 +612,8 @@ public class TextGenerationService {
             // Build the same body as invokeClaudeModel but send via streaming API
             Thread.ofVirtual().start(() -> {
                 try {
-                    ObjectNode body = buildClaudeRequestBody(request, conversation, finalModelId);
-                    String bodyString = objectMapper.writeValueAsString(body);
+                    var body = buildClaudeRequestBody(request, conversation, finalModelId);
+                    var bodyString = objectMapper.writeValueAsString(body);
 
                     InvokeModelWithResponseStreamRequest streamReq =
                             InvokeModelWithResponseStreamRequest.builder()
@@ -643,24 +623,24 @@ public class TextGenerationService {
                                     .accept("application/json")
                                     .build();
 
-                    StringBuilder fullText = new StringBuilder();
-                    AtomicInteger inputTokens  = new AtomicInteger(0);
-                    AtomicInteger outputTokens = new AtomicInteger(0);
+                    var fullText = new StringBuilder();
+                    var inputTokens  = new AtomicInteger(0);
+                    var outputTokens = new AtomicInteger(0);
 
                     InvokeModelWithResponseStreamResponseHandler handler =
                             InvokeModelWithResponseStreamResponseHandler.builder()
                                     .subscriber(InvokeModelWithResponseStreamResponseHandler.Visitor.builder()
                                             .onChunk(payloadPart -> {
                                                 try {
-                                                    String chunk = payloadPart.bytes().asUtf8String();
-                                                    JsonNode node = objectMapper.readTree(chunk);
-                                                    String type = node.path("type").asText("");
+                                                    var chunk = payloadPart.bytes().asUtf8String();
+                                                    var node = objectMapper.readTree(chunk);
+                                                    var type = node.path("type").asText("");
 
                                                     if ("content_block_delta".equals(type)) {
-                                                        String delta = node.path("delta").path("text").asText("");
+                                                        var delta = node.path("delta").path("text").asText("");
                                                         if (!delta.isEmpty()) {
                                                             fullText.append(delta);
-                                                            String escaped = objectMapper.writeValueAsString(delta);
+                                                            var escaped = objectMapper.writeValueAsString(delta);
                                                             // writeValueAsString adds surrounding quotes — strip them
                                                             escaped = escaped.substring(1, escaped.length() - 1);
                                                             emitter.send(SseEmitter.event()
@@ -678,9 +658,8 @@ public class TextGenerationService {
                                             .build())
                                     .onComplete(() -> {
                                         try {
-                                            // Save assistant message to conversation
-                                            String htmlContent = markdownToHtml(fullText.toString());
-                                            Message assistantMsg = Message.builder()
+                                            var htmlContent = markdownToHtml(fullText.toString());
+                                            var assistantMsg = Message.builder()
                                                     .id(UUID.randomUUID().toString())
                                                     .role("assistant")
                                                     .content(fullText.toString())
@@ -693,18 +672,18 @@ public class TextGenerationService {
                                             assistantMsg.setConversation(conversation);
                                             conversation.getMessages().add(assistantMsg);
 
-                                            ModelInfo model = modelCatalog.getModelById(finalModelId).orElse(null);
+                                            var model = modelCatalog.getModelById(finalModelId).orElse(null);
                                             if (model != null) {
                                                 conversation.setTotalTokensUsed(
                                                         conversation.getTotalTokensUsed() + inputTokens.get() + outputTokens.get());
-                                                double cost = (inputTokens.get() / 1000.0 * model.getInputCostPer1K())
-                                                        + (outputTokens.get() / 1000.0 * model.getOutputCostPer1K());
+                                                double cost = (inputTokens.get() / 1000.0 * model.inputCostPer1K())
+                                                        + (outputTokens.get() / 1000.0 * model.outputCostPer1K());
                                                 conversation.setEstimatedCost(conversation.getEstimatedCost() + cost);
                                             }
                                             if (persist) storageService.saveConversation(conversation);
 
                                             // Send done event with final server-rendered HTML + metadata
-                                            String doneEvent = String.format(
+                                            var doneEvent = String.format(
                                                     "{\"type\":\"done\",\"conversationId\":\"%s\",\"conversationTitle\":%s,\"formattedContent\":%s,\"inputTokens\":%d,\"outputTokens\":%d,\"totalTokens\":%d,\"estimatedCost\":\"$%.6f\"}",
                                                     conversation.getId(),
                                                     objectMapper.writeValueAsString(conversation.getTitle()),
@@ -724,7 +703,7 @@ public class TextGenerationService {
                                         try {
                                             emitter.send(SseEmitter.event()
                                                     .data("{\"type\":\"error\",\"message\":\"" + err.getMessage() + "\"}"));
-                                        } catch (Exception ignored) {}
+                                        } catch (Exception _) {}
                                         emitter.completeWithError(err);
                                     })
                                     .build();
@@ -736,7 +715,7 @@ public class TextGenerationService {
                     try {
                         emitter.send(SseEmitter.event()
                                 .data("{\"type\":\"error\",\"message\":\"" + ex.getMessage() + "\"}"));
-                    } catch (Exception ignored) {}
+                    } catch (Exception _) {}
                     emitter.completeWithError(ex);
                 }
             });
@@ -744,12 +723,12 @@ public class TextGenerationService {
             // Non-Claude: run sync call on virtual thread, emit full response as single token event
             Thread.ofVirtual().start(() -> {
                 try {
-                    Message msg = generateResponse(request, conversation);
+                    var msg = generateResponse(request, conversation);
                     msg.setConversation(conversation);
                     conversation.getMessages().add(msg);
                     if (persist) storageService.saveConversation(conversation);
 
-                    String doneEvent = String.format(
+                    var doneEvent = String.format(
                             "{\"type\":\"done\",\"conversationId\":\"%s\",\"conversationTitle\":%s,\"formattedContent\":%s,\"inputTokens\":%d,\"outputTokens\":%d,\"totalTokens\":%d,\"estimatedCost\":\"$%.6f\"}",
                             conversation.getId(),
                             objectMapper.writeValueAsString(conversation.getTitle()),
@@ -764,7 +743,7 @@ public class TextGenerationService {
                     try {
                         emitter.send(SseEmitter.event()
                                 .data("{\"type\":\"error\",\"message\":\"" + ex.getMessage() + "\"}"));
-                    } catch (Exception ignored) {}
+                    } catch (Exception _) {}
                     emitter.completeWithError(ex);
                 }
             });
@@ -775,16 +754,16 @@ public class TextGenerationService {
 
     /** Extracts the Claude request body construction into a reusable method. */
     private ObjectNode buildClaudeRequestBody(ChatRequest request, Conversation conversation, String modelId) throws Exception {
-        ObjectNode body = objectMapper.createObjectNode();
+        var body = objectMapper.createObjectNode();
         body.put("anthropic_version", "bedrock-2023-05-31");
         body.put("max_tokens", request.getMaxTokens() > 0 ? request.getMaxTokens() : 4096);
         body.put("temperature", request.getTemperature() > 0 ? request.getTemperature() : 0.7);
 
-        String buildUserSysPrompt = request.getSystemPrompt();
+        var buildUserSysPrompt = request.getSystemPrompt();
         if (buildUserSysPrompt == null || buildUserSysPrompt.isEmpty()) {
             buildUserSysPrompt = conversation != null ? conversation.getSystemPrompt() : null;
         }
-        String buildSystemPrompt = buildFullSystemPrompt(request.getMessage(), buildUserSysPrompt, conversation != null ? conversation.getUserId() : null);
+        var buildSystemPrompt = buildFullSystemPrompt(request.getMessage(), buildUserSysPrompt, conversation != null ? conversation.getUserId() : null);
         body.put("system", buildSystemPrompt);
 
         ArrayNode messages = body.putArray("messages");

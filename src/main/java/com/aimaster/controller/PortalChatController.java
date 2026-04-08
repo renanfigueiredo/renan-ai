@@ -74,14 +74,14 @@ public class PortalChatController {
 
     @PostMapping(value = "/api/portal/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter portalChat(@RequestBody PortalChatRequest req, Authentication auth) {
-        boolean loggedIn = auth != null && auth.isAuthenticated()
+        var loggedIn = auth != null && auth.isAuthenticated()
                 && !(auth instanceof AnonymousAuthenticationToken);
         try {
             Conversation conversation;
             boolean persist;
 
             if (loggedIn) {
-                Long userId = userService.findByEmail(auth.getName()).orElseThrow().getId();
+                var userId = userService.findByEmail(auth.getName()).orElseThrow().getId();
                 if (req.conversationId() != null && !req.conversationId().isEmpty()) {
                     conversation = storageService.findConversationByUser(req.conversationId(), userId)
                             .orElseGet(() -> newPortalConversation(userId));
@@ -94,8 +94,7 @@ public class PortalChatController {
                 persist = false;
             }
 
-            // Add user message
-            Message userMsg = Message.builder()
+            var userMsg = Message.builder()
                     .role("user")
                     .content(req.message())
                     .formattedContent("<p>" + escapeHtml(req.message()) + "</p>")
@@ -106,7 +105,7 @@ public class PortalChatController {
 
             // Auto-title from first real message
             if ("Portal EVJ AI".equals(conversation.getTitle()) && req.message() != null) {
-                String title = req.message().length() > 55
+                var title = req.message().length() > 55
                         ? req.message().substring(0, 55) + "…"
                         : req.message();
                 conversation.setTitle(title);
@@ -114,7 +113,7 @@ public class PortalChatController {
 
             if (persist) storageService.saveConversation(conversation);
 
-            ChatRequest chatReq = new ChatRequest();
+            var chatReq = new ChatRequest();
             chatReq.setMessage(req.message());
             chatReq.setConversationId(conversation.getId());
             chatReq.setModelId(PORTAL_MODEL);
@@ -126,11 +125,11 @@ public class PortalChatController {
 
         } catch (Exception e) {
             log.error("Portal chat error", e);
-            SseEmitter err = new SseEmitter(0L);
+            var err = new SseEmitter(0L);
             try {
                 err.send(SseEmitter.event()
                         .data("{\"type\":\"error\",\"message\":\"Erro ao processar. Tente novamente.\"}"));
-            } catch (Exception ignored) {}
+            } catch (Exception _) {}
             err.complete();
             return err;
         }
@@ -146,18 +145,18 @@ public class PortalChatController {
     }
 
     private Conversation buildGuestConversation(PortalChatRequest req) {
-        Conversation conv = Conversation.builder()
+        var conv = Conversation.builder()
                 .title("Portal EVJ AI")
                 .modelId(PORTAL_MODEL)
                 .systemPrompt(PORTAL_SYSTEM_PROMPT)
                 .build();
         if (req.history() != null) {
-            for (Map<String, String> entry : req.history()) {
-                String role    = entry.get("role");
-                String content = entry.get("content");
+            for (var entry : req.history()) {
+                var role    = entry.get("role");
+                var content = entry.get("content");
                 if (role != null && content != null
                         && (role.equals("user") || role.equals("assistant"))) {
-                    Message msg = Message.builder()
+                    var msg = Message.builder()
                             .role(role)
                             .content(content)
                             .timestamp(LocalDateTime.now())
