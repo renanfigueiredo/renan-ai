@@ -24,8 +24,7 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
@@ -47,6 +46,7 @@ public class SecurityConfig {
                                  "/forgot-password", "/reset-password",
                                  "/guest/**",
                                  "/portal", "/portal/**",
+                                 "/api/portal/chat",
                                  "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 // Everything else requires authentication (includes ROLE_GUEST)
                 .anyRequest().authenticated()

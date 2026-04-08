@@ -36,6 +36,7 @@ public class TextGenerationService {
     private final ModelCatalogService modelCatalog;
     private final StorageService storageService;
     private final PortalContentService portalContentService;
+    private final UserPreferenceService userPreferenceService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // Markdown parser for formatting
@@ -46,12 +47,14 @@ public class TextGenerationService {
                                   BedrockRuntimeAsyncClient bedrockAsyncClient,
                                   ModelCatalogService modelCatalog,
                                   StorageService storageService,
-                                  PortalContentService portalContentService) {
+                                  PortalContentService portalContentService,
+                                  UserPreferenceService userPreferenceService) {
         this.bedrockClient = bedrockClient;
         this.bedrockAsyncClient = bedrockAsyncClient;
         this.modelCatalog = modelCatalog;
         this.storageService = storageService;
         this.portalContentService = portalContentService;
+        this.userPreferenceService = userPreferenceService;
 
         MutableDataSet options = new MutableDataSet();
         this.markdownParser = Parser.builder(options).build();
@@ -276,6 +279,15 @@ public class TextGenerationService {
         return fullPrompt.toString();
     }
 
+    /**
+     * Personalised overload — appends user preference context when userId is provided.
+     */
+    private String buildFullSystemPrompt(String userMessage, String userSystemPrompt, Long userId) {
+        String base = buildFullSystemPrompt(userMessage, userSystemPrompt);
+        String userContext = userPreferenceService.buildAiContext(userId);
+        return userContext.isEmpty() ? base : base + userContext;
+    }
+
     private String[] invokeClaudeModel(ChatRequest request, Conversation conversation, String modelId) throws Exception {
         ObjectNode body = objectMapper.createObjectNode();
         body.put("anthropic_version", "bedrock-2023-05-31");
@@ -288,7 +300,7 @@ public class TextGenerationService {
         if (userSystemPrompt == null || userSystemPrompt.isEmpty()) {
             userSystemPrompt = conversation != null ? conversation.getSystemPrompt() : null;
         }
-        String systemPrompt = buildFullSystemPrompt(request.getMessage(), userSystemPrompt);
+        String systemPrompt = buildFullSystemPrompt(request.getMessage(), userSystemPrompt, conversation != null ? conversation.getUserId() : null);
         body.put("system", systemPrompt);
 
         // Build messages array
@@ -379,7 +391,7 @@ public class TextGenerationService {
         if (novaUserSysPrompt == null || novaUserSysPrompt.isEmpty()) {
             novaUserSysPrompt = conversation != null ? conversation.getSystemPrompt() : null;
         }
-        String novaSystemPrompt = buildFullSystemPrompt(request.getMessage(), novaUserSysPrompt);
+        String novaSystemPrompt = buildFullSystemPrompt(request.getMessage(), novaUserSysPrompt, conversation != null ? conversation.getUserId() : null);
         ArrayNode systemArr = body.putArray("system");
         ObjectNode sysObj = systemArr.addObject();
         sysObj.put("text", novaSystemPrompt);
@@ -457,7 +469,7 @@ public class TextGenerationService {
         if (llamaUserSysPrompt == null || llamaUserSysPrompt.isEmpty()) {
             llamaUserSysPrompt = conversation != null ? conversation.getSystemPrompt() : null;
         }
-        String llamaSystemPrompt = buildFullSystemPrompt(request.getMessage(), llamaUserSysPrompt);
+        String llamaSystemPrompt = buildFullSystemPrompt(request.getMessage(), llamaUserSysPrompt, conversation != null ? conversation.getUserId() : null);
 
         promptBuilder.append("<|begin_of_text|>");
         promptBuilder.append("<|start_header_id|>system<|end_header_id|>\n");
@@ -505,7 +517,7 @@ public class TextGenerationService {
         ObjectNode body = objectMapper.createObjectNode();
         StringBuilder promptBuilder = new StringBuilder();
         boolean mistralEvjInjected = false;
-        String mistralFullPrompt = buildFullSystemPrompt(request.getMessage(), null);
+        String mistralFullPrompt = buildFullSystemPrompt(request.getMessage(), null, conversation != null ? conversation.getUserId() : null);
 
         if (conversation != null && !conversation.getMessages().isEmpty()) {
             List<Message> history = conversation.getMessages();
@@ -559,7 +571,7 @@ public class TextGenerationService {
         body.put("temperature", request.getTemperature() > 0 ? request.getTemperature() : 0.7);
 
         String cohereUserSysPrompt = request.getSystemPrompt();
-        String coherePreamble = buildFullSystemPrompt(request.getMessage(), cohereUserSysPrompt);
+        String coherePreamble = buildFullSystemPrompt(request.getMessage(), cohereUserSysPrompt, conversation != null ? conversation.getUserId() : null);
         body.put("preamble", coherePreamble);
 
         if (conversation != null && !conversation.getMessages().isEmpty()) {
@@ -604,6 +616,10 @@ public class TextGenerationService {
      * For non-Claude models falls back to the synchronous path on a virtual thread.
      */
     public SseEmitter streamResponse(ChatRequest request, Conversation conversation) {
+        return streamResponse(request, conversation, true);
+    }
+
+    public SseEmitter streamResponse(ChatRequest request, Conversation conversation, boolean persist) {
         SseEmitter emitter = new SseEmitter(0L); // no timeout — kept alive by streaming
 
         String modelId = request.getModelId();
@@ -685,7 +701,7 @@ public class TextGenerationService {
                                                         + (outputTokens.get() / 1000.0 * model.getOutputCostPer1K());
                                                 conversation.setEstimatedCost(conversation.getEstimatedCost() + cost);
                                             }
-                                            storageService.saveConversation(conversation);
+                                            if (persist) storageService.saveConversation(conversation);
 
                                             // Send done event with final server-rendered HTML + metadata
                                             String doneEvent = String.format(
@@ -731,7 +747,7 @@ public class TextGenerationService {
                     Message msg = generateResponse(request, conversation);
                     msg.setConversation(conversation);
                     conversation.getMessages().add(msg);
-                    storageService.saveConversation(conversation);
+                    if (persist) storageService.saveConversation(conversation);
 
                     String doneEvent = String.format(
                             "{\"type\":\"done\",\"conversationId\":\"%s\",\"conversationTitle\":%s,\"formattedContent\":%s,\"inputTokens\":%d,\"outputTokens\":%d,\"totalTokens\":%d,\"estimatedCost\":\"$%.6f\"}",
@@ -768,7 +784,7 @@ public class TextGenerationService {
         if (buildUserSysPrompt == null || buildUserSysPrompt.isEmpty()) {
             buildUserSysPrompt = conversation != null ? conversation.getSystemPrompt() : null;
         }
-        String buildSystemPrompt = buildFullSystemPrompt(request.getMessage(), buildUserSysPrompt);
+        String buildSystemPrompt = buildFullSystemPrompt(request.getMessage(), buildUserSysPrompt, conversation != null ? conversation.getUserId() : null);
         body.put("system", buildSystemPrompt);
 
         ArrayNode messages = body.putArray("messages");

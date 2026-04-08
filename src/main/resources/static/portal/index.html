@@ -17,6 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/portal/assets/css/portal-home.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
 </head>
 <body>
 
@@ -467,6 +468,281 @@
       btn.innerHTML = '<span class="guest-dot"></span> Explorar como Visitante — 1 hora grátis';
     }
   }
+</script>
+
+<!-- ─── FLOATING CHAT WIDGET ─── -->
+<button class="pcw-fab" id="pcwFab" aria-label="Abrir chat EVJ AI" onclick="toggleWidget()">
+  <i class="bi bi-chat-dots-fill"></i>
+  <span class="pcw-fab-label">EVJ AI</span>
+  <span class="pcw-unread" id="pcwUnread" aria-hidden="true">1</span>
+</button>
+
+<div class="pcw-popup" id="pcwPopup" role="dialog" aria-label="Chat EVJ AI">
+  <div class="pcw-header">
+    <div class="pcw-header-info">
+      <div class="pcw-avatar-icon"><i class="bi bi-stars"></i></div>
+      <div>
+        <div class="pcw-title">EVJ AI</div>
+        <div class="pcw-subtitle">IA Cristã · Online</div>
+      </div>
+    </div>
+    <div class="pcw-header-actions">
+      <button class="pcw-hbtn" onclick="clearWidgetChat()" title="Limpar conversa"><i class="bi bi-trash"></i></button>
+      <button class="pcw-hbtn" onclick="closeWidget()" title="Fechar"><i class="bi bi-x-lg"></i></button>
+    </div>
+  </div>
+  <!-- Login banners (compact) -->
+  <div class="pcw-banner pcw-banner--guest" id="pchatBannerGuest">
+    <i class="bi bi-info-circle-fill"></i>
+    <span>Visitante &mdash; conversas não salvas.
+      <a href="/register">Criar conta</a> para guardar histórico.</span>
+  </div>
+  <div class="pcw-banner pcw-banner--logged" id="pchatBannerLogged" style="display:none">
+    <i class="bi bi-bookmark-check-fill"></i>
+    <span>Conversa salva. <a href="/history">Histórico</a> &middot; <a href="/dashboard">Dashboard</a></span>
+  </div>
+  <div class="pchat-messages" id="pchatMessages"></div>
+  <div class="pcw-input-wrap">
+    <textarea id="pchatInput" class="pcw-input" rows="1" maxlength="2000"
+      placeholder="Pergunte sobre fé, Bíblia, oração..."></textarea>
+    <button class="pcw-send-btn" id="pchatSendBtn"><i class="bi bi-send-fill"></i></button>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────
+   PORTAL CHATBOT EVJ AI
+───────────────────────────────── */
+'use strict';
+var pcState = {
+  isLoggedIn: false, userName: '',
+  conversationId: sessionStorage.getItem('pchat_conv_id') || null,
+  guestHistory: [],
+  messageCount: 0,
+  isStreaming: false
+};
+
+var PCHAT_CHIPS = [
+  { text: 'O que a Bíblia diz sobre ansiedade?',          icon: 'bi-heart-pulse-fill' },
+  { text: 'Me fale sobre o livro de Hebreus',             icon: 'bi-book-fill' },
+  { text: 'Namoro com propósito segundo a Bíblia',        icon: 'bi-heart-fill' },
+  { text: 'Como ter uma vida de oração constante?',       icon: 'bi-wind' },
+  { text: 'Versículo de encorajamento para hoje',          icon: 'bi-stars' },
+  { text: 'O que é o Espírito Santo?',                    icon: 'bi-lightning-fill' },
+  { text: 'Como lidar com desafios like cristão?',        icon: 'bi-shield-check' },
+  { text: 'O que a Bíblia fala sobre propósito de vida?', icon: 'bi-compass' }
+];
+
+function toggleWidget() {
+  var popup = document.getElementById('pcwPopup');
+  var isOpen = popup.classList.toggle('pcw-popup--open');
+  if (isOpen) {
+    document.getElementById('pcwUnread').style.display = 'none';
+    setTimeout(function() { document.getElementById('pchatInput').focus(); }, 220);
+  }
+}
+function openWidget() { document.getElementById('pcwPopup').classList.add('pcw-popup--open'); }
+function closeWidget() { document.getElementById('pcwPopup').classList.remove('pcw-popup--open'); }
+function clearWidgetChat() {
+  pcState.guestHistory = [];
+  pcState.conversationId = null;
+  pcState.messageCount = 0;
+  pcState.isStreaming = false;
+  sessionStorage.removeItem('pchat_conv_id');
+  renderPchatWelcome();
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#pcwPopup') && !e.target.closest('#pcwFab')) closeWidget();
+});
+
+async function initPortalChat() {
+  try {
+    var r = await fetch('/api/me');
+    if (r.ok) {
+      var user = await r.json();
+      pcState.isLoggedIn = true;
+      pcState.userName = user.name || '';
+      document.getElementById('pchatBannerGuest').style.display = 'none';
+      document.getElementById('pchatBannerLogged').style.display = 'flex';
+    }
+  } catch (_) {}
+
+  renderPchatWelcome();
+
+  var input = document.getElementById('pchatInput');
+  var btn   = document.getElementById('pchatSendBtn');
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPortalMessage(); }
+  });
+  input.addEventListener('input', function() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  });
+  btn.addEventListener('click', function() { sendPortalMessage(); });
+}
+
+function renderPchatWelcome() {
+  var greeting = pcState.isLoggedIn
+    ? 'Olá, <strong>' + escPc(pcState.userName) + '</strong>! 🙌 Que bom ter você de volta!'
+    : 'Olá! <strong>Bem-vindo à EVJ AI</strong> ✝️';
+  var chips = PCHAT_CHIPS.map(function(s) {
+    return '<button class="pchat-chip" data-text="' + escPc(s.text) + '" onclick="sendPortalMessage(this.dataset.text)">'
+      + '<i class="bi ' + s.icon + '"></i><span>' + escPc(s.text) + '</span></button>';
+  }).join('');
+  document.getElementById('pchatMessages').innerHTML =
+    '<div class="pchat-msg pchat-msg--ai">'
+    + '<div class="pchat-avatar"><i class="bi bi-stars"></i></div>'
+    + '<div class="pchat-bubble">'
+    + '<p>' + greeting + '</p>'
+    + '<p>Sou a EVJ AI, ancorada na Bíblia e no caráter de Jesus. Posso te ajudar com reflexões bíblicas, estudos, oração, propósito e muito mais.</p>'
+    + '<p class="pchat-hint">Por onde quer começar? 👇</p>'
+    + '<div class="pchat-chips">' + chips + '</div>'
+    + '</div></div>';
+}
+
+async function sendPortalMessage(text) {
+  if (pcState.isStreaming) return;
+  /* If called from a chip, ensure popup is open */
+  openWidget();
+  var input   = document.getElementById('pchatInput');
+  var message = (typeof text === 'string' ? text : input.value).trim();
+  if (!message) return;
+  input.value = '';
+  input.style.height = 'auto';
+
+  var msgs = document.getElementById('pchatMessages');
+  /* user bubble */
+  var userEl = document.createElement('div');
+  userEl.className = 'pchat-msg pchat-msg--user';
+  userEl.innerHTML = '<div class="pchat-bubble pchat-bubble--user">' + escPc(message) + '</div>';
+  msgs.appendChild(userEl);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  /* AI streaming bubble */
+  var aiId = 'pcmsg-' + Date.now();
+  var aiEl = document.createElement('div');
+  aiEl.className = 'pchat-msg pchat-msg--ai pchat-msg--streaming';
+  aiEl.id = aiId;
+  aiEl.innerHTML =
+    '<div class="pchat-avatar"><i class="bi bi-stars"></i></div>'
+    + '<div class="pchat-bubble">'
+    + '<div class="pchat-text"></div>'
+    + '<div class="pchat-typing"><span></span><span></span><span></span></div>'
+    + '</div>';
+  msgs.appendChild(aiEl);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  pcState.isStreaming = true;
+  document.getElementById('pchatSendBtn').disabled = true;
+
+  try {
+    var history = pcState.isLoggedIn ? [] : pcState.guestHistory.slice(-16);
+    var res = await fetch('/api/portal/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: message, conversationId: pcState.conversationId, history: history })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    var reader = res.body.getReader();
+    var dec    = new TextDecoder();
+    var buf    = '';
+    var aiText = '';
+    var textEl = document.getElementById(aiId) && document.getElementById(aiId).querySelector('.pchat-text');
+
+    while (true) {
+      var chunk = await reader.read();
+      if (chunk.done) break;
+      buf += dec.decode(chunk.value, { stream: true });
+      var lines = buf.split('\n');
+      buf = lines.pop();
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if (!line.startsWith('data:')) continue;
+        var jsonStr = line.slice(5).trim();
+        if (!jsonStr) continue;
+        try {
+          var ev = JSON.parse(jsonStr);
+          if (ev.type === 'token') {
+            aiText += ev.text;
+            if (textEl) { textEl.textContent = aiText; msgs.scrollTop = msgs.scrollHeight; }
+          } else if (ev.type === 'done') {
+            var bubble = document.getElementById(aiId);
+            if (bubble) {
+              bubble.classList.remove('pchat-msg--streaming');
+              var tEl = bubble.querySelector('.pchat-text');
+              if (tEl) tEl.innerHTML = ev.formattedContent || pcFormatText(aiText);
+              var typingEl = bubble.querySelector('.pchat-typing');
+              if (typingEl) typingEl.remove();
+            }
+            if (ev.conversationId) {
+              pcState.conversationId = ev.conversationId;
+              sessionStorage.setItem('pchat_conv_id', ev.conversationId);
+            }
+            if (!pcState.isLoggedIn) {
+              pcState.guestHistory.push({ role: 'user', content: message });
+              pcState.guestHistory.push({ role: 'assistant', content: aiText });
+              if (pcState.guestHistory.length > 20) pcState.guestHistory = pcState.guestHistory.slice(-20);
+            }
+            msgs.scrollTop = msgs.scrollHeight;
+          } else if (ev.type === 'error') {
+            throw new Error(ev.message || 'Erro desconhecido');
+          }
+        } catch (_) {}
+      }
+    }
+
+    pcState.messageCount++;
+    /* Unread badge on FAB when popup is closed */
+    if (!document.getElementById('pcwPopup').classList.contains('pcw-popup--open')) {
+      document.getElementById('pcwUnread').style.display = 'flex';
+    }
+    /* Login reminder for guests after 3rd message */
+    if (!pcState.isLoggedIn && pcState.messageCount === 3) {
+      setTimeout(function() {
+        var rem = document.createElement('div');
+        rem.className = 'pchat-msg pchat-msg--reminder';
+        rem.innerHTML =
+          '<div class="pchat-reminder-card">'
+          + '<i class="bi bi-bookmark-heart-fill"></i>'
+          + '<div><strong>Salve sua jornada \u2721️</strong>'
+          + '<p>Crie uma conta gratuita para guardar este hist\u00f3rico e ter acesso completo \u00e0 EVJ AI.</p></div>'
+          + '<a href="/register" class="pchat-reminder-btn">Criar conta <i class="bi bi-arrow-right"></i></a>'
+          + '</div>';
+        msgs.appendChild(rem);
+        msgs.scrollTop = msgs.scrollHeight;
+      }, 700);
+    }
+
+  } catch (e) {
+    var el2 = document.getElementById(aiId);
+    if (el2) {
+      el2.classList.remove('pchat-msg--streaming');
+      var t2 = el2.querySelector('.pchat-text');
+      if (t2) t2.innerHTML = '<span style="color:#ff6b6b">⚠️ Erro ao conectar. Por favor, tente novamente.</span>';
+      var typ2 = el2.querySelector('.pchat-typing');
+      if (typ2) typ2.remove();
+    }
+  } finally {
+    pcState.isStreaming = false;
+    document.getElementById('pchatSendBtn').disabled = false;
+    document.getElementById('pchatInput').focus();
+  }
+}
+
+function pcFormatText(text) {
+  if (!text) return '';
+  if (window.marked) return marked.parse(text);
+  return '<p>' + text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>') + '</p>';
+}
+
+function escPc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.addEventListener('DOMContentLoaded', initPortalChat);
 </script>
 </body>
 </html>

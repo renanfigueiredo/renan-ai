@@ -25,11 +25,23 @@ document.addEventListener('DOMContentLoaded', () => {
     initPageSpecific();
     initHighlightJs();
     checkPendingTemplate();
+    initOnboarding();
 });
 
 function initHighlightJs() {
     if (window.hljs) {
         document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+    }
+}
+
+function checkPendingTemplate() {
+    const pending = localStorage.getItem('pendingTemplate');
+    if (!pending) return;
+    const ta = document.getElementById('messageInput');
+    if (ta) {
+        localStorage.removeItem('pendingTemplate');
+        ta.value = pending;
+        ta.dispatchEvent(new Event('input'));
     }
 }
 
@@ -1619,6 +1631,188 @@ function triggerVideoRefImage() {
         showToast('Reference image attached!', 'success');
     };
     input.click();
+}
+
+// ── Dashboard ─────────────────────────────────────────
+function initDashboard() {
+    const d = window._dashboardData;
+    if (!d) return;
+
+    // Render topics chips
+    const container = document.getElementById('topicsChips');
+    if (container && d.favoriteTopics) {
+        const topics = d.favoriteTopics.split(',').map(t => t.trim()).filter(Boolean);
+        container.innerHTML = topics.map(t =>
+            `<span class="topic-chip"><i class="bi bi-tag-fill"></i> ${escHtml(t)}</span>`
+        ).join('');
+    }
+}
+
+// ── Onboarding ────────────────────────────────────────
+let _obSelectedTopics = new Set();
+let _obSelectedStyle  = '';
+
+function initOnboarding() {
+    const d = window._dashboardData;
+    if (!d) return;
+    if (!d.onboardingCompleted) {
+        // Small delay so page renders first
+        setTimeout(showOnboardingModal, 600);
+    }
+}
+
+function showOnboardingModal() {
+    document.getElementById('obBackdrop')?.classList.add('active');
+    document.getElementById('obModal')?.classList.add('active');
+    obGoStep(1);
+}
+
+function obGoStep(n) {
+    [1, 2, 3].forEach(i => {
+        const el = document.getElementById(`obStep${i}`);
+        if (el) el.style.display = (i === n) ? '' : 'none';
+    });
+}
+
+function obSkip() {
+    _closeModal('obBackdrop', 'obModal');
+    // Mark onboarding completed silently so it doesn't show again
+    fetch('/api/preferences/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ favoriteTopics: '', interactionStyle: 'CASUAL' })
+    }).catch(() => {});
+    if (window._dashboardData) window._dashboardData.onboardingCompleted = true;
+}
+
+function obSelectStyle(btn) {
+    document.querySelectorAll('#obStep3 .ob-style-card').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    _obSelectedStyle = btn.dataset.style;
+}
+
+document.addEventListener('click', e => {
+    const chip = e.target.closest('#obTopicsGrid .ob-topic-chip');
+    if (chip) {
+        chip.classList.toggle('selected');
+        const t = chip.dataset.topic;
+        _obSelectedTopics.has(t) ? _obSelectedTopics.delete(t) : _obSelectedTopics.add(t);
+    }
+});
+
+async function obFinish() {
+    const btn = document.getElementById('obFinishBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-sm"></span> Salvando…'; }
+    try {
+        const res = await fetch('/api/preferences/onboarding', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                favoriteTopics:   [..._obSelectedTopics].join(','),
+                interactionStyle: _obSelectedStyle || 'CASUAL'
+            })
+        });
+        if (res.ok) {
+            _closeModal('obBackdrop', 'obModal');
+            if (window._dashboardData) window._dashboardData.onboardingCompleted = true;
+            showToast('Preferências salvas! A EVJ AI está pronta pra você. 🙌', 'success');
+            // Re-render chips
+            const container = document.getElementById('topicsChips');
+            if (container && _obSelectedTopics.size) {
+                container.innerHTML = [..._obSelectedTopics].map(t =>
+                    `<span class="topic-chip"><i class="bi bi-tag-fill"></i> ${escHtml(t)}</span>`
+                ).join('');
+                container.closest('.topics-section')?.removeAttribute('style');
+            }
+        } else {
+            showToast('Erro ao salvar preferências', 'error');
+            if (btn) { btn.disabled = false; btn.innerHTML = 'Salvar e Começar <i class="bi bi-check2-circle"></i>'; }
+        }
+    } catch {
+        showToast('Erro de rede ao salvar', 'error');
+        if (btn) { btn.disabled = false; btn.innerHTML = 'Salvar e Começar <i class="bi bi-check2-circle"></i>'; }
+    }
+}
+
+// ── Preferences Modal ─────────────────────────────────
+let _prefsSelectedTopics = new Set();
+let _prefsSelectedStyle  = '';
+
+function openPreferencesModal() {
+    // Load current prefs
+    fetch('/api/preferences').then(r => r.ok ? r.json() : null).then(prefs => {
+        if (!prefs) return;
+        _prefsSelectedStyle = prefs.interactionStyle || '';
+        _prefsSelectedTopics = new Set(
+            (prefs.favoriteTopics || '').split(',').map(t => t.trim()).filter(Boolean)
+        );
+        // Mark chips
+        document.querySelectorAll('#prefsTopicsGrid .ob-topic-chip').forEach(chip => {
+            chip.classList.toggle('selected', _prefsSelectedTopics.has(chip.dataset.topic));
+        });
+        document.querySelectorAll('#prefsModal .ob-style-card').forEach(card => {
+            card.classList.toggle('selected', card.dataset.style === _prefsSelectedStyle);
+        });
+        const ta = document.getElementById('prefsCustomInstructions');
+        if (ta) ta.value = prefs.customInstructions || '';
+    });
+    document.getElementById('prefsBackdrop')?.classList.add('active');
+    document.getElementById('prefsModal')?.classList.add('active');
+}
+
+function closePreferencesModal() {
+    _closeModal('prefsBackdrop', 'prefsModal');
+}
+
+function prefsSelectStyle(btn) {
+    document.querySelectorAll('#prefsModal .ob-style-card').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    _prefsSelectedStyle = btn.dataset.style;
+}
+
+document.addEventListener('click', e => {
+    const chip = e.target.closest('#prefsTopicsGrid .ob-topic-chip');
+    if (chip) {
+        chip.classList.toggle('selected');
+        const t = chip.dataset.topic;
+        _prefsSelectedTopics.has(t) ? _prefsSelectedTopics.delete(t) : _prefsSelectedTopics.add(t);
+    }
+});
+
+async function savePreferences() {
+    const ta    = document.getElementById('prefsCustomInstructions');
+    const body  = {
+        favoriteTopics:      [..._prefsSelectedTopics].join(','),
+        interactionStyle:    _prefsSelectedStyle || 'CASUAL',
+        customInstructions:  ta?.value?.trim() || ''
+    };
+    try {
+        const res = await fetch('/api/preferences', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (res.ok) {
+            closePreferencesModal();
+            showToast('Preferências atualizadas!', 'success');
+            // Update dashboard chips if present
+            const container = document.getElementById('topicsChips');
+            if (container !== null) {
+                container.innerHTML = [..._prefsSelectedTopics].map(t =>
+                    `<span class="topic-chip"><i class="bi bi-tag-fill"></i> ${escHtml(t)}</span>`
+                ).join('');
+            }
+        } else {
+            showToast('Erro ao salvar preferências', 'error');
+        }
+    } catch {
+        showToast('Erro de rede ao salvar', 'error');
+    }
+}
+
+function _closeModal(backdropId, modalId) {
+    document.getElementById(backdropId)?.classList.remove('active');
+    document.getElementById(modalId)?.classList.remove('active');
 }
 
 async function enhanceVideoPrompt() {

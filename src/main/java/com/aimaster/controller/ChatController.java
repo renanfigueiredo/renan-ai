@@ -110,7 +110,7 @@ public class ChatController {
                 conversation.setTitle(title);
             }
 
-            if (request.isEnhancePrompt()) {
+            if (Boolean.TRUE.equals(request.getEnhancePrompt())) {
                 try {
                     request.setMessage(textGenerationService.enhancePrompt(request.getMessage(), "chat"));
                 } catch (Exception e) {

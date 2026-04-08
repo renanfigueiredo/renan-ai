@@ -19,12 +19,12 @@ public class ChatRequest {
     private double temperature;
     private int maxTokens;
     private double topP;
-    private boolean stream;
+    private Boolean stream;
     private List<String> stopSequences;
     private List<String> imagesBase64;
     private List<String> imagesMimeTypes;
     private List<String> documentsBase64;
     private List<String> documentsNames;
-    private boolean enhancePrompt; // auto-enhance with AI
+    private Boolean enhancePrompt; // auto-enhance with AI
     private String responseLanguage;
 }

@@ -38,13 +38,14 @@
 
         <!-- Stats Bar -->
         <div class="stats-bar">
-            <div class="stat-card">
+            <a href="/history" class="stat-card stat-card-link">
                 <div class="stat-icon text-blue"><i class="bi bi-chat-dots-fill"></i></div>
                 <div class="stat-info">
                     <span class="stat-number" th:text="${totalConversations}">0</span>
                     <span class="stat-label">Conversas</span>
                 </div>
-            </div>
+                <div class="stat-arrow"><i class="bi bi-arrow-right"></i></div>
+            </a>
             <div class="stat-card">
                 <div class="stat-icon text-green"><i class="bi bi-book-fill"></i></div>
                 <div class="stat-info">
@@ -68,6 +69,34 @@
                     </a>
                 </div>
             </div>
+        </div>
+
+        <!-- Resume Last Conversation -->
+        <div th:if="${lastConversation != null}" class="resume-section">
+            <div class="resume-label"><i class="bi bi-arrow-counterclockwise"></i> Retomar onde parou</div>
+            <div class="resume-card">
+                <div class="resume-card-icon"><i class="bi bi-chat-text-fill"></i></div>
+                <div class="resume-card-body">
+                    <div class="resume-card-title" th:text="${lastConversation.title}">Última conversa</div>
+                    <div class="resume-card-preview" th:if="${lastAiPreview != null}" th:text="${lastAiPreview}"></div>
+                    <div class="resume-card-meta">
+                        <span th:if="${lastConversation.updatedAt != null}" th:text="${#temporals.format(lastConversation.updatedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        <span class="resume-msg-count" th:if="${lastConversation.messages != null}">
+                            <i class="bi bi-chat-dots"></i>
+                            <span th:text="${#lists.size(lastConversation.messages)}">0</span> mensagens
+                        </span>
+                    </div>
+                </div>
+                <a th:href="@{/chat(id=${lastConversation.id})}" class="resume-card-btn">
+                    <i class="bi bi-play-fill"></i> Continuar
+                </a>
+            </div>
+        </div>
+
+        <!-- Topics Chips -->
+        <div th:if="${userPrefs != null and userPrefs.onboardingCompleted and userPrefs.favoriteTopics != null and !#strings.isEmpty(userPrefs.favoriteTopics)}" class="topics-section">
+            <div class="topics-label"><i class="bi bi-bookmark-heart-fill"></i> Seus tópicos favoritos</div>
+            <div class="topics-chips" id="topicsChips"></div>
         </div>
 
         <!-- Quick Access Grid -->
@@ -112,6 +141,16 @@
 
     </div>
 </div>
-<th:block layout:fragment="scripts"></th:block>
+<th:block layout:fragment="scripts">
+<script th:inline="javascript">
+    window._dashboardData = {
+        favoriteTopics:       /*[[${userPrefs != null ? userPrefs.favoriteTopics : ''}]]*/ '',
+        interactionStyle:     /*[[${userPrefs != null ? userPrefs.interactionStyle : ''}]]*/ '',
+        onboardingCompleted:  /*[[${userPrefs != null ? userPrefs.onboardingCompleted : false}]]*/ false,
+        totalConversations:   /*[[${totalConversations}]]*/ 0
+    };
+    document.addEventListener('DOMContentLoaded', () => initDashboard());
+</script>
+</th:block>
 </body>
 </html>

@@ -98,6 +98,10 @@
                         </div>
                     </div>
                     <div class="user-dropdown-divider"></div>
+                    <a href="#" class="user-dropdown-item" onclick="openPreferencesModal(); return false;">
+                        <i class="bi bi-sliders"></i> Personalizar EVJ AI
+                    </a>
+                    <div class="user-dropdown-divider"></div>
                     <form th:action="@{/logout}" method="post">
                         <button type="submit" class="user-dropdown-item user-dropdown-logout">
                             <i class="bi bi-box-arrow-right"></i> Sair da conta
@@ -132,9 +136,133 @@
     </div>
 </div>
 
+<!-- Onboarding Modal -->
+<div class="ob-backdrop" id="obBackdrop"></div>
+<div class="ob-modal" id="obModal" role="dialog" aria-modal="true" aria-labelledby="obTitle">
+    <!-- Step 1: Welcome -->
+    <div class="ob-step" id="obStep1">
+        <div class="ob-header">
+            <div class="ob-icon"><i class="bi bi-stars"></i></div>
+            <h2 class="ob-title" id="obTitle">Bem-vindo à EVJ AI! ✌️</h2>
+            <p class="ob-desc">Vamos personalizar sua experiência em poucos passos.</p>
+        </div>
+        <div class="ob-actions">
+            <button class="ob-btn-primary" onclick="obGoStep(2)">Começar <i class="bi bi-arrow-right"></i></button>
+            <button class="ob-btn-skip" onclick="obSkip()">Pular por agora</button>
+        </div>
+    </div>
+    <!-- Step 2: Topics -->
+    <div class="ob-step" id="obStep2" style="display:none">
+        <div class="ob-header">
+            <div class="ob-icon"><i class="bi bi-bookmark-heart-fill"></i></div>
+            <h2 class="ob-title">Quais tópicos te interessam?</h2>
+            <p class="ob-desc">Selecione quantos quiser — a EVJ AI vai priorizar esses temas.</p>
+        </div>
+        <div class="ob-topics-grid" id="obTopicsGrid">
+            <button class="ob-topic-chip" data-topic="Profecíia"><i class="bi bi-lightning-fill"></i> Profecia</button>
+            <button class="ob-topic-chip" data-topic="Louvor"><i class="bi bi-music-note-beamed"></i> Louvor</button>
+            <button class="ob-topic-chip" data-topic="Oração"><i class="bi bi-hand-thumbs-up-fill"></i> Oração</button>
+            <button class="ob-topic-chip" data-topic="Evangélicos"><i class="bi bi-globe2"></i> Evangélicos</button>
+            <button class="ob-topic-chip" data-topic="Bíblia"><i class="bi bi-book-fill"></i> Bíblia</button>
+            <button class="ob-topic-chip" data-topic="Juventude"><i class="bi bi-people-fill"></i> Juventude</button>
+            <button class="ob-topic-chip" data-topic="Milagres"><i class="bi bi-stars"></i> Milagres</button>
+            <button class="ob-topic-chip" data-topic="Discípulado"><i class="bi bi-mortarboard-fill"></i> Discipulado</button>
+            <button class="ob-topic-chip" data-topic="Família"><i class="bi bi-house-heart-fill"></i> Família</button>
+            <button class="ob-topic-chip" data-topic="Cura"><i class="bi bi-heart-pulse-fill"></i> Cura</button>
+        </div>
+        <div class="ob-actions">
+            <button class="ob-btn-secondary" onclick="obGoStep(1)"><i class="bi bi-arrow-left"></i> Voltar</button>
+            <button class="ob-btn-primary" onclick="obGoStep(3)">Próximo <i class="bi bi-arrow-right"></i></button>
+        </div>
+    </div>
+    <!-- Step 3: Style -->
+    <div class="ob-step" id="obStep3" style="display:none">
+        <div class="ob-header">
+            <div class="ob-icon"><i class="bi bi-sliders"></i></div>
+            <h2 class="ob-title">Como prefere conversar?</h2>
+            <p class="ob-desc">Escolha o estilo de resposta da EVJ AI.</p>
+        </div>
+        <div class="ob-style-grid">
+            <button class="ob-style-card" data-style="CASUAL" onclick="obSelectStyle(this)">
+                <i class="bi bi-emoji-smile-fill"></i>
+                <strong>Casual</strong>
+                <span>Linguagem descontraída e amigável</span>
+            </button>
+            <button class="ob-style-card" data-style="DEVOTIONAL" onclick="obSelectStyle(this)">
+                <i class="bi bi-heart-fill"></i>
+                <strong>Devocional</strong>
+                <span>Reflexivo, edificante e espiritual</span>
+            </button>
+            <button class="ob-style-card" data-style="FORMAL" onclick="obSelectStyle(this)">
+                <i class="bi bi-briefcase-fill"></i>
+                <strong>Formal</strong>
+                <span>Preciso e respeitoso</span>
+            </button>
+            <button class="ob-style-card" data-style="ACADEMIC" onclick="obSelectStyle(this)">
+                <i class="bi bi-mortarboard-fill"></i>
+                <strong>Acadêmico</strong>
+                <span>Aprofundado e teólogico</span>
+            </button>
+        </div>
+        <div class="ob-actions">
+            <button class="ob-btn-secondary" onclick="obGoStep(2)"><i class="bi bi-arrow-left"></i> Voltar</button>
+            <button class="ob-btn-primary" id="obFinishBtn" onclick="obFinish()">Salvar e Começar <i class="bi bi-check2-circle"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- Preferences Modal -->
+<div class="ob-backdrop" id="prefsBackdrop"></div>
+<div class="ob-modal" id="prefsModal" role="dialog" aria-modal="true" aria-labelledby="prefsTitle">
+    <div class="ob-step" id="prefsStep">
+        <div class="ob-header">
+            <div class="ob-icon"><i class="bi bi-sliders"></i></div>
+            <h2 class="ob-title" id="prefsTitle">Minhas Preferências</h2>
+            <p class="ob-desc">Ajuste como a EVJ AI conversa com você.</p>
+        </div>
+        <div class="prefs-form">
+            <label class="prefs-label">Tópicos favoritos</label>
+            <div class="ob-topics-grid" id="prefsTopicsGrid">
+                <button class="ob-topic-chip" data-topic="Profecia"><i class="bi bi-lightning-fill"></i> Profecia</button>
+                <button class="ob-topic-chip" data-topic="Louvor"><i class="bi bi-music-note-beamed"></i> Louvor</button>
+                <button class="ob-topic-chip" data-topic="Oração"><i class="bi bi-hand-thumbs-up-fill"></i> Oração</button>
+                <button class="ob-topic-chip" data-topic="Evangélicos"><i class="bi bi-globe2"></i> Evangélicos</button>
+                <button class="ob-topic-chip" data-topic="Bíblia"><i class="bi bi-book-fill"></i> Bíblia</button>
+                <button class="ob-topic-chip" data-topic="Juventude"><i class="bi bi-people-fill"></i> Juventude</button>
+                <button class="ob-topic-chip" data-topic="Milagres"><i class="bi bi-stars"></i> Milagres</button>
+                <button class="ob-topic-chip" data-topic="Discípulado"><i class="bi bi-mortarboard-fill"></i> Discipulado</button>
+                <button class="ob-topic-chip" data-topic="Família"><i class="bi bi-house-heart-fill"></i> Família</button>
+                <button class="ob-topic-chip" data-topic="Cura"><i class="bi bi-heart-pulse-fill"></i> Cura</button>
+            </div>
+            <label class="prefs-label" style="margin-top:1.2rem">Estilo de conversa</label>
+            <div class="ob-style-grid">
+                <button class="ob-style-card" data-style="CASUAL" onclick="prefsSelectStyle(this)">
+                    <i class="bi bi-emoji-smile-fill"></i><strong>Casual</strong>
+                </button>
+                <button class="ob-style-card" data-style="DEVOTIONAL" onclick="prefsSelectStyle(this)">
+                    <i class="bi bi-heart-fill"></i><strong>Devocional</strong>
+                </button>
+                <button class="ob-style-card" data-style="FORMAL" onclick="prefsSelectStyle(this)">
+                    <i class="bi bi-briefcase-fill"></i><strong>Formal</strong>
+                </button>
+                <button class="ob-style-card" data-style="ACADEMIC" onclick="prefsSelectStyle(this)">
+                    <i class="bi bi-mortarboard-fill"></i><strong>Acadêmico</strong>
+                </button>
+            </div>
+            <label class="prefs-label" style="margin-top:1.2rem">Instruções personalizadas <span style="opacity:.5;font-size:.85em">(opcional)</span></label>
+            <textarea id="prefsCustomInstructions" class="prefs-textarea" rows="3" maxlength="500" placeholder="Ex: Sempre cite versículos bíblicos. Seja breve..."></textarea>
+        </div>
+        <div class="ob-actions">
+            <button class="ob-btn-secondary" onclick="closePreferencesModal()">Cancelar</button>
+            <button class="ob-btn-primary" onclick="savePreferences()">Salvar <i class="bi bi-check2-circle"></i></button>
+        </div>
+    </div>
+</div>
+
 <!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
 <script th:src="@{/js/app.js(v=20260316)}"></script>
+<th:block layout:fragment="scripts"></th:block>
 </body>
 </html>
