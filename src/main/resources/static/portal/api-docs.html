@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EVJ AI — Developer Portal</title>
+  <meta name="description" content="Documentação da API pública EVJ AI. Integre inteligência artificial cristã na sua aplicação." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300ccff'/%3E%3Cstop offset='100%25' stop-color='%2300e05a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='40' height='40' rx='10' fill='%230e0a1a'/%3E%3Ctext x='4' y='28' font-family='Arial' font-weight='900' font-size='22' fill='url(%23g)'%3EEVJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
+  <style>
+    /* ── Variables ── */
+    :root {
+      --bg:        #0e0a1a;
+      --bg2:       #140f24;
+      --bg3:       #1c1530;
+      --bg-card:   #1a1333;
+      --bg-card2:  #201840;
+      --border:    #2e2255;
+      --border-l:  #3d2e76;
+      --text:      #eeeeff;
+      --muted:     #9a8fc0;
+      --dim:       #5e5488;
+      --cyan:      #00ccff;
+      --green:     #00e05a;
+      --purple:    #7c3aed;
+      --red:       #ef4444;
+      --yellow:    #f59e0b;
+      --mono:      'JetBrains Mono', 'Fira Code', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 14px; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-l); border-radius: 99px; }
+
+    /* ── Ambient orbs ── */
+    body::before, body::after {
+      content: ''; position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+    }
+    body::before {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(0,204,255,.06) 0%, transparent 70%);
+      top: -300px; right: -200px;
+    }
+    body::after {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,224,90,.05) 0%, transparent 70%);
+      bottom: -250px; left: -200px;
+    }
+
+    /* ── Top nav ── */
+    .topnav {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(14,10,26,.92); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 56px; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .topnav-left { display: flex; align-items: center; gap: 16px; }
+    .topnav-brand {
+      font-weight: 900; font-size: 18px; letter-spacing: -.3px;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .topnav-sep { color: var(--border-l); font-size: 18px; }
+    .topnav-title { color: var(--muted); font-size: 13px; font-weight: 500; }
+    .topnav-pill {
+      background: rgba(0,224,90,.12); color: var(--green);
+      border: 1px solid rgba(0,224,90,.25);
+      font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 20px;
+    }
+    .topnav-right { display: flex; align-items: center; gap: 12px; }
+    .topnav-link {
+      color: var(--muted); font-size: 12px; font-weight: 500;
+      padding: 5px 12px; border-radius: 8px; transition: all .15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .topnav-link:hover { color: var(--cyan); background: rgba(0,204,255,.08); }
+    .topnav-link-cta {
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      color: #0e0a1a !important; font-weight: 700;
+      padding: 6px 16px; border-radius: 20px;
+    }
+    .topnav-link-cta:hover { opacity: .9; }
+
+    /* ── Layout shell ── */
+    .shell { display: flex; min-height: calc(100vh - 56px); position: relative; z-index: 1; }
+
+    /* ── Left sidebar ── */
+    .doc-sidebar {
+      width: 240px; flex-shrink: 0;
+      position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 28px 0; background: var(--bg2);
+    }
+    .sidebar-group { margin-bottom: 28px; }
+    .sidebar-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--dim); padding: 0 20px 8px;
+    }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 20px; font-size: 13px; font-weight: 500;
+      color: var(--muted); cursor: pointer; transition: all .15s;
+      border-left: 2px solid transparent;
+    }
+    .sidebar-item:hover { color: var(--text); background: rgba(255,255,255,.03); }
+    .sidebar-item.active { color: var(--cyan); border-left-color: var(--cyan); background: rgba(0,204,255,.06); }
+    .sidebar-method {
+      font-family: var(--mono); font-size: 10px; font-weight: 600;
+      padding: 2px 7px; border-radius: 5px; background: rgba(0,224,90,.15); color: var(--green); flex-shrink: 0;
+    }
+    .sidebar-method.get { background: rgba(0,204,255,.15); color: var(--cyan); }
+
+    /* ── Main doc area ── */
+    .doc-main { flex: 1; min-width: 0; padding: 40px 48px 100px; max-width: 900px; }
+
+    /* ── Sections ── */
+    .doc-section { margin-bottom: 72px; scroll-margin-top: 72px; }
+
+    /* ── Hero ── */
+    .api-hero {
+      background: linear-gradient(135deg, rgba(0,204,255,.06) 0%, rgba(0,224,90,.04) 100%);
+      border: 1px solid var(--border-l);
+      border-radius: 16px; padding: 36px; margin-bottom: 56px;
+    }
+    .api-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(0,204,255,.1); border: 1px solid rgba(0,204,255,.25);
+      color: var(--cyan); font-size: 11px; font-weight: 600; letter-spacing: .5px;
+      padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+    }
+    .api-hero-title {
+      font-size: 32px; font-weight: 800; line-height: 1.2;
+      background: linear-gradient(135deg, var(--text) 0%, var(--cyan) 60%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 12px;
+    }
+    .api-hero-sub { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 24px; }
+    .api-hero-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+    .api-stat { display: flex; align-items: center; gap: 8px; }
+    .api-stat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .api-stat-text { font-size: 12px; font-weight: 600; color: var(--muted); }
+    .api-stat-text span { color: var(--text); }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: 22px; font-weight: 700; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title i { color: var(--cyan); font-size: 18px; }
+    .section-sub { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+
+    /* ── Info cards ── */
+    .info-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px; margin-bottom: 16px;
+    }
+    .info-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-key { font-size: 12px; font-weight: 600; color: var(--muted); width: 120px; flex-shrink: 0; }
+    .info-val { font-family: var(--mono); font-size: 12px; color: var(--text); }
+    .info-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(0,224,90,.12); color: var(--green);
+      border: 1px solid rgba(0,224,90,.2); font-size: 11px; font-weight: 600;
+      padding: 2px 10px; border-radius: 20px;
+    }
+
+    /* ── Alert box ── */
+    .alert-box {
+      display: flex; gap: 12px; align-items: flex-start;
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;
+      font-size: 13px; line-height: 1.6;
+    }
+    .alert-box.info { background: rgba(0,204,255,.07); border: 1px solid rgba(0,204,255,.2); color: var(--cyan); }
+    .alert-box.tip  { background: rgba(0,224,90,.07);  border: 1px solid rgba(0,224,90,.2);  color: var(--green); }
+    .alert-box i { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+    .alert-box p { color: var(--muted); margin: 0; }
+    .alert-box p strong { color: var(--text); }
+
+    /* ── Endpoint block ── */
+    .endpoint-block {
+      border: 1px solid var(--border); border-radius: 16px;
+      overflow: hidden; margin-bottom: 40px;
+    }
+    .endpoint-header {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--bg-card); padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .method-badge {
+      font-family: var(--mono); font-size: 12px; font-weight: 700;
+      padding: 4px 12px; border-radius: 6px; letter-spacing: .5px;
+    }
+    .method-badge.POST { background: rgba(0,224,90,.15); color: var(--green); border: 1px solid rgba(0,224,90,.3); }
+    .method-badge.GET  { background: rgba(0,204,255,.15); color: var(--cyan);  border: 1px solid rgba(0,204,255,.3); }
+    .endpoint-path {
+      font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--text);
+    }
+    .endpoint-path .path-param { color: var(--cyan); }
+    .endpoint-desc { margin-left: auto; color: var(--muted); font-size: 12px; }
+    .endpoint-body { padding: 24px; background: var(--bg2); }
+    .endpoint-section-title {
+      font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 12px;
+    }
+
+    /* ── Schema table ── */
+    .schema-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    .schema-table th {
+      text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .5px;
+      text-transform: uppercase; color: var(--dim);
+      padding: 8px 12px; border-bottom: 1px solid var(--border);
+    }
+    .schema-table td {
+      padding: 10px 12px; font-size: 13px;
+      border-bottom: 1px solid rgba(46,34,85,.5);
+      vertical-align: top;
+    }
+    .schema-table tr:last-child td { border-bottom: none; }
+    .schema-table .field { font-family: var(--mono); color: var(--cyan); font-size: 12px; }
+    .schema-table .type  { font-family: var(--mono); color: var(--purple); font-size: 11px;
+      background: rgba(124,58,237,.12); padding: 2px 8px; border-radius: 4px; }
+    .schema-table .req   { color: var(--green); font-size: 11px; font-weight: 600; }
+    .schema-table .opt   { color: var(--dim); font-size: 11px; }
+    .schema-table .desc  { color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+    /* ── Code block ── */
+    .code-tabs { display: flex; gap: 4px; margin-bottom: 0; }
+    .code-tab {
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      padding: 6px 14px; border-radius: 6px 6px 0 0; cursor: pointer;
+      background: var(--bg3); border: 1px solid var(--border); border-bottom: none;
+      transition: all .15s;
+    }
+    .code-tab.active { color: var(--text); background: var(--bg-card2); border-color: var(--border-l); }
+    .code-panel {
+      background: #161122; border: 1px solid var(--border-l);
+      border-radius: 0 8px 8px 8px; overflow: hidden;
+    }
+    .code-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 16px; background: rgba(255,255,255,.02); border-bottom: 1px solid var(--border);
+    }
+    .code-panel-lang { font-size: 11px; font-weight: 600; color: var(--dim); font-family: var(--mono); }
+    .copy-btn {
+      display: flex; align-items: center; gap: 5px;
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 5px;
+      cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    .copy-btn:hover { color: var(--text); border-color: var(--border-l); }
+    .copy-btn.copied { color: var(--green); border-color: var(--green); }
+    .code-panel pre { margin: 0; }
+    .code-panel code { font-family: var(--mono) !important; font-size: 12.5px !important; line-height: 1.7 !important; }
+
+    /* ── Status codes ── */
+    .status-grid { display: grid; grid-template-columns: 80px 1fr; gap: 0; margin-bottom: 24px; }
+    .status-code {
+      font-family: var(--mono); font-size: 13px; font-weight: 700;
+      padding: 10px 12px; border-bottom: 1px solid rgba(46,34,85,.5);
+    }
+    .status-code.s2 { color: var(--green); }
+    .status-code.s4 { color: var(--yellow); }
+    .status-code.s5 { color: var(--red); }
+    .status-desc {
+      padding: 10px 12px; color: var(--muted); font-size: 13px;
+      border-bottom: 1px solid rgba(46,34,85,.5);
+    }
+
+    /* ── Try it section ── */
+    .try-card {
+      background: var(--bg-card); border: 1px solid var(--border-l);
+      border-radius: 16px; overflow: hidden;
+    }
+    .try-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px; background: rgba(0,204,255,.04);
+      border-bottom: 1px solid var(--border);
+    }
+    .try-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .try-title i { color: var(--cyan); }
+    .live-badge {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 600; color: var(--green);
+    }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,224,90,.4)} 50%{opacity:.8;box-shadow:0 0 0 6px rgba(0,224,90,0)} }
+    .try-body { padding: 24px; }
+    .try-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 8px; }
+    .try-url-bar {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 16px; margin-bottom: 20px;
+    }
+    .try-method { background: rgba(0,224,90,.15); color: var(--green); font-family: var(--mono); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+    .try-url { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+    .try-textarea {
+      width: 100%; min-height: 100px; resize: vertical;
+      background: #161122; border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;
+      font-family: var(--mono); font-size: 13px; color: var(--text);
+      outline: none; transition: border .15s; line-height: 1.6;
+    }
+    .try-textarea:focus { border-color: var(--cyan); }
+    .try-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      color: #0e0a1a; font-weight: 700; font-size: 13px;
+      padding: 10px 24px; border-radius: 8px; border: none;
+      cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    .try-btn:hover { opacity: .9; transform: translateY(-1px); }
+    .try-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .try-spinner { animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .try-result { margin-top: 20px; }
+    .try-result-label {
+      font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .5px;
+      text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+    }
+    .try-result-status {
+      font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+    }
+    .try-result-status.ok   { background: rgba(0,224,90,.15); color: var(--green); }
+    .try-result-status.err  { background: rgba(239,68,68,.15); color: var(--red); }
+    .try-result-box {
+      background: #161122; border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px;
+      font-family: var(--mono); font-size: 12px; color: var(--text);
+      line-height: 1.7; white-space: pre-wrap; word-break: break-all;
+      max-height: 300px; overflow-y: auto;
+    }
+    .try-poll-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); display: none; }
+    .poll-id-display {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 14px; margin-bottom: 12px;
+      font-family: var(--mono); font-size: 12px; color: var(--muted);
+    }
+    .poll-id-display strong { color: var(--cyan); }
+    .poll-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(0,204,255,.1); color: var(--cyan);
+      border: 1px solid rgba(0,204,255,.3); font-weight: 600; font-size: 12px;
+      padding: 7px 18px; border-radius: 8px; border: 1px solid rgba(0,204,255,.3);
+      cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    .poll-btn:hover { background: rgba(0,204,255,.18); }
+    .poll-status-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-left: 8px;
+    }
+    .chip-processing { background: rgba(245,158,11,.1); color: var(--yellow); border: 1px solid rgba(245,158,11,.25); }
+    .chip-completed  { background: rgba(0,224,90,.1);  color: var(--green);  border: 1px solid rgba(0,224,90,.25); }
+    .chip-failed     { background: rgba(239,68,68,.1); color: var(--red);    border: 1px solid rgba(239,68,68,.25); }
+
+    /* ── Flow diagram ── */
+    .flow-steps { display: flex; align-items: center; gap: 0; margin-bottom: 24px; flex-wrap: wrap; }
+    .flow-step {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 16px; flex: 1; min-width: 160px;
+    }
+    .flow-step-num {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,204,255,.15); color: var(--cyan);
+      font-size: 11px; font-weight: 700;
+    }
+    .flow-step-content { flex: 1; }
+    .flow-step-label { font-size: 11px; font-weight: 700; color: var(--text); }
+    .flow-step-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .flow-arrow {
+      color: var(--border-l); font-size: 18px; padding: 0 8px; flex-shrink: 0;
+    }
+
+    /* ── Swagger link card ── */
+    .swagger-card {
+      background: linear-gradient(135deg, rgba(124,58,237,.12) 0%, rgba(0,204,255,.06) 100%);
+      border: 1px solid var(--border-l);
+      border-radius: 14px; padding: 24px; display: flex; align-items: center; gap: 20px;
+    }
+    .swagger-icon {
+      width: 52px; height: 52px; border-radius: 12px; flex-shrink: 0;
+      background: rgba(124,58,237,.2); border: 1px solid rgba(124,58,237,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; color: #a78bfa;
+    }
+    .swagger-text h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .swagger-text p  { color: var(--muted); font-size: 13px; }
+    .swagger-btn {
+      margin-left: auto; flex-shrink: 0;
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(124,58,237,.2); color: #a78bfa;
+      border: 1px solid rgba(124,58,237,.4); font-weight: 600; font-size: 13px;
+      padding: 8px 20px; border-radius: 8px; cursor: pointer; transition: all .15s;
+    }
+    .swagger-btn:hover { background: rgba(124,58,237,.35); }
+
+    /* ── Divider ── */
+    .doc-divider { border: none; border-top: 1px solid var(--border); margin: 56px 0; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .doc-sidebar { display: none; }
+      .doc-main { padding: 28px 20px 80px; max-width: 100%; }
+      .flow-steps { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); align-self: flex-start; margin-left: 20px; }
+      .swagger-card { flex-direction: column; }
+      .swagger-btn { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Top Navigation ── -->
+<nav class="topnav">
+  <div class="topnav-left">
+    <a href="/portal/" class="topnav-brand">EVJ</a>
+    <span class="topnav-sep">/</span>
+    <span class="topnav-title">Developer Portal</span>
+    <span class="topnav-pill">v1.0</span>
+  </div>
+  <div class="topnav-right">
+    <a href="#overview" class="topnav-link"><i class="bi bi-grid-3x3-gap"></i> Visão Geral</a>
+    <a href="#endpoint-chat" class="topnav-link"><i class="bi bi-braces"></i> Endpoints</a>
+    <a href="#tryit" class="topnav-link"><i class="bi bi-play-circle"></i> Try It</a>
+    <a href="/swagger-ui/index.html" target="_blank" class="topnav-link"><i class="bi bi-box-arrow-up-right"></i> Swagger UI</a>
+    <a href="/dashboard" class="topnav-link topnav-link-cta"><i class="bi bi-box-arrow-in-right"></i> Acessar EVJ AI</a>
+  </div>
+</nav>
+
+<!-- ── Shell ── -->
+<div class="shell">
+
+  <!-- Left Sidebar -->
+  <aside class="doc-sidebar">
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">Início</div>
+      <a class="sidebar-item active" onclick="scrollTo('overview')">
+        <i class="bi bi-house"></i> Visão Geral
+      </a>
+      <a class="sidebar-item" onclick="scrollTo('quickstart')">
+        <i class="bi bi-lightning"></i> Quick Start
+      </a>
+      <a class="sidebar-item" onclick="scrollTo('auth')">
+        <i class="bi bi-shield-check"></i> Autenticação
+      </a>
+      <a class="sidebar-item" onclick="scrollTo('flow')">
+        <i class="bi bi-arrow-repeat"></i> Fluxo Assíncrono
+      </a>
+    </div>
+
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">API Reference</div>
+      <a class="sidebar-item" onclick="scrollTo('endpoint-chat')">
+        <span class="sidebar-method">POST</span> /api/v1/chat
+      </a>
+      <a class="sidebar-item" onclick="scrollTo('endpoint-poll')">
+        <span class="sidebar-method get">GET</span> /api/v1/chat/{id}
+      </a>
+    </div>
+
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">Exemplos</div>
+      <a class="sidebar-item" onclick="scrollTo('examples')">
+        <i class="bi bi-code-slash"></i> Código
+      </a>
+      <a class="sidebar-item" onclick="scrollTo('tryit')">
+        <i class="bi bi-play-circle"></i> Try It Live
+      </a>
+    </div>
+
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">Recursos</div>
+      <a class="sidebar-item" href="/swagger-ui/index.html" target="_blank">
+        <i class="bi bi-box-arrow-up-right"></i> Swagger UI
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="doc-main">
+
+    <!-- Hero -->
+    <div class="api-hero" id="overview">
+      <div class="api-badge"><i class="bi bi-braces-asterisk"></i> REST API · JSON</div>
+      <h1 class="api-hero-title">EVJ AI — API de Chat</h1>
+      <p class="api-hero-sub">
+        Integre a inteligência artificial cristã do EVJ na sua aplicação. Envie perguntas
+        teológicas, bíblicas ou espirituais e receba respostas profundas e fundamentadas
+        na Palavra de Deus — geradas pelo modelo Claude via AWS Bedrock.
+      </p>
+      <div class="api-hero-stats">
+        <div class="api-stat">
+          <div class="api-stat-dot"></div>
+          <div class="api-stat-text">Status: <span>Online</span></div>
+        </div>
+        <div class="api-stat">
+          <div class="api-stat-dot" style="background:#00ccff;box-shadow:0 0 8px #00ccff"></div>
+          <div class="api-stat-text">Base URL: <span>https://evj.app.br</span></div>
+        </div>
+        <div class="api-stat">
+          <div class="api-stat-dot" style="background:#7c3aed;box-shadow:0 0 8px #7c3aed"></div>
+          <div class="api-stat-text">Versão: <span>v1.0.0</span></div>
+        </div>
+        <div class="api-stat">
+          <div class="api-stat-dot" style="background:#f59e0b;box-shadow:0 0 8px #f59e0b"></div>
+          <div class="api-stat-text">Modelo: <span>Claude (Bedrock)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Start -->
+    <div class="doc-section" id="quickstart">
+      <h2 class="section-title"><i class="bi bi-lightning-fill"></i> Quick Start</h2>
+      <p class="section-sub">Em 2 requisições você já obtém uma resposta da EVJ AI.</p>
+
+      <div class="info-card">
+        <div class="info-row">
+          <div class="info-key">Base URL</div>
+          <div class="info-val">https://evj.app.br</div>
+        </div>
+        <div class="info-row">
+          <div class="info-key">Content-Type</div>
+          <div class="info-val">application/json</div>
+        </div>
+        <div class="info-row">
+          <div class="info-key">Autenticação</div>
+          <div class="info-val"><span class="info-badge"><i class="bi bi-unlock"></i> Nenhuma — API pública</span></div>
+        </div>
+      </div>
+
+      <div class="alert-box tip">
+        <i class="bi bi-info-circle-fill"></i>
+        <p><strong>API assíncrona.</strong> O POST retorna 202 imediatamente com um <code>id</code>. Depois você consulta o resultado com GET. Isso evita timeouts em respostas longas.</p>
+      </div>
+    </div>
+
+    <hr class="doc-divider" />
+
+    <!-- Auth -->
+    <div class="doc-section" id="auth">
+      <h2 class="section-title"><i class="bi bi-shield-check"></i> Autenticação</h2>
+      <p class="section-sub">A API de chat é pública — não requer token, chave ou login para uso.</p>
+
+      <div class="alert-box info">
+        <i class="bi bi-unlock-fill"></i>
+        <p><strong>Sem autenticação.</strong> Qualquer cliente HTTP pode chamar os endpoints <code>/api/v1/chat</code> diretamente, sem headers de autorização.</p>
+      </div>
+
+      <div class="info-card">
+        <div class="info-row">
+          <div class="info-key">Authorization</div>
+          <div class="info-val" style="color:var(--dim)">Não necessário</div>
+        </div>
+        <div class="info-row">
+          <div class="info-key">API Key</div>
+          <div class="info-val" style="color:var(--dim)">Não necessário</div>
+        </div>
+        <div class="info-row">
+          <div class="info-key">Rate Limit</div>
+          <div class="info-val">Sem limite atual</div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="doc-divider" />
+
+    <!-- Flow -->
+    <div class="doc-section" id="flow">
+      <h2 class="section-title"><i class="bi bi-arrow-repeat"></i> Fluxo Assíncrono</h2>
+      <p class="section-sub">A API usa um padrão de polling assíncrono para evitar timeouts. Respostas longas (como estudos bíblicos) podem levar 30–60s para gerar.</p>
+
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-step-num">1</div>
+          <div class="flow-step-content">
+            <div class="flow-step-label">POST /api/v1/chat</div>
+            <div class="flow-step-desc">Envia o prompt · retorna <code>id</code> em ~50ms</div>
+          </div>
+        </div>
+        <div class="flow-arrow"><i class="bi bi-arrow-right"></i></div>
+        <div class="flow-step">
+          <div class="flow-step-num">2</div>
+          <div class="flow-step-content">
+            <div class="flow-step-label">status: PROCESSING</div>
+            <div class="flow-step-desc">IA gerando resposta via streaming</div>
+          </div>
+        </div>
+        <div class="flow-arrow"><i class="bi bi-arrow-right"></i></div>
+        <div class="flow-step">
+          <div class="flow-step-num">3</div>
+          <div class="flow-step-content">
+            <div class="flow-step-label">GET /api/v1/chat/{id}</div>
+            <div class="flow-step-desc">Polling até status: COMPLETED</div>
+          </div>
+        </div>
+        <div class="flow-arrow"><i class="bi bi-arrow-right"></i></div>
+        <div class="flow-step">
+          <div class="flow-step-num">4</div>
+          <div class="flow-step-content">
+            <div class="flow-step-label">result: "..."</div>
+            <div class="flow-step-desc">Texto completo da resposta</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert-box info">
+        <i class="bi bi-clock-history"></i>
+        <p><strong>Recomendação:</strong> faça polling a cada <strong>3–5 segundos</strong>. Respostas simples chegam em ~5s. Estudos bíblicos completos podem levar até 60s.</p>
+      </div>
+    </div>
+
+    <hr class="doc-divider" />
+
+    <!-- Endpoint: POST /chat -->
+    <div class="doc-section" id="endpoint-chat">
+      <h2 class="section-title"><i class="bi bi-send-fill"></i> Endpoints</h2>
+      <p class="section-sub">A API expõe 2 endpoints de chat.</p>
+
+      <div class="endpoint-block">
+        <div class="endpoint-header">
+          <span class="method-badge POST">POST</span>
+          <span class="endpoint-path">/api/v1/chat</span>
+          <span class="endpoint-desc">Criar tarefa de chat</span>
+        </div>
+        <div class="endpoint-body">
+
+          <div class="endpoint-section-title">Request Body — application/json</div>
+          <table class="schema-table" style="margin-bottom:24px">
+            <thead>
+              <tr>
+                <th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Descrição</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="field">prompt</td>
+                <td><span class="type">string</span></td>
+                <td class="req">✓ Sim</td>
+                <td class="desc">Pergunta ou instrução para a EVJ AI. Máx: 50.000 caracteres.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="endpoint-section-title">Response — 202 Accepted</div>
+          <table class="schema-table" style="margin-bottom:24px">
+            <thead>
+              <tr>
+                <th>Campo</th><th>Tipo</th><th>Descrição</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="field">id</td>
+                <td><span class="type">string</span></td>
+                <td class="desc">ID único da tarefa. Ex: <code>chat-a1b2c3d4</code></td>
+              </tr>
+              <tr>
+                <td class="field">status</td>
+                <td><span class="type">string</span></td>
+                <td class="desc"><code>PROCESSING</code> · <code>COMPLETED</code> · <code>FAILED</code></td>
+              </tr>
+              <tr>
+                <td class="field">prompt</td>
+                <td><span class="type">string</span></td>
+                <td class="desc">O prompt enviado (espelhado).</td>
+              </tr>
+              <tr>
+                <td class="field">result</td>
+                <td><span class="type">string | null</span></td>
+                <td class="desc">Resposta da IA. Disponível quando <code>status: COMPLETED</code>.</td>
+              </tr>
+              <tr>
+                <td class="field">error</td>
+                <td><span class="type">string | null</span></td>
+                <td class="desc">Mensagem de erro. Disponível quando <code>status: FAILED</code>.</td>
+              </tr>
+              <tr>
+                <td class="field">createdAt</td>
+                <td><span class="type">string (ISO 8601)</span></td>
+                <td class="desc">Timestamp de criação da tarefa.</td>
+              </tr>
+              <tr>
+                <td class="field">completedAt</td>
+                <td><span class="type">string | null</span></td>
+                <td class="desc">Timestamp de conclusão. Disponível quando concluído.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="endpoint-section-title">Status Codes</div>
+          <div class="status-grid">
+            <div class="status-code s2">202</div>
+            <div class="status-desc">Tarefa criada com sucesso. Consulte o ID retornado.</div>
+            <div class="status-code s4">400</div>
+            <div class="status-desc">Prompt inválido, ausente ou excede o limite de caracteres.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Endpoint: GET /chat/{id} -->
+      <div class="endpoint-block" id="endpoint-poll">
+        <div class="endpoint-header">
+          <span class="method-badge GET">GET</span>
+          <span class="endpoint-path">/api/v1/chat/<span class="path-param">{id}</span></span>
+          <span class="endpoint-desc">Consultar resultado</span>
+        </div>
+        <div class="endpoint-body">
+
+          <div class="endpoint-section-title">Path Parameters</div>
+          <table class="schema-table" style="margin-bottom:24px">
+            <thead>
+              <tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="field">id</td>
+                <td><span class="type">string</span></td>
+                <td class="desc">ID retornado pelo POST. Ex: <code>chat-a1b2c3d4</code></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="endpoint-section-title">Response — 200 OK</div>
+          <p class="desc" style="color:var(--muted);font-size:13px;margin-bottom:16px">Mesmo schema do POST. O campo <code>status</code> indica o andamento. Quando <code>COMPLETED</code>, o campo <code>result</code> contém a resposta em Markdown.</p>
+
+          <div class="endpoint-section-title">Status Codes</div>
+          <div class="status-grid">
+            <div class="status-code s2">200</div>
+            <div class="status-desc">Status/resultado retornado com sucesso.</div>
+            <div class="status-code s4">404</div>
+            <div class="status-desc">Tarefa não encontrada. O ID pode ser inválido ou a tarefa expirou.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="doc-divider" />
+
+    <!-- Code Examples -->
+    <div class="doc-section" id="examples">
+      <h2 class="section-title"><i class="bi bi-code-slash"></i> Exemplos de Código</h2>
+      <p class="section-sub">Exemplos completos com polling automático em várias linguagens.</p>
+
+      <!-- cURL -->
+      <p style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px">cURL</p>
+      <div class="code-panel" style="border-radius:8px;margin-bottom:24px">
+        <div class="code-panel-header">
+          <span class="code-panel-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copiar</button>
+        </div>
+        <pre><code class="language-bash"># 1. Enviar prompt
+ID=$(curl -s -X POST https://evj.app.br/api/v1/chat \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Explique o Sermão do Monte em Mateus 5"}' \
+  | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+
+echo "Task ID: $ID"
+
+# 2. Polling até completar
+while true; do
+  RESPONSE=$(curl -s "https://evj.app.br/api/v1/chat/$ID")
+  STATUS=$(echo $RESPONSE | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
+
+  echo "Status: $STATUS"
+
+  if [ "$STATUS" = "COMPLETED" ]; then
+    echo $RESPONSE | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['result'])"
+    break
+  elif [ "$STATUS" = "FAILED" ]; then
+    echo "Falhou: $RESPONSE"
+    break
+  fi
+
+  sleep 3
+done</code></pre>
+      </div>
+
+      <!-- JavaScript -->
+      <p style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px">JavaScript (fetch)</p>
+      <div class="code-panel" style="border-radius:8px;margin-bottom:24px">
+        <div class="code-panel-header">
+          <span class="code-panel-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copiar</button>
+        </div>
+        <pre><code class="language-javascript">async function askEvjAI(prompt) {
+  const BASE = 'https://evj.app.br';
+
+  // 1. Criar tarefa
+  const postRes = await fetch(`${BASE}/api/v1/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt })
+  });
+  const { id } = await postRes.json();
+  console.log('Task criada:', id);
+
+  // 2. Polling até completar
+  while (true) {
+    await new Promise(r => setTimeout(r, 3000)); // aguarda 3s
+
+    const pollRes = await fetch(`${BASE}/api/v1/chat/${id}`);
+    const task = await pollRes.json();
+
+    console.log('Status:', task.status);
+
+    if (task.status === 'COMPLETED') return task.result;
+    if (task.status === 'FAILED')    throw new Error(task.error);
+  }
+}
+
+// Uso
+askEvjAI('Quais são as bem-aventuranças de Mateus 5?')
+  .then(result => console.log('Resposta:', result))
+  .catch(err   => console.error('Erro:', err));</code></pre>
+      </div>
+
+      <!-- Python -->
+      <p style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px">Python</p>
+      <div class="code-panel" style="border-radius:8px;margin-bottom:24px">
+        <div class="code-panel-header">
+          <span class="code-panel-lang">python</span>
+          <button class="copy-btn" onclick="copyCode(this)"><i class="bi bi-clipboard"></i> Copiar</button>
+        </div>
+        <pre><code class="language-python">import requests
+import time
+
+BASE_URL = "https://evj.app.br"
+
+def ask_evj_ai(prompt: str) -> str:
+    # 1. Criar tarefa
+    res = requests.post(
+        f"{BASE_URL}/api/v1/chat",
+        json={"prompt": prompt}
+    )
+    res.raise_for_status()
+    task_id = res.json()["id"]
+    print(f"Task criada: {task_id}")
+
+    # 2. Polling até completar
+    while True:
+        time.sleep(3)
+        poll = requests.get(f"{BASE_URL}/api/v1/chat/{task_id}")
+        task = poll.json()
+        print(f"Status: {task['status']}")
+
+        if task["status"] == "COMPLETED":
+            return task["result"]
+        elif task["status"] == "FAILED":
+            raise RuntimeError(task.get("error", "Falha desconhecida"))
+
+# Uso
+if __name__ == "__main__":
+    resposta = ask_evj_ai("O que a Bíblia diz sobre oração?")
+    print("Resposta:", resposta)</code></pre>
+      </div>
+    </div>
+
+    <hr class="doc-divider" />
+
+    <!-- Try It Live -->
+    <div class="doc-section" id="tryit">
+      <h2 class="section-title"><i class="bi bi-play-circle-fill"></i> Try It Live</h2>
+      <p class="section-sub">Teste a API diretamente aqui — sem sair da documentação.</p>
+
+      <div class="try-card">
+        <div class="try-header">
+          <div class="try-title"><i class="bi bi-terminal"></i> API Playground</div>
+          <div class="live-badge"><div class="live-dot"></div> Live</div>
+        </div>
+        <div class="try-body">
+
+          <!-- POST -->
+          <div class="try-label">Endpoint</div>
+          <div class="try-url-bar">
+            <span class="try-method">POST</span>
+            <span class="try-url">https://evj.app.br/api/v1/chat</span>
+          </div>
+
+          <div class="try-label">Request Body</div>
+          <textarea class="try-textarea" id="tryPrompt" placeholder='{"prompt": "Explique o amor de Deus em João 3:16"}'>{
+  "prompt": "Explique o amor de Deus em João 3:16"
+}</textarea>
+
+          <button class="try-btn" id="tryBtn" onclick="runTry()">
+            <i class="bi bi-send-fill"></i> Enviar Prompt
+          </button>
+
+          <!-- POST result -->
+          <div class="try-result" id="tryPostResult" style="display:none">
+            <div class="try-result-label">
+              Resposta do POST
+              <span class="try-result-status ok" id="tryPostStatus">202</span>
+            </div>
+            <div class="try-result-box" id="tryPostBody"></div>
+          </div>
+
+          <!-- Poll section -->
+          <div class="try-poll-section" id="tryPollSection">
+            <div class="try-label" style="margin-bottom:12px">
+              Tarefa criada — consulte o resultado:
+            </div>
+            <div class="poll-id-display">
+              <i class="bi bi-tag" style="color:var(--cyan)"></i>
+              Task ID: <strong id="tryTaskId">—</strong>
+              <span class="poll-status-chip chip-processing" id="pollChip">PROCESSING</span>
+            </div>
+            <button class="poll-btn" id="pollBtn" onclick="pollResult()">
+              <i class="bi bi-arrow-clockwise"></i> Verificar Status
+            </button>
+            <div class="try-result" id="tryPollResult" style="display:none;margin-top:16px">
+              <div class="try-result-label">GET /api/v1/chat/<span id="pollResultId" style="color:var(--cyan)">...</span></div>
+              <div class="try-result-box" id="tryPollBody"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <hr class="doc-divider" />
+
+    <!-- Swagger -->
+    <div class="doc-section">
+      <h2 class="section-title"><i class="bi bi-file-earmark-code-fill"></i> Especificação OpenAPI</h2>
+      <p class="section-sub">Acesse a documentação interativa gerada automaticamente pelo Swagger.</p>
+      <div class="swagger-card">
+        <div class="swagger-icon"><i class="bi bi-file-earmark-code"></i></div>
+        <div class="swagger-text">
+          <h3>Swagger UI</h3>
+          <p>Interface interativa para explorar e testar todos os endpoints diretamente no browser.</p>
+        </div>
+        <a href="/swagger-ui/index.html" target="_blank" class="swagger-btn">
+          <i class="bi bi-box-arrow-up-right"></i> Abrir Swagger UI
+        </a>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Syntax highlighting
+  document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());
+
+  // Sidebar active tracking
+  function scrollTo(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+  }
+
+  // Copy code
+  function copyCode(btn) {
+    const pre = btn.closest('.code-panel').querySelector('code');
+    navigator.clipboard.writeText(pre.innerText);
+    btn.innerHTML = '<i class="bi bi-check2"></i> Copiado!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = '<i class="bi bi-clipboard"></i> Copiar';
+      btn.classList.remove('copied');
+    }, 2000);
+  }
+
+  // Try It
+  let currentTaskId = null;
+
+  async function runTry() {
+    const btn = document.getElementById('tryBtn');
+    const bodyRaw = document.getElementById('tryPrompt').value.trim();
+
+    let payload;
+    try {
+      payload = JSON.parse(bodyRaw);
+    } catch {
+      alert('JSON inválido no Request Body.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-repeat try-spinner"></i> Enviando...';
+
+    try {
+      const res = await fetch('/api/v1/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      document.getElementById('tryPostResult').style.display = 'block';
+      document.getElementById('tryPostStatus').textContent = res.status;
+      document.getElementById('tryPostBody').textContent = JSON.stringify(data, null, 2);
+
+      if (data.id) {
+        currentTaskId = data.id;
+        document.getElementById('tryTaskId').textContent = data.id;
+        document.getElementById('pollResultId').textContent = data.id;
+        document.getElementById('tryPollSection').style.display = 'block';
+        document.getElementById('pollChip').className = 'poll-status-chip chip-processing';
+        document.getElementById('pollChip').textContent = 'PROCESSING';
+        document.getElementById('tryPollResult').style.display = 'none';
+      }
+    } catch (e) {
+      document.getElementById('tryPostResult').style.display = 'block';
+      document.getElementById('tryPostStatus').textContent = 'ERR';
+      document.getElementById('tryPostStatus').className = 'try-result-status err';
+      document.getElementById('tryPostBody').textContent = 'Erro de rede: ' + e.message;
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-send-fill"></i> Enviar Prompt';
+  }
+
+  async function pollResult() {
+    if (!currentTaskId) return;
+    const btn = document.getElementById('pollBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-repeat try-spinner"></i> Consultando...';
+
+    try {
+      const res = await fetch(`/api/v1/chat/${currentTaskId}`);
+      const data = await res.json();
+
+      document.getElementById('tryPollResult').style.display = 'block';
+      document.getElementById('tryPollBody').textContent = JSON.stringify(data, null, 2);
+
+      const chip = document.getElementById('pollChip');
+      if (data.status === 'COMPLETED') {
+        chip.className = 'poll-status-chip chip-completed';
+        chip.textContent = 'COMPLETED';
+      } else if (data.status === 'FAILED') {
+        chip.className = 'poll-status-chip chip-failed';
+        chip.textContent = 'FAILED';
+      } else {
+        chip.className = 'poll-status-chip chip-processing';
+        chip.textContent = 'PROCESSING';
+      }
+    } catch (e) {
+      document.getElementById('tryPollBody').textContent = 'Erro: ' + e.message;
+      document.getElementById('tryPollResult').style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Verificar Status';
+  }
+</script>
+</body>
+</html>
