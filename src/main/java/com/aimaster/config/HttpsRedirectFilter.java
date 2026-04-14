@@ -17,7 +17,10 @@ public class HttpsRedirectFilter implements Filter {
         if (request instanceof HttpServletRequest req
                 && response instanceof HttpServletResponse res
                 && "http".equals(req.getHeader("x-forwarded-proto"))) {
-            res.sendRedirect("https://" + req.getServerName() + req.getRequestURI());
+            String redirect = "https://" + req.getServerName() + req.getRequestURI();
+            String qs = req.getQueryString();
+            if (qs != null) redirect += "?" + qs;
+            res.sendRedirect(redirect);
             return;
         }
 

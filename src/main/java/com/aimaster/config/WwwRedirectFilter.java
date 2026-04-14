@@ -20,7 +20,10 @@ public class WwwRedirectFilter implements Filter {
         if (request instanceof HttpServletRequest req
                 && response instanceof HttpServletResponse res
                 && REDIRECT_HOSTS.contains(req.getHeader("host"))) {
-            res.sendRedirect("https://www.evj.app.br" + req.getRequestURI());
+            String redirect = "https://www.evj.app.br" + req.getRequestURI();
+            String qs = req.getQueryString();
+            if (qs != null) redirect += "?" + qs;
+            res.sendRedirect(redirect);
             return;
         }
 
