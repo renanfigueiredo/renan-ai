@@ -3,6 +3,7 @@ package com.aimaster.controller;
 import com.aimaster.model.ChatRequest;
 import com.aimaster.model.Conversation;
 import com.aimaster.model.Message;
+import com.aimaster.service.AgendaItemService;
 import com.aimaster.service.StorageService;
 import com.aimaster.service.TextGenerationService;
 import com.aimaster.service.UserService;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +73,31 @@ public class PortalChatController {
     private final TextGenerationService textGenerationService;
     private final StorageService storageService;
     private final UserService userService;
+    private final AgendaItemService agendaItemService;
+
+    private static final List<String> AGENDA_KEYWORDS = List.of(
+        "agenda", "programaç", "programacao", "evento", "culto", "atividade",
+        "ebd", "domingo", "horário", "horario", "quando", "próximo", "proximo",
+        "próximos", "proximos", "ocorre", "acontece", "reunião", "reuniao",
+        "encontro", "celebraç", "semana", "semanal",
+        "o que tem", "o que vai ter", "o que acontece", "o que rola",
+        "quais eventos", "quais programas", "calendario", "calendário"
+    );
+
+    private static boolean isAgendaQuestion(String msg) {
+        if (msg == null) return false;
+        String lower = Normalizer.normalize(msg.toLowerCase(), Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        return AGENDA_KEYWORDS.stream().anyMatch(lower::contains);
+    }
+
+    /** Builds the portal system prompt, injecting live agenda data when relevant. */
+    private String buildPortalSystemPrompt(String message) {
+        if (!isAgendaQuestion(message)) return PORTAL_SYSTEM_PROMPT;
+        String agendaContext = agendaItemService.formatAgendaForAI();
+        if (agendaContext.isEmpty()) return PORTAL_SYSTEM_PROMPT;
+        return PORTAL_SYSTEM_PROMPT + "\n\n" + agendaContext;
+    }
 
     @PostMapping(value = "/api/portal/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter portalChat(@RequestBody PortalChatRequest req, Authentication auth) {
@@ -117,7 +144,7 @@ public class PortalChatController {
             chatReq.setMessage(req.message());
             chatReq.setConversationId(conversation.getId());
             chatReq.setModelId(PORTAL_MODEL);
-            chatReq.setSystemPrompt(PORTAL_SYSTEM_PROMPT);
+            chatReq.setSystemPrompt(buildPortalSystemPrompt(req.message()));
             chatReq.setStream(true);
             chatReq.setMaxTokens(1500);
 

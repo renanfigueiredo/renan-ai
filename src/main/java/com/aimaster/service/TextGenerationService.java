@@ -21,6 +21,7 @@ import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelWithRespo
 import software.amazon.awssdk.services.bedrockruntime.model.PayloadPart;
 
 import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -41,6 +42,7 @@ public class TextGenerationService {
     private final StorageService storageService;
     private final PortalContentService portalContentService;
     private final UserPreferenceService userPreferenceService;
+    private final AgendaItemService agendaItemService;
     private final ObjectMapper objectMapper;
 
     // Markdown parser for formatting
@@ -53,6 +55,7 @@ public class TextGenerationService {
                                   StorageService storageService,
                                   PortalContentService portalContentService,
                                   UserPreferenceService userPreferenceService,
+                                  AgendaItemService agendaItemService,
                                   ObjectMapper objectMapper) {
         this.bedrockClient = bedrockClient;
         this.bedrockAsyncClient = bedrockAsyncClient;
@@ -60,6 +63,7 @@ public class TextGenerationService {
         this.storageService = storageService;
         this.portalContentService = portalContentService;
         this.userPreferenceService = userPreferenceService;
+        this.agendaItemService = agendaItemService;
         this.objectMapper = objectMapper;
 
         var options = new MutableDataSet();
@@ -224,6 +228,24 @@ public class TextGenerationService {
         "• Usa linguagem contemporânea, mas sempre edificante e respeitosa\n" +
         "• Nunca fria ou robótica — sempre humana, calorosa e ungida\n";
 
+    private static final List<String> AGENDA_KEYWORDS = List.of(
+        "agenda", "programaç", "programacao", "evento", "culto", "cultos", "atividade",
+        "ebd", "domingo", "horário", "horario", "quando", "próximo", "proximo",
+        "próximos", "proximos", "ocorre", "acontece", "reunião", "reuniao",
+        "encontro", "celebraç", "celebracao", "semana", "semanal",
+        "o que tem", "o que vai ter", "o que acontece", "o que rola",
+        "quais eventos", "quais programas", "quais atividades",
+        "calendario", "calendário", "organização", "organizaçao"
+    );
+
+    /** Detecta se a mensagem provavelmente é sobre agenda/eventos da EVJ. */
+    private static boolean isAgendaQuestion(String message) {
+        if (message == null) return false;
+        String lower = Normalizer.normalize(message.toLowerCase(), Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        return AGENDA_KEYWORDS.stream().anyMatch(lower::contains);
+    }
+
     /**
      * Monta o system prompt completo com catálogo dinâmico do portal
      * e conteúdo contextual relevante à pergunta do usuário.
@@ -244,7 +266,15 @@ public class TextGenerationService {
                 fullPrompt.append("════════════════════════════════════════\n");
             }
 
-            // 3. Injeta versículos bíblicos relevantes (curadoria EVJ)
+            // 3. Injeta agenda EVJ quando a pergunta for relacionada a eventos/programação
+            if (isAgendaQuestion(userMessage)) {
+                String agendaContext = agendaItemService.formatAgendaForAI();
+                if (!agendaContext.isEmpty()) {
+                    fullPrompt.append("\n").append(agendaContext);
+                }
+            }
+
+            // 4. Injeta versículos bíblicos relevantes (curadoria EVJ)
             String relevantVerses = portalContentService.findRelevantVerses(userMessage, 5);
             if (!relevantVerses.isEmpty()) {
                 fullPrompt.append("\n════════════════════════════════════════\n");
