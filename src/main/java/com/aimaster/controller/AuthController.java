@@ -69,6 +69,19 @@ public class AuthController {
         return "pending";
     }
 
+    @GetMapping("/verify-email")
+    public String verifyEmail(@RequestParam String token, RedirectAttributes redirectAttrs) {
+        boolean ok = userService.verifyEmail(token);
+        if (ok) {
+            redirectAttrs.addFlashAttribute("message",
+                    "E-mail confirmado! Sua conta est\u00e1 ativa. Fa\u00e7a login para come\u00e7ar.");
+        } else {
+            redirectAttrs.addFlashAttribute("error",
+                    "Link inv\u00e1lido ou expirado. Solicite um novo cadastro.");
+        }
+        return "redirect:/login";
+    }
+
     @GetMapping("/admin/approve/{token}")
     public String approveUser(@PathVariable String token, Model model) {
         boolean ok = userService.approveUser(token);
@@ -88,14 +101,21 @@ public class AuthController {
     @GetMapping("/api/me")
     @ResponseBody
     public ResponseEntity<Map<String, String>> me(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.ok(Map.of("role", "ANONYMOUS"));
+        }
         return userService.findByEmail(principal.getName())
                 .map(u -> {
                     String displayEmail = u.getEmail().endsWith("@guest.invalid")
                             ? "Modo Visitante"
                             : u.getEmail();
-                    return ResponseEntity.ok(Map.of("name", u.getName(), "email", displayEmail));
+                    return ResponseEntity.ok(Map.of(
+                            "name",  u.getName(),
+                            "email", displayEmail,
+                            "role",  u.getRole().name()
+                    ));
                 })
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.ok(Map.of("role", "ANONYMOUS")));
     }
 
     // ── Esqueci minha senha ────────────────────────────────────────

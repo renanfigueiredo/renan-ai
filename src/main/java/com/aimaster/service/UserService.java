@@ -71,7 +71,7 @@ public class UserService implements UserDetailsService {
         userRepository.save(newUser);
 
         try {
-            emailService.sendApprovalRequest(newUser);
+            emailService.sendVerificationEmail(newUser);
         } catch (Exception e) {
             log.error("Falha ao enviar e-mail de aprovação para novo usuário: {}", email, e);
         }
@@ -116,6 +116,89 @@ public class UserService implements UserDetailsService {
 
     public Optional<AppUser> findByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    /** Verifica o e-mail do usuário a partir do token enviado no cadastro (sem e-mail extra). */
+    @Transactional
+    public boolean verifyEmail(String token) {
+        Optional<AppUser> opt = userRepository.findByApprovalToken(token);
+        if (opt.isEmpty()) return false;
+        AppUser user = opt.get();
+        user.setStatus(UserStatus.ACTIVE);
+        user.setApprovalToken(null);
+        userRepository.save(user);
+        log.info("E-mail verificado, conta ativada: {}", user.getEmail());
+        return true;
+    }
+
+    public Optional<AppUser> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    // ── Admin CRUD ───────────────────────────────────────────────────────────
+
+    public List<AppUser> getAllUsers() {
+        return userRepository.findAllNonGuests();
+    }
+
+    public java.util.Map<String, Long> getUserStats() {
+        return java.util.Map.of(
+            "total",   userRepository.countNonGuests(),
+            "active",  userRepository.countNonGuestsByStatus(UserStatus.ACTIVE),
+            "pending", userRepository.countNonGuestsByStatus(UserStatus.PENDING),
+            "admin",   userRepository.countNonGuestsByRole(UserRole.ADMIN)
+        );
+    }
+
+    @Transactional
+    public AppUser adminCreateUser(String name, String email, String rawPassword,
+                                   UserRole role, UserStatus status) {
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("E-mail já cadastrado.");
+        }
+        AppUser user = AppUser.builder()
+                .name(name)
+                .email(email)
+                .password(passwordEncoder.encode(rawPassword))
+                .role(role)
+                .status(status)
+                .build();
+        log.info("Admin criou usuário: {} ({})", email, role);
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public AppUser adminUpdateUser(Long id, String name, String email,
+                                   UserRole role, UserStatus status) {
+        AppUser user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        if (!user.getEmail().equals(email) && userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("E-mail já utilizado por outro usuário.");
+        }
+        user.setName(name);
+        user.setEmail(email);
+        user.setRole(role);
+        user.setStatus(status);
+        log.info("Admin atualizou usuário id={} email={}", id, email);
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public void adminChangePassword(Long id, String newRawPassword) {
+        AppUser user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        user.setPassword(passwordEncoder.encode(newRawPassword));
+        userRepository.save(user);
+        log.info("Admin alterou senha do usuário id={}", id);
+    }
+
+    @Transactional
+    public void adminDeleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new IllegalArgumentException("Usuário não encontrado.");
+        }
+        userRepository.deleteById(id);
+        log.info("Admin excluiu usuário id={}", id);
     }
 
     // ── Password reset ────────────────────────────────────────────────────────

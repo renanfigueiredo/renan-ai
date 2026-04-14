@@ -23,42 +23,22 @@
 
 <!-- ─── NAVIGATION ─── -->
 <nav class="portal-nav">
-  <a href="/" class="nav-brand" aria-label="EVJ">
-    EVJ
-  </a>
-
-  <!-- Desktop links -->
+  <a href="/portal/index.html" class="nav-brand" aria-label="EVJ">EVJ</a>
   <ul class="nav-links">
-    <li><a href="#pilares">Nosso Ministério</a></li>
-    <li><a href="#ebd">EBD</a></li>
-    <li><a href="#aprendizados">Aprendizados</a></li>
-    <li><a href="#cursos">Cursos</a></li>
-    <li><a href="#evjai">EVJ AI</a></li>
-    <li><a href="/portal/api-docs.html"><i class="bi bi-braces" style="margin-right:4px"></i>DOC API</a></li>
-    <li>
-      <a href="/login" class="nav-cta">
-        <i class="bi bi-box-arrow-in-right"></i> Entrar na EVJ AI
-      </a>
+    <li><a href="/portal/index.html" class="nav-active">Portal EVJ</a></li>
+    <li><a href="/portal/programacao.html">Agenda</a></li>
+    <li id="navAdminItem" style="display:none">
+      <a href="/admin/users" class="nav-admin"><i class="bi bi-shield-fill-check"></i> Admin</a>
     </li>
+    <li><a href="/login" class="nav-cta" id="navEvjAiLink"><i class="bi bi-box-arrow-in-right"></i> EVJ AI</a></li>
   </ul>
-
-  <!-- Mobile hamburger -->
-  <button class="nav-hamburger" id="hamburger" aria-label="Menu">
-    <i class="bi bi-list"></i>
-  </button>
+  <button class="nav-hamburger" id="hamburger" aria-label="Menu"><i class="bi bi-list"></i></button>
 </nav>
-
-<!-- Mobile nav drawer -->
 <div class="nav-mobile" id="mobileNav">
-  <a href="#pilares">Nosso Ministério</a>
-  <a href="#ebd">EBD</a>
-  <a href="#aprendizados">Aprendizados</a>
-  <a href="#cursos">Cursos</a>
-  <a href="#evjai">EVJ AI</a>
-  <a href="/portal/api-docs.html"><i class="bi bi-braces" style="margin-right:4px"></i>DOC API</a>
-  <a href="/login" class="nav-cta">
-    <i class="bi bi-box-arrow-in-right"></i> Entrar na EVJ AI
-  </a>
+  <a href="/portal/index.html">Portal EVJ</a>
+  <a href="/portal/programacao.html">Agenda</a>
+  <a href="/admin/users" id="mobileAdminLink" style="display:none"><i class="bi bi-shield-fill-check"></i> Admin</a>
+  <a href="/login" class="nav-cta" id="mobileEvjAiLink"><i class="bi bi-box-arrow-in-right"></i> EVJ AI</a>
 </div>
 
 <!-- ─── HERO ─── -->
@@ -66,16 +46,11 @@
 
   <!-- Left: EVJ identity -->
   <div class="hero-left">
-    <h1 class="hero-title">Estação Vida Jovem</h1>
+    <h1 class="hero-title">EVJ</h1>
+    <p class="hero-subtitle">Estação Vida Jovem</p>
     <div class="hero-pills">
-      <div class="pill pill-cyan"><i class="bi bi-heart-fill"></i><span>GCG — Gente Cuidando de Gente</span></div>
-      <div class="pill pill-green"><i class="bi bi-calendar-event"></i><span>Eventos e Atividades</span></div>
-      <div class="pill pill-purple"><i class="bi bi-broadcast"></i><span>Mídias e Comunicação</span></div>
-    </div>
-    <div class="hero-nav-btns">
-      <a href="#pilares" class="btn-out"><i class="bi bi-compass"></i> Ver Ministério</a>
-      <a href="#ebd" class="btn-out"><i class="bi bi-book-open"></i> EBD</a>
-      <a href="#cursos" class="btn-out"><i class="bi bi-journal-bookmark-fill"></i> Cursos</a>
+      <div class="pill pill-green"><i class="bi bi-church"></i><span>Igreja de Nova Vida em Estrela do Norte</span></div>
+      <div class="pill pill-cyan"><i class="bi bi-people"></i><span>Ministério de Jovens</span></div>
     </div>
   </div>
 
@@ -86,34 +61,42 @@
     </div>
 
     <div>
-      <p class="login-title">Entrar na EVJ AI</p>
       <div id="guestError" class="lc-alert lc-alert-err d-none">
         <i class="bi bi-exclamation-circle-fill"></i>
         <span id="guestErrorText"></span>
       </div>
       <a href="/login" class="lc-submit">
-        <i class="bi bi-box-arrow-in-right"></i> Entrar com sua conta
+        <i class="bi bi-box-arrow-in-right"></i> Entrar
       </a>
       <div class="lc-sep">ou</div>
       <button class="lc-guest" id="btnGuest" onclick="startGuestMode()">
         <span class="guest-dot"></span>
-        Explorar como Visitante
+        Testar IA como Visitante
       </button>
       <div class="lc-register">
         <span>Não tem conta?</span>
-        <a href="/register"> Solicitar acesso</a>
+        <a href="/register"> Cadastrar</a>
       </div>
     </div>
   </div>
 
 </div><!-- /.hero-wrap -->
 
-<hr class="divider" />
+<div class="acc-list">
 
-<!-- ─── PILARES ─── -->
-<section class="portal-section" id="pilares">
-  <p class="section-label"><i class="bi bi-columns-gap"></i> Fundamentos</p>
-  <h2 class="section-title">Nosso Ministério</h2>
+  <!-- ── Nosso Ministério ── -->
+  <div class="acc-item">
+    <button class="acc-header" onclick="toggleAcc(this)" aria-expanded="false">
+      <div class="acc-left">
+        <span class="acc-icon" style="background:rgba(0,204,255,0.12);color:var(--cyan)"><i class="bi bi-columns-gap"></i></span>
+        <div>
+          <span class="acc-title">Nosso Ministério</span>
+          <span class="acc-meta">GCG · Eventos · Mídias e Comunicação</span>
+        </div>
+      </div>
+      <i class="bi bi-chevron-down acc-chevron"></i>
+    </button>
+    <div class="acc-body"><div class="acc-body-inner">
 
   <div class="pillars-grid">
     <div class="pillar-card c1">
@@ -139,15 +122,22 @@
       <p>Conteúdo que inspira, conecta e transforma — com conversa real que vira presença.</p>
     </div>
   </div>
-</section>
+    </div></div>
+  </div><!-- /acc-item: Ministério -->
 
-<hr class="divider" />
-
-<!-- ─── EBD ─── -->
-<section class="portal-section" id="ebd">
-  <p class="section-label"><i class="bi bi-book-open"></i> Domingo — 08h45</p>
-  <h2 class="section-title">EBD — Escola Bíblica Dominical</h2>
-  <p class="section-sub">Palavra, reflexão e aplicação para a vida real. Uma hora que transforma.</p>
+  <!-- ── EBD ── -->
+  <div class="acc-item">
+    <button class="acc-header" onclick="toggleAcc(this)" aria-expanded="false">
+      <div class="acc-left">
+        <span class="acc-icon" style="background:rgba(0,224,90,0.12);color:var(--green)"><i class="bi bi-book"></i></span>
+        <div>
+          <span class="acc-title">EBD — Escola Bíblica Dominical</span>
+          <span class="acc-meta">Domingo · 08h45 · Em andamento: Ciclo 2 — Cristianismo Leve</span>
+        </div>
+      </div>
+      <i class="bi bi-chevron-down acc-chevron"></i>
+    </button>
+    <div class="acc-body"><div class="acc-body-inner">
 
   <!-- CICLO 1 -->
   <div class="cycle-header">
@@ -211,15 +201,22 @@
       <span class="card-sub">Níveis, tipos e o perfil do legalista</span>
     </a>
   </div>
-</section>
+    </div></div>
+  </div><!-- /acc-item: EBD -->
 
-<hr class="divider" />
-
-<!-- ─── APRENDIZADOS ─── -->
-<section class="portal-section" id="aprendizados">
-  <p class="section-label"><i class="bi bi-lightbulb-fill"></i> Acervo</p>
-  <h2 class="section-title">Aprendizados e Discussões que nos Marcaram</h2>
-  <p class="section-sub">Temas importantes que já tivemos e que nos ensinaram muita coisa. Cada conversa aqui deixou marcas reais.</p>
+  <!-- ── Aprendizados ── -->
+  <div class="acc-item">
+    <button class="acc-header" onclick="toggleAcc(this)" aria-expanded="false">
+      <div class="acc-left">
+        <span class="acc-icon" style="background:rgba(124,58,237,0.15);color:#a78bfa"><i class="bi bi-lightbulb-fill"></i></span>
+        <div>
+          <span class="acc-title">Aprendizados e Discussões</span>
+          <span class="acc-meta">Acervo · 12 temas que nos marcaram</span>
+        </div>
+      </div>
+      <i class="bi bi-chevron-down acc-chevron"></i>
+    </button>
+    <div class="acc-body"><div class="acc-body-inner">
 
   <div class="content-grid">
     <a href="/portal/contents/sermoes/01-filhos.html" class="content-card">
@@ -283,15 +280,22 @@
       <span class="card-sub">Apocalipse 22:20 — A esperança que nos move</span>
     </a>
   </div>
-</section>
+    </div></div>
+  </div><!-- /acc-item: Aprendizados -->
 
-<hr class="divider" />
-
-<!-- ─── CURSOS ─── -->
-<section class="portal-section" id="cursos">
-  <p class="section-label"><i class="bi bi-mortarboard-fill"></i> Formação</p>
-  <h2 class="section-title">Curso — Namoro com Propósito</h2>
-  <p class="section-sub">8 aulas sobre família, aliança, pureza, conflitos e vida financeira para casais cristãos.</p>
+  <!-- ── Namoro com Propósito ── -->
+  <div class="acc-item">
+    <button class="acc-header" onclick="toggleAcc(this)" aria-expanded="false">
+      <div class="acc-left">
+        <span class="acc-icon" style="background:rgba(251,146,60,0.15);color:#fb923c"><i class="bi bi-mortarboard-fill"></i></span>
+        <div>
+          <span class="acc-title">Curso — Namoro com Propósito</span>
+          <span class="acc-meta">8 aulas · Família, aliança, pureza e vida financeira</span>
+        </div>
+      </div>
+      <i class="bi bi-chevron-down acc-chevron"></i>
+    </button>
+    <div class="acc-body"><div class="acc-body-inner">
 
   <div class="content-grid">
     <a href="/portal/contents/cursos/namoro-com-proposito.html" class="content-card">
@@ -340,15 +344,22 @@
       <span class="card-sub">Comunicação, perdão e maturidade</span>
     </a>
   </div>
-</section>
+    </div></div>
+  </div><!-- /acc-item: Cursos -->
 
-<hr class="divider" />
-
-<!-- ─── METODOLOGIA ─── -->
-<section class="portal-section">
-  <p class="section-label"><i class="bi bi-diagram-3-fill"></i> Guia Prático</p>
-  <h2 class="section-title">Nosso Guia Prático</h2>
-  <p class="section-sub">Ritmo, discipulado, liderança e comunicação — guia completo de prática e multiplicação.</p>
+  <!-- ── Guia Prático ── -->
+  <div class="acc-item">
+    <button class="acc-header" onclick="toggleAcc(this)" aria-expanded="false">
+      <div class="acc-left">
+        <span class="acc-icon" style="background:rgba(0,204,255,0.08);color:var(--cyan)"><i class="bi bi-diagram-3-fill"></i></span>
+        <div>
+          <span class="acc-title">Guia Prático</span>
+          <span class="acc-meta">Discipulado · Liderança · Comunicação</span>
+        </div>
+      </div>
+      <i class="bi bi-chevron-down acc-chevron"></i>
+    </button>
+    <div class="acc-body"><div class="acc-body-inner">
 
   <div class="content-grid wide">
     <a href="/portal/contents/metodologia.html" class="content-card featured">
@@ -357,61 +368,13 @@
       <span class="card-sub">Guia de discipulado, grupos, liderança e comunicação</span>
     </a>
   </div>
-</section>
+    </div></div>
+  </div><!-- /acc-item: Guia Prático -->
 
-<hr class="divider" />
+</div><!-- /acc-list -->
 
-<!-- ─── EVJ AI PROMO ─── -->
-<div class="ai-promo" id="evjai">
-  <span class="ai-promo-icon">✝️</span>
-  <h2>EVJ AI — Inteligência Artificial Cristã</h2>
-  
-  <div class="ai-features">
-    <span class="ai-feature"><i class="bi bi-book-fill"></i> Baseada na Bíblia</span>
-  </div>
-  <a href="/login" class="btn-primary-portal">
-    <i class="bi bi-box-arrow-in-right"></i> Entrar na EVJ AI
-  </a>
-  <a href="/register" class="btn-secondary-portal ml-sm">
-    <i class="bi bi-person-plus"></i> Criar Conta
-  </a>
-</div>
-
-<hr class="divider" />
-
-<!-- ─── API DEV PORTAL ─── -->
-<section class="portal-section" id="api" style="text-align:center;">
-  <p class="section-label"><i class="bi bi-braces"></i> Desenvolvedores</p>
-  <h2 class="section-title" style="justify-content:center">DOC API — EVJ AI</h2>
-  <p class="section-sub" style="max-width:520px;margin:0 auto 32px">Integre a inteligência artificial cristã do EVJ na sua aplicação. API REST pública, sem autenticação, com documentação completa e exemplos em cURL, JavaScript e Python.</p>
-  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:16px">
-    <div class="content-card" style="max-width:220px;text-align:left">
-      <div class="card-num"><i class="bi bi-send-fill"></i></div>
-      <span class="card-title">POST /api/v1/chat</span>
-      <span class="card-sub">Envia um prompt e obtém um ID de tarefa</span>
-    </div>
-    <div class="content-card" style="max-width:220px;text-align:left">
-      <div class="card-num"><i class="bi bi-arrow-repeat"></i></div>
-      <span class="card-title">GET /api/v1/chat/{id}</span>
-      <span class="card-sub">Consulta o status e resultado da geração</span>
-    </div>
-    <div class="content-card" style="max-width:220px;text-align:left">
-      <div class="card-num"><i class="bi bi-unlock-fill"></i></div>
-      <span class="card-title">Sem autenticação</span>
-      <span class="card-sub">API pública — qualquer cliente HTTP pode usar</span>
-    </div>
-  </div>
-  <a href="/portal/api-docs.html" class="btn-primary-portal" style="display:inline-flex;align-items:center;gap:8px">
-    <i class="bi bi-braces"></i> Ver Documentação Completa
-  </a>
-  <a href="/swagger-ui/index.html" class="btn-secondary-portal ml-sm" style="display:inline-flex;align-items:center;gap:8px">
-    <i class="bi bi-box-arrow-up-right"></i> Swagger UI
-  </a>
-</section>
-
-<!-- ─── FOOTER ─── -->
 <footer>
-  <p>© <span id="yr"></span>  &mdash; <strong>EVJ — Estação Vida Jovem</strong></p>
+  <p>&mdash; <strong>EVJ — Estação Vida Jovem</strong></p>
   <p class="footer-links">
     <a href="/portal">Portal</a>
     &nbsp;·&nbsp;
@@ -420,7 +383,6 @@
 </footer>
 
 <script>
-  document.getElementById('yr').textContent = new Date().getFullYear();
   document.getElementById('hamburger').addEventListener('click', function() {
     var m = document.getElementById('mobileNav');
     m.classList.toggle('open');
@@ -507,6 +469,23 @@
       btn.innerHTML = '<span class="guest-dot"></span> Explorar como Visitante — 1 hora grátis';
     }
   }
+  function toggleAcc(btn) {
+    btn.closest('.acc-item').classList.toggle('open');
+    btn.setAttribute('aria-expanded', btn.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
+  }
+  (async function() {
+    try {
+      var r = await fetch('/api/me');
+      if (r.ok) { var u = await r.json();
+        var cta = document.getElementById('navEvjAiLink'); if (cta) { cta.href='/dashboard'; }
+        var mCta = document.getElementById('mobileEvjAiLink'); if (mCta) { mCta.href='/dashboard'; }
+        if (u.role === 'ADMIN') {
+          var a = document.getElementById('navAdminItem'); if (a) a.style.display = '';
+          var b = document.getElementById('mobileAdminLink'); if (b) b.style.display = '';
+        }
+      }
+    } catch(_) {}
+  })();
 </script>
 
 <!-- ─── FLOATING CHAT WIDGET ─── -->

@@ -57,6 +57,13 @@
             <i class="bi bi-braces"></i>
             <span>DOC API</span>
         </a>
+        <!-- Admin-only nav link -->
+        <a th:href="@{/admin/users}" class="nav-item" sec:authorize="hasRole('ADMIN')"
+           th:classappend="${activeTab == 'admin-users'} ? 'active' : ''"
+           style="margin-top:auto;border-top:1px solid rgba(255,255,255,0.07);padding-top:8px">
+            <i class="bi bi-shield-fill-check"></i>
+            <span>Usuários</span>
+        </a>
     </nav>
 
     <div class="sidebar-logo-showcase">
@@ -80,7 +87,13 @@
                 <span class="evj-brand-vida">Vida Jovem</span>
             </span>
         </a>
-        </a>
+        <nav class="topbar-nav">
+            <a href="/portal/index.html" class="topbar-nav-link">Portal EVJ</a>
+            <a href="/portal/programacao.html" class="topbar-nav-link">Agenda</a>
+            <a th:href="@{/admin/users}" class="topbar-nav-link topbar-nav-admin" sec:authorize="hasRole('ADMIN')">
+                <i class="bi bi-shield-fill-check"></i> Admin
+            </a>
+        </nav>
         <div class="topbar-actions">
             <div class="status-indicator online" title="AWS Bedrock Conectado">
                 <span class="status-dot"></span>

@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agenda EVJ — Estação Vida Jovem</title>
+  <meta name="description" content="Confira a agenda da Estação Vida Jovem — cultos, EBD, eventos e muito mais." />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300ccff'/%3E%3Cstop offset='100%25' stop-color='%2300e05a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='40' height='40' rx='10' fill='%230e0a1a'/%3E%3Ctext x='4' y='28' font-family='Arial' font-weight='900' font-size='22' fill='url(%23g)'%3EEVJ%3C/text%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/portal/assets/css/portal-home.css">
+  <link rel="stylesheet" href="/portal/assets/css/programacao.css">
+  <!-- QR Code library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<!-- ─── NAVIGATION ─── -->
+<nav class="portal-nav">
+  <a href="/" class="nav-brand" aria-label="EVJ">EVJ</a>
+  <ul class="nav-links">
+    <li><a href="/portal/index.html">Portal EVJ</a></li>
+    <li><a href="/portal/programacao.html" class="nav-active">Agenda</a></li>
+    <li id="navAdminItem" style="display:none">
+      <a href="/admin/users" class="nav-admin"><i class="bi bi-shield-fill-check"></i> Admin</a>
+    </li>
+    <li><a href="/login" class="nav-cta" id="navEvjAiLink"><i class="bi bi-box-arrow-in-right"></i> EVJ AI</a></li>
+  </ul>
+  <button class="nav-hamburger" id="hamburger" aria-label="Menu"><i class="bi bi-list"></i></button>
+</nav>
+<div class="nav-mobile" id="mobileNav">
+  <a href="/portal/index.html">Portal EVJ</a>
+  <a href="/portal/programacao.html">Agenda</a>
+  <a href="/admin/users" id="mobileAdminLink" style="display:none"><i class="bi bi-shield-fill-check"></i> Admin</a>
+  <a href="/login" class="nav-cta" id="mobileEvjAiLink"><i class="bi bi-box-arrow-in-right"></i> EVJ AI</a>
+</div>
+
+<!-- ─── HERO ─── -->
+<div class="pg-hero">
+  <div class="pg-hero-inner">
+    <span class="pg-hero-badge"><i class="bi bi-calendar3"></i> Agenda EVJ</span>
+    <h1 class="pg-hero-title">Agenda<br><span class="gradient-text">EVJ</span></h1>
+
+    <div class="pg-hero-actions">
+      <button class="btn-primary-pg" onclick="scrollToSection('programacoes-fixas')">
+        <i class="bi bi-repeat"></i> Agenda Fixa
+      </button>
+      <button class="btn-secondary-pg" onclick="scrollToSection('eventos-especiais')">
+        <i class="bi bi-stars"></i> Eventos
+      </button>
+      <button class="btn-qr-pg" onclick="openQR()">
+        <i class="bi bi-qr-code"></i> Gerar QR Code
+      </button>
+    </div>
+  </div>
+
+  <!-- Floating edit hint for admins -->
+  <div class="pg-edit-fab-hint">
+    <i class="bi bi-info-circle"></i> Clique em <kbd>Editar</kbd> em qualquer card para atualizar
+  </div>
+</div>
+
+<!-- ─── MAIN CONTENT ─── -->
+<main class="pg-main">
+
+  <!-- ════════════════════════════════
+       PROGRAMAÇÕES FIXAS
+  ════════════════════════════════ -->
+  <section id="programacoes-fixas" class="pg-section">
+    <div class="pg-section-header">
+      <div>
+        <p class="section-label"><i class="bi bi-repeat"></i> Toda semana</p>
+        <h2 class="section-title">Agenda Fixa</h2>
+      </div>
+      <button class="btn-add" onclick="openAddFixed()"><i class="bi bi-plus-lg"></i> Adicionar</button>
+    </div>
+
+    <div class="fixed-grid" id="fixedGrid">
+      <!-- Cards are rendered by JS -->
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       EVENTOS ESPECIAIS
+  ════════════════════════════════ -->
+  <section id="eventos-especiais" class="pg-section" style="margin-top:0">
+    <div class="pg-section-header">
+      <div>
+        <p class="section-label"><i class="bi bi-calendar-event-fill"></i> Em breve</p>
+        <h2 class="section-title">Eventos</h2>
+      </div>
+      <button class="btn-add" onclick="openAddEvent()"><i class="bi bi-plus-lg"></i> Adicionar</button>
+    </div>
+
+    <!-- Next Up spotlight -->
+    <div id="nextUpSpot" class="next-up-spot hidden"></div>
+
+    <!-- Timeline -->
+    <div class="events-timeline" id="eventsTimeline">
+      <!-- Rendered by JS -->
+    </div>
+  </section>
+
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer class="pg-footer">
+  <p>© Estação Vida Jovem — <a href="/portal/index.html">evj.app.br</a></p>
+  <button class="btn-qr-footer" onclick="openQR()"><i class="bi bi-qr-code-scan"></i> Gerar QR Code da página</button>
+</footer>
+
+<!-- ════════════ MODAL — EDIT / ADD ════════════ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-header">
+      <h3 id="modalTitle">Editar Agenda</h3>
+      <button class="modal-close" onclick="closeModalDirect()"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <form id="modalForm" onsubmit="saveItem(event)">
+      <input type="hidden" id="fId" />
+      <input type="hidden" id="fType" />
+
+      <!-- Row 1: name -->
+      <div class="form-group">
+        <label>Nome do Evento *</label>
+        <input type="text" id="fName" placeholder="Ex: Culto de Jovens" required oninput="onNameInput()" />
+      </div>
+
+      <!-- Row 2: icon + color -->
+      <div class="form-row">
+        <div class="form-group icon-search-wrap">
+          <label>Ícone (Bootstrap Icon)</label>
+          <div class="icon-input-wrap">
+            <span class="icon-preview" id="iconPreview"><i class="bi bi-calendar-heart"></i></span>
+            <input type="text" id="fIcon" placeholder="Busque: livro, coração, música..." value="calendar-heart"
+              oninput="updateIconPreview();searchIcons(this.value)"
+              onfocus="searchIcons(this.value)"
+              autocomplete="off" />
+          </div>
+          <div class="icon-dropdown" id="iconDropdown" style="display:none"></div>
+        </div>
+        <div class="form-group">
+          <label>Cor de destaque</label>
+          <div class="color-options" id="colorOptions">
+            <button type="button" class="color-dot active" data-color="cyan" style="background:#00ccff" onclick="selectColor('cyan',this)"></button>
+            <button type="button" class="color-dot" data-color="green" style="background:#00e05a" onclick="selectColor('green',this)"></button>
+            <button type="button" class="color-dot" data-color="purple" style="background:#a78bfa" onclick="selectColor('purple',this)"></button>
+            <button type="button" class="color-dot" data-color="orange" style="background:#fb923c" onclick="selectColor('orange',this)"></button>
+            <button type="button" class="color-dot" data-color="red" style="background:#f87171" onclick="selectColor('red',this)"></button>
+            <button type="button" class="color-dot" data-color="yellow" style="background:#fbbf24" onclick="selectColor('yellow',this)"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: day/time (fixed) OR date/time (event) -->
+      <div id="fixedFields">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Dia da Semana</label>
+            <select id="fDayOfWeek">
+              <option value="0">Domingo</option>
+              <option value="1">Segunda-feira</option>
+              <option value="2">Terça-feira</option>
+              <option value="3">Quarta-feira</option>
+              <option value="4">Quinta-feira</option>
+              <option value="5">Sexta-feira</option>
+              <option value="6">Sábado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Horário</label>
+            <input type="time" id="fFixedTime" value="19:00" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Frequência</label>
+          <select id="fFrequency">
+            <option value="Toda semana">Toda semana</option>
+            <option value="Toda quinzena">Toda quinzena</option>
+            <option value="Todo mês">Todo mês</option>
+            <option value="Todo domingo">Todo domingo</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="eventFields" class="hidden">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Data *</label>
+            <input type="date" id="fDate" />
+          </div>
+          <div class="form-group">
+            <label>Horário *</label>
+            <input type="time" id="fEventTime" value="19:00" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4: location -->
+      <div class="form-group">
+        <label>Local</label>
+        <input type="text" id="fLocation" placeholder="Ex: Salão Principal, Online, IEAD Central..." />
+      </div>
+
+      <!-- Row 5: description -->
+      <div class="form-group">
+        <label>Descrição / Detalhes</label>
+        <textarea id="fDesc" rows="3" placeholder="Detalhes, tema, palestrante, observações..."></textarea>
+      </div>
+
+      <!-- Row 6: highlight -->
+      <div class="form-group form-check-group">
+        <label class="check-label">
+          <input type="checkbox" id="fHighlight" />
+          <span class="check-custom"></span>
+          Destaque — exibir como evento principal
+        </label>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-danger-sm" id="btnDelete" onclick="deleteItem()">
+          <i class="bi bi-trash3"></i> Excluir
+        </button>
+        <div style="display:flex;gap:10px">
+          <button type="button" class="btn-cancel" onclick="closeModalDirect()">Cancelar</button>
+          <button type="submit" class="btn-save"><i class="bi bi-check2"></i> Salvar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════ MODAL — QR CODE ════════════ -->
+<div class="modal-overlay" id="qrOverlay" onclick="closeQRModal(event)">
+  <div class="modal-box qr-modal-box">
+    <div class="modal-header">
+      <h3>QR Code — Programação EVJ</h3>
+      <button class="modal-close" onclick="document.getElementById('qrOverlay').classList.remove('active')"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="qr-body">
+      <p class="qr-desc">Aponte a câmera para acessar a programação completa da EVJ no celular.</p>
+      <div id="qrCodeContainer" class="qr-code-wrap"></div>
+      <p class="qr-url" id="qrUrlLabel"></p>
+      <div class="qr-actions">
+        <button class="btn-primary-pg" onclick="downloadQR()"><i class="bi bi-download"></i> Baixar PNG</button>
+        <button class="btn-secondary-pg" onclick="printQR()"><i class="bi bi-printer"></i> Imprimir</button>
+      </div>
+      <div class="qr-print-area" id="qrPrintArea">
+        <div class="qr-print-card">
+          <div class="qr-print-logo">EVJ</div>
+          <div id="qrPrintCode"></div>
+          <p class="qr-print-tagline">Estação Vida Jovem 2026</p>
+          <p class="qr-print-url" id="qrPrintUrl"></p>
+          <p class="qr-print-sub">Acesse nossa programação completa</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ SCRIPTS ════════════ -->
+<script>
+/* ─────────────────────────────────────────
+   DATA STORE — API backed (PostgreSQL)
+───────────────────────────────────────── */
+const COLOR_MAP = {
+  cyan:   { hex: '#00ccff', rgb: '0,204,255',   label: 'Azul'     },
+  green:  { hex: '#00e05a', rgb: '0,224,90',    label: 'Verde'    },
+  purple: { hex: '#a78bfa', rgb: '167,139,250', label: 'Roxo'     },
+  orange: { hex: '#fb923c', rgb: '251,146,60',  label: 'Laranja'  },
+  red:    { hex: '#f87171', rgb: '248,113,113', label: 'Vermelho' },
+  yellow: { hex: '#fbbf24', rgb: '251,191,36',  label: 'Amarelo'  },
+};
+
+const DAY_NAMES   = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const DAY_SHORT   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MONTH_SHORT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+async function loadAgenda() {
+  try {
+    const res = await fetch('/api/agenda');
+    if (!res.ok) { fixedData = []; eventsData = []; return; }
+    const data = await res.json();
+    fixedData  = data.filter(i => i.type === 'fixed');
+    eventsData = data.filter(i => i.type === 'event');
+  } catch(e) {
+    console.error('Erro ao carregar agenda:', e);
+    fixedData = []; eventsData = [];
+  }
+}
+
+/* ─────────────────────────────────────────
+   ADMIN AUTH CHECK
+───────────────────────────────────────── */
+let IS_ADMIN = false;
+
+async function checkAdminAccess() {
+  try {
+    const res = await fetch('/api/me', { credentials: 'include' });
+    if (!res.ok) return;
+    const data = await res.json();
+    IS_ADMIN = data.role === 'ADMIN';
+    const cta = document.getElementById('navEvjAiLink'); if (cta) { cta.href='/dashboard'; }
+    const mCta = document.getElementById('mobileEvjAiLink'); if (mCta) { mCta.href='/dashboard'; }
+    if (IS_ADMIN) {
+      const na = document.getElementById('navAdminItem'); if (na) na.style.display = '';
+      const nb = document.getElementById('mobileAdminLink'); if (nb) nb.style.display = '';
+    }
+  } catch(e) { IS_ADMIN = false; }
+  // Re-render with correct visibility
+  renderAll();
+  // Hide static add buttons and hint if not admin
+  if (!IS_ADMIN) {
+    document.querySelectorAll('.btn-add, .pg-edit-fab-hint').forEach(el => el.style.display = 'none');
+  }
+}
+
+/* ─────────────────────────────────────────
+   SMART ICON SUGGESTION (IA)
+───────────────────────────────────────── */
+const ICON_RULES = [
+  { words: ['culto','worship'],                                 icon: 'music-note-beamed' },
+  { words: ['ebd','escola bíblica','escola biblica'],           icon: 'book-open' },
+  { words: ['célula','celula','gcg','grupo pequeno'],           icon: 'people-fill' },
+  { words: ['louvor','adoração','adoracao','praise'],           icon: 'music-note-list' },
+  { words: ['oração','oracao','intercessão','intercessao'],    icon: 'heart-pulse' },
+  { words: ['acampamento'],                                     icon: 'tree-fill' },
+  { words: ['retiro'],                                          icon: 'mountain' },
+  { words: ['missão','missao','evangelismo','evangelizar'],     icon: 'geo-alt-fill' },
+  { words: ['casais','casal'],                                  icon: 'heart-fill' },
+  { words: ['jovens','jovem','youth'],                          icon: 'lightning-charge-fill' },
+  { words: ['líderes','lideres','liderança','lideranca'],       icon: 'diagram-3-fill' },
+  { words: ['natal'],                                           icon: 'star-fill' },
+  { words: ['páscoa','pascoa','ressurreição','ressurreicao'],   icon: 'sunrise' },
+  { words: ['batismo','batizar'],                               icon: 'droplet-fill' },
+  { words: ['conferência','conferencia','congresso'],           icon: 'mic-fill' },
+  { words: ['workshop','curso','treinamento','capacitação'],    icon: 'journal-bookmark-fill' },
+  { words: ['estudo','temático','tematico'],                    icon: 'lightbulb-fill' },
+  { words: ['café','cafe','lanche','coffee'],                   icon: 'cup-hot-fill' },
+  { words: ['jantar','almoço','almoco','refeição'],             icon: 'cup-straw' },
+  { words: ['festa','celebração','celebracao'],                 icon: 'balloon-fill' },
+  { words: ['aniversário','aniversario'],                       icon: 'cake2-fill' },
+  { words: ['visitante','recepção','recepcao','boas-vindas','acolhimento'], icon: 'door-open' },
+  { words: ['pregação','pregacao','sermão','sermao'],           icon: 'megaphone-fill' },
+  { words: ['família','familia','pais','filhos'],               icon: 'house-heart-fill' },
+  { words: ['online','live','youtube','streaming','zoom'],      icon: 'camera-video-fill' },
+  { words: ['mulher','mulheres','feminino'],                    icon: 'person-heart' },
+  { words: ['homem','homens','masculino'],                      icon: 'person-arms-up' },
+  { words: ['criança','crianças','criancas','infantil','kids'], icon: 'emoji-smile-fill' },
+  { words: ['musical','show','concerto'],                       icon: 'vinyl-fill' },
+  { words: ['testemunho','depoimento'],                         icon: 'chat-quote-fill' },
+  { words: ['obreiro','obreiros','diaconato'],                  icon: 'shield-check' },
+  { words: ['urbana'],                                          icon: 'buildings' },
+  { words: ['encontro','reunião','reuniao'],                    icon: 'calendar-event' },
+  { words: ['esporte','futebol','vôlei','volei','jogo'],        icon: 'trophy-fill' },
+];
+
+/* ─────────────────────────────────────────
+   ICON SEARCH (PT + EN)
+───────────────────────────────────────── */
+const ICON_PT = {
+  livro:'book-open', biblia:'book-fill', texto:'journal-richtext',
+  coracao:'heart-fill', amor:'heart', flor:'flower1',
+  musica:'music-note-beamed', melodia:'music-note-list', instrumento:'vinyl-fill',
+  pessoa:'person-fill', pessoas:'people-fill', gente:'people-fill',
+  lua:'moon-fill', sol:'sunrise', nascer:'sunrise',
+  casa:'house-fill', familia:'house-heart-fill', lar:'house-heart-fill',
+  arvore:'tree-fill', natureza:'tree-fill', fogo:'fire', raio:'lightning-charge-fill',
+  energia:'lightning-fill', globo:'globe', mundo:'globe',
+  local:'geo-alt-fill', localizacao:'geo-alt-fill', mapa:'map',
+  camera:'camera-video-fill', microfone:'mic-fill', megafone:'megaphone-fill',
+  sino:'bell-fill', notificacao:'bell-fill', chave:'key-fill',
+  lampada:'lightbulb-fill', ideia:'lightbulb-fill', estrela:'star-fill',
+  trofeu:'trophy-fill', premio:'award-fill', diploma:'mortarboard-fill',
+  formacao:'mortarboard-fill', montanha:'mountain', gota:'droplet-fill',
+  agua:'droplet-fill', arco:'rainbow', infinito:'infinity',
+  conversa:'chat-dots-fill', mensagem:'chat-fill', bate:'chat-quote-fill',
+  construcao:'bricks', tijolo:'bricks', edificio:'building',
+  presente:'gift-fill', calendario:'calendar-event-fill',
+  cafe:'cup-hot-fill', copo:'cup-straw', escudo:'shield-check',
+  protecao:'shield-fill', bicicleta:'bicycle', praia:'sunset',
+};
+
+const ICON_NAMES = [
+  'activity','alarm-fill','award-fill','balloon-fill','bank2','bell-fill',
+  'bicycle','book','book-fill','book-half','book-open','bookmark-heart-fill',
+  'bricks','briefcase-fill','broadcast','building','buildings','calendar-check-fill',
+  'calendar-event','calendar-event-fill','calendar-fill','calendar-heart','calendar3',
+  'camera-video-fill','card-checklist','chat-dots-fill','chat-fill','chat-quote-fill',
+  'check-circle-fill','church','clipboard-check','clock-fill','cloud-arrow-down-fill',
+  'compass-fill','crosshair2','cup-hot-fill','cup-straw','diagram-3-fill',
+  'door-open','droplet-fill','emoji-smile-fill','exclamation-triangle-fill',
+  'feather','fire','flag-fill','flower1','geo-alt-fill','gift-fill','globe',
+  'graph-up-arrow','heart','heart-fill','heart-pulse','house-fill','house-heart-fill',
+  'infinity','journal-bookmark-fill','journal-richtext','key-fill','lightbulb-fill',
+  'lightning-charge-fill','lightning-fill','map','megaphone-fill','mic-fill',
+  'moon-fill','mortarboard-fill','mountain','music-note-beamed','music-note-list',
+  'palette-fill','patch-check-fill','pencil','people-fill','person-arms-up',
+  'person-check','person-fill','person-heart','person-plus-fill','puzzle-fill',
+  'rainbow','repeat','shield-check','shield-fill','shield-lock-fill','signpost-fill',
+  'speaker-fill','star-fill','stars','sunrise','sunset','tag-fill','telephone-fill',
+  'tools','tree-fill','trophy-fill','unlock-fill','vinyl-fill','wind',
+  'book','bookmark-heart','camera-video','chat-dots','compass','cup-hot',
+  'diagram-3','door-open','emoji-heart-eyes-fill','geo-alt','heart-pulse-fill',
+  'house-heart','journal-bookmark','lightning-charge','mortarboard','music-note',
+  'patch-question-fill','people','person','shield','signpost','star','tree',
+];
+
+function searchIcons(query) {
+  if (!query || query.length < 2) { closeIconDropdown(); return; }
+  const q = normalize(query);
+  const results = [];
+  const seen    = new Set();
+
+  // 1. Português direto
+  for (const [ptKey, iconName] of Object.entries(ICON_PT)) {
+    if (ptKey.includes(q) || q.includes(ptKey)) {
+      if (!seen.has(iconName)) { results.push(iconName); seen.add(iconName); }
+    }
+  }
+
+  // 2. Palavras PT via ICON_RULES
+  for (const rule of ICON_RULES) {
+    if (rule.words.some(w => normalize(w).includes(q) || q.includes(normalize(w)))) {
+      if (!seen.has(rule.icon)) { results.push(rule.icon); seen.add(rule.icon); }
+    }
+  }
+
+  // 3. Nome do ícone em inglês
+  const en = q.replace(/[^a-z0-9]/g,'');
+  if (en.length >= 2) {
+    for (const name of ICON_NAMES) {
+      if (name.replace(/-/g,'').includes(en)) {
+        if (!seen.has(name)) { results.push(name); seen.add(name); }
+        if (results.length >= 16) break;
+      }
+    }
+  }
+
+  results.length ? renderIconDropdown(results.slice(0,12)) : closeIconDropdown();
+}
+
+function renderIconDropdown(icons) {
+  const dd = document.getElementById('iconDropdown');
+  if (!dd) return;
+  dd.innerHTML = icons.map(name =>
+    `<div class="icon-opt" onclick="selectIcon('${name}')" title="${name}">
+       <i class="bi bi-${name}"></i><span>${name}</span>
+     </div>`
+  ).join('');
+  dd.style.display = 'flex';
+}
+
+function selectIcon(name) {
+  document.getElementById('fIcon').value = name;
+  updateIconPreview();
+  closeIconDropdown();
+}
+
+function closeIconDropdown() {
+  const dd = document.getElementById('iconDropdown');
+  if (dd) dd.style.display = 'none';
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.icon-search-wrap')) closeIconDropdown();
+});
+
+function normalize(s) { return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+
+function suggestIcon(name) {
+  const n = normalize(name);
+  for (const rule of ICON_RULES) {
+    if (rule.words.some(w => n.includes(normalize(w)))) return rule.icon;
+  }
+  return null;
+}
+
+function onNameInput() {
+  const name = document.getElementById('fName').value;
+  const suggested = suggestIcon(name);
+  if (suggested) {
+    const defaults = ['calendar-heart','calendar-event','calendar3',''];
+    const current = document.getElementById('fIcon').value.trim();
+    if (defaults.includes(current)) {
+      document.getElementById('fIcon').value = suggested;
+      updateIconPreview();
+      let hint = document.getElementById('iconAiHint');
+      if (!hint) {
+        hint = document.createElement('span');
+        hint.id = 'iconAiHint';
+        hint.style.cssText = 'font-size:10px;color:var(--cyan);margin-top:3px;display:block;transition:opacity .3s';
+        document.querySelector('.icon-input-wrap').insertAdjacentElement('afterend', hint);
+      }
+      hint.textContent = '✨ Ícone sugerido pela IA — você pode alterar livremente';
+      hint.style.opacity = '1';
+      clearTimeout(hint._t);
+      hint._t = setTimeout(() => { hint.style.opacity = '0'; }, 3500);
+    }
+  }
+}
+
+/* ─────────────────────────────────────────
+   RENDER
+───────────────────────────────────────── */
+let fixedData  = [];
+let eventsData = [];
+let editingId  = null;
+let editingType = null;
+let chosenColor = 'cyan';
+
+function renderAll() {
+  renderFixed();
+  renderEvents();
+}
+
+/* — FIXED CARDS — */
+function renderFixed() {
+  const grid = document.getElementById('fixedGrid');
+  grid.innerHTML = '';
+  const dayOrder = [0,1,2,3,4,5,6];
+  const sorted = [...fixedData].sort((a,b) => a.dayOfWeek - b.dayOfWeek || a.time.localeCompare(b.time));
+
+  sorted.forEach(item => {
+    const c = COLOR_MAP[item.color] || COLOR_MAP.cyan;
+    const card = document.createElement('div');
+    card.className = 'fixed-card' + (item.highlight ? ' fixed-card--highlight' : '');
+    card.setAttribute('style', `--card-color:${c.hex};--card-rgb:${c.rgb}`);
+    card.innerHTML = `
+      <div class="fcard-top">
+        <div class="fcard-icon"><i class="bi bi-${item.icon}"></i></div>
+        <div class="fcard-day-chip">${DAY_NAMES[item.dayOfWeek]}</div>
+      </div>
+      <h3 class="fcard-name">${item.name}</h3>
+      <div class="fcard-meta">
+        <span><i class="bi bi-clock"></i>${item.time}</span>
+        ${item.location ? `<span><i class="bi bi-geo-alt"></i>${item.location}</span>` : ''}
+        <span class="fcard-freq"><i class="bi bi-repeat"></i>${item.frequency}</span>
+      </div>
+      ${item.description ? `<p class="fcard-desc">${item.description}</p>` : ''}
+      ${IS_ADMIN ? `<button class="fcard-edit-btn" onclick="openEdit(${item.id},'fixed')"><i class="bi bi-pencil"></i> Editar</button>` : ''}
+      ${item.highlight ? '<span class="fcard-badge-highlight"><i class="bi bi-star-fill"></i> Destaque</span>' : ''}
+    `;
+    grid.appendChild(card);
+  });
+
+  if (sorted.length === 0) {
+    grid.innerHTML = '<p class="empty-state"><i class="bi bi-calendar-x"></i> Nenhuma programação fixa cadastrada. Clique em <strong>Adicionar</strong>.</p>';
+  }
+}
+
+/* — EVENTS TIMELINE — */
+function renderEvents() {
+  const timeline = document.getElementById('eventsTimeline');
+  const spot     = document.getElementById('nextUpSpot');
+  timeline.innerHTML = '';
+  spot.innerHTML = '';
+  spot.classList.add('hidden');
+
+  const now  = new Date(); now.setHours(0,0,0,0);
+  const sorted = [...eventsData].sort((a,b) => new Date(a.date+' '+a.time) - new Date(b.date+' '+b.time));
+
+  // Find next up
+  const upcoming  = sorted.filter(e => { const [y,m,d] = e.date.split('-').map(Number); return new Date(y,m-1,d) >= now; });
+  const past      = sorted.filter(e => { const [y,m,d] = e.date.split('-').map(Number); return new Date(y,m-1,d) <  now; });
+  const nextEvent = upcoming[0]; // kept for spotItems logic below
+
+  let spotItems = [];
+  if (upcoming.length > 0) {
+    // Collect next 3 events; if the 3rd has siblings on the same day, include them all
+    spotItems = upcoming.slice(0, 3);
+    if (spotItems.length === 3) {
+      const thirdDate = spotItems[2].date;
+      upcoming.slice(3).forEach(e => { if (e.date === thirdDate) spotItems.push(e); });
+    }
+    spot.classList.remove('hidden');
+    // Determine CSS custom props from the first event's color
+    const c0 = COLOR_MAP[spotItems[0].color] || COLOR_MAP.cyan;
+    spot.setAttribute('style', `--card-color:${c0.hex};--card-rgb:${c0.rgb}`);
+    spot.innerHTML = `
+      <div class="next-spot-header">
+        <i class="bi bi-lightning-charge-fill"></i> Próximos eventos
+        <span class="next-spot-count">${spotItems.length}</span>
+      </div>
+      <div class="next-spot-grid">
+        ${spotItems.map(ev => buildSpotCard(ev, now)).join('')}
+      </div>`;
+  }
+
+  // Upcoming section header
+  const spotIds = new Set(spotItems.map(e => e.id));
+
+  if (upcoming.length > 0) {
+    const nonSpot = upcoming.filter(e => !spotIds.has(e.id));
+    if (nonSpot.length > 0) {
+      const upcomingHeader = document.createElement('div');
+      upcomingHeader.className = 'timeline-section-header upcoming';
+      upcomingHeader.innerHTML = `<i class="bi bi-chevron-right"></i> Próximas programações <span class="tsh-count">${nonSpot.length}</span>`;
+      timeline.appendChild(upcomingHeader);
+
+      nonSpot.forEach((item) => {
+        timeline.appendChild(buildEventCard(item, 'upcoming'));
+      });
+    }
+  }
+
+  // Past section
+  if (past.length > 0) {
+    const pastHeader = document.createElement('div');
+    pastHeader.className = 'timeline-section-header past';
+    pastHeader.innerHTML = `<button class="tsh-toggle" onclick="togglePast(this)"><i class="bi bi-chevron-down"></i> Programações passadas <span class="tsh-count">${past.length}</span></button>`;
+    timeline.appendChild(pastHeader);
+
+    const pastWrap = document.createElement('div');
+    pastWrap.className = 'past-wrap collapsed';
+    pastWrap.id = 'pastWrap';
+    // Show in reverse (most recent first)
+    [...past].reverse().forEach(item => {
+      pastWrap.appendChild(buildEventCard(item, 'past'));
+    });
+    timeline.appendChild(pastWrap);
+  }
+
+  if (sorted.length === 0) {
+    timeline.innerHTML = '<p class="empty-state"><i class="bi bi-calendar-x"></i> Nenhum evento especial cadastrado. Clique em <strong>Adicionar</strong>.</p>';
+  }
+}
+
+function buildEventCard(item, status) {
+  const d  = parseDate(item.date);
+  const c  = COLOR_MAP[item.color] || COLOR_MAP.cyan;
+  const now = new Date(); now.setHours(0,0,0,0);
+  const itemDate = new Date(item.date);
+  const diff = daysDiff(now, itemDate);
+
+  const card = document.createElement('div');
+  card.className = `event-card event-card--${status}` + (item.highlight ? ' event-card--highlight' : '');
+  card.setAttribute('style', `--card-color:${c.hex};--card-rgb:${c.rgb}`);
+
+  let countdownBadge = '';
+  if (status === 'upcoming') {
+    if (diff === 0) countdownBadge = `<span class="ev-countdown today">Hoje!</span>`;
+    else if (diff === 1) countdownBadge = `<span class="ev-countdown tomorrow">Amanhã</span>`;
+    else if (diff <= 7) countdownBadge = `<span class="ev-countdown soon">em ${diff} dias</span>`;
+    else countdownBadge = `<span class="ev-countdown future">em ${diff} dias</span>`;
+  } else {
+    countdownBadge = `<span class="ev-countdown past-label">Realizado</span>`;
+  }
+
+  card.innerHTML = `
+    <div class="ev-date-col">
+      <div class="ev-day-num">${d.day}</div>
+      <div class="ev-month-abbr">${d.monthShort}</div>
+      <div class="ev-weekday-abbr">${d.weekdayShort}</div>
+    </div>
+    <div class="ev-body">
+      <div class="ev-top">
+        <div class="ev-icon-wrap"><i class="bi bi-${item.icon}"></i></div>
+        <div class="ev-title-wrap">
+          <h3 class="ev-name">${item.name}</h3>
+          ${countdownBadge}
+        </div>
+      </div>
+      <div class="ev-meta">
+        <span><i class="bi bi-clock"></i>${item.time}</span>
+        ${item.location ? `<span><i class="bi bi-geo-alt"></i>${item.location}</span>` : ''}
+      </div>
+      ${item.description ? `<p class="ev-desc">${item.description}</p>` : ''}
+    </div>
+    ${IS_ADMIN ? `<button class="ev-edit-btn" onclick="openEdit(${item.id},'event')"><i class="bi bi-pencil"></i></button>` : ''}
+  `;
+  return card;
+}
+
+function togglePast(btn) {
+  const wrap = document.getElementById('pastWrap');
+  wrap.classList.toggle('collapsed');
+  const icon = btn.querySelector('i');
+  icon.className = wrap.classList.contains('collapsed') ? 'bi bi-chevron-down' : 'bi bi-chevron-up';
+}
+
+/* ─────────────────────────────────────────
+   MODAL
+───────────────────────────────────────── */
+function openModal(type, item) {
+  editingType = type;
+  editingId   = item ? item.id : null;
+  chosenColor = item ? item.color : 'cyan';
+
+  document.getElementById('modalTitle').textContent = item ? 'Editar Programação' : 'Nova Programação';
+  document.getElementById('fId').value   = item ? item.id : '';
+  document.getElementById('fType').value = type;
+
+  document.getElementById('fName').value     = item ? item.name     : '';
+  document.getElementById('fIcon').value     = item ? item.icon     : 'calendar-heart';
+  document.getElementById('fLocation').value = item ? item.location : '';
+  document.getElementById('fDesc').value     = item ? item.description : '';
+  document.getElementById('fHighlight').checked = item ? item.highlight : false;
+
+  // Update icon preview
+  updateIconPreview();
+
+  // Color dots
+  document.querySelectorAll('.color-dot').forEach(d => {
+    d.classList.toggle('active', d.dataset.color === chosenColor);
+  });
+
+  // Show/hide fixed vs event fields
+  if (type === 'fixed') {
+    document.getElementById('fixedFields').classList.remove('hidden');
+    document.getElementById('eventFields').classList.add('hidden');
+    document.getElementById('fDayOfWeek').value = item ? item.dayOfWeek  : 0;
+    document.getElementById('fFixedTime').value = item ? item.time       : '19:00';
+    document.getElementById('fFrequency').value = item ? item.frequency  : 'Toda semana';
+  } else {
+    document.getElementById('fixedFields').classList.add('hidden');
+    document.getElementById('eventFields').classList.remove('hidden');
+    document.getElementById('fDate').value      = item ? item.date       : todayISO();
+    document.getElementById('fEventTime').value = item ? item.time       : '19:00';
+  }
+
+  document.getElementById('btnDelete').style.display = item ? 'flex' : 'none';
+  document.getElementById('modalOverlay').classList.add('active');
+  document.getElementById('fName').focus();
+}
+
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+function openAddFixed()  { openModal('fixed',  null); }
+function openAddEvent()  { openModal('event',  null); }
+function openEdit(id, type) {
+  const item = type === 'fixed'
+    ? fixedData.find(x => x.id == id)
+    : eventsData.find(x => x.id == id);
+  openModal(type, item);
+}
+
+async function saveItem(e) {
+  e.preventDefault();
+  const type = document.getElementById('fType').value;
+  const id   = document.getElementById('fId').value;
+
+  const item = {
+    type,
+    name:        document.getElementById('fName').value.trim(),
+    icon:        document.getElementById('fIcon').value.trim() || 'calendar-heart',
+    color:       chosenColor,
+    location:    document.getElementById('fLocation').value.trim(),
+    description: document.getElementById('fDesc').value.trim(),
+    highlight:   document.getElementById('fHighlight').checked,
+  };
+
+  if (type === 'fixed') {
+    Object.assign(item, {
+      dayOfWeek: parseInt(document.getElementById('fDayOfWeek').value),
+      time:      document.getElementById('fFixedTime').value,
+      frequency: document.getElementById('fFrequency').value,
+    });
+  } else {
+    Object.assign(item, {
+      date: document.getElementById('fDate').value,
+      time: document.getElementById('fEventTime').value,
+    });
+  }
+
+  const method = id ? 'PUT' : 'POST';
+  const url    = id ? `/api/admin/agenda/${id}` : '/api/admin/agenda';
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(item),
+    });
+    if (!res.ok) {
+      showToast(res.status === 403 ? 'Acesso negado. Faça login como admin.' : 'Erro ao salvar.', 'error');
+      return;
+    }
+    await loadAgenda();
+    closeModalDirect();
+    renderAll();
+    showToast('Salvo com sucesso!', 'success');
+  } catch(err) {
+    showToast('Erro de conexão.', 'error');
+  }
+}
+
+async function deleteItem() {
+  if (!editingId) return;
+  if (!confirm('Excluir esta programação?')) return;
+  try {
+    const res = await fetch(`/api/admin/agenda/${editingId}`, { method: 'DELETE' });
+    if (!res.ok) { showToast('Erro ao excluir.', 'error'); return; }
+    await loadAgenda();
+    closeModalDirect();
+    renderAll();
+    showToast('Item excluído.', 'success');
+  } catch(err) {
+    showToast('Erro de conexão.', 'error');
+  }
+}
+
+function updateIconPreview() {
+  const val = document.getElementById('fIcon').value.trim();
+  document.getElementById('iconPreview').innerHTML = `<i class="bi bi-${val || 'calendar-heart'}"></i>`;
+}
+
+function selectColor(color, el) {
+  chosenColor = color;
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ─────────────────────────────────────────
+   QR CODE
+───────────────────────────────────────── */
+let qrInstance = null;
+let qrPrintInstance = null;
+
+function openQR() {
+  const url  = window.location.href.split('?')[0];
+  const wrap = document.getElementById('qrCodeContainer');
+  const pWrap = document.getElementById('qrPrintCode');
+  document.getElementById('qrUrlLabel').textContent  = url;
+  document.getElementById('qrPrintUrl').textContent  = url;
+
+  wrap.innerHTML  = '';
+  pWrap.innerHTML = '';
+
+  try {
+    new QRCode(wrap, {
+      text:          url,
+      width:         220,
+      height:        220,
+      colorDark:     '#00ccff',
+      colorLight:    '#0e0a1a',
+      correctLevel:  QRCode.CorrectLevel.H
+    });
+    new QRCode(pWrap, {
+      text:          url,
+      width:         260,
+      height:        260,
+      colorDark:     '#0e0a1a',
+      colorLight:    '#ffffff',
+      correctLevel:  QRCode.CorrectLevel.H
+    });
+  } catch(err) {
+    wrap.innerHTML = `<p style="color:#f87171;font-size:13px">Erro ao gerar QR Code.</p>`;
+  }
+
+  document.getElementById('qrOverlay').classList.add('active');
+}
+
+function closeQRModal(e) {
+  if (e.target === document.getElementById('qrOverlay'))
+    document.getElementById('qrOverlay').classList.remove('active');
+}
+
+function downloadQR() {
+  const canvas = document.querySelector('#qrCodeContainer canvas');
+  if (!canvas) return alert('QR Code ainda não gerado.');
+  const link = document.createElement('a');
+  link.download = 'evj-programacao-qrcode.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function printQR() {
+  window.print();
+}
+
+/* ─────────────────────────────────────────
+   UTILS
+───────────────────────────────────────── */
+function parseDate(iso) {
+  const [y,m,d] = iso.split('-').map(Number);
+  const dt = new Date(y, m-1, d);
+  return {
+    day:          String(d).padStart(2,'0'),
+    month:        MONTH_NAMES[m-1],
+    monthShort:   MONTH_SHORT[m-1],
+    year:         y,
+    weekday:      DAY_NAMES[dt.getDay()],
+    weekdayShort: DAY_SHORT[dt.getDay()],
+  };
+}
+
+function daysDiff(a, b) {
+  return Math.round((b - a) / 86400000);
+}
+
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showToast(msg, type) {
+  const t = document.createElement('div');
+  t.className = `pg-toast pg-toast--${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2800);
+}
+
+function buildSpotCard(item, now) {
+  const d    = parseDate(item.date);
+  const c    = COLOR_MAP[item.color] || COLOR_MAP.cyan;
+  const diff = daysDiff(now, new Date(item.date + 'T00:00:00'));
+  const cd   = diff === 0 ? 'Hoje!' : diff === 1 ? 'Amanhã' : `em ${diff} dias`;
+  return `<div class="next-mini-card" style="--card-color:${c.hex};--card-rgb:${c.rgb}">
+    <div class="nmc-date"><div class="nmc-day">${d.day}</div><div class="nmc-month">${d.monthShort}</div></div>
+    <div class="nmc-icon"><i class="bi bi-${item.icon}"></i></div>
+    <div class="nmc-info">
+      <div class="nmc-name">${item.name}</div>
+      <div class="nmc-meta"><i class="bi bi-clock"></i>${item.time}${item.location ? ' · ' + item.location : ''}</div>
+      <div class="nmc-countdown">${cd}</div>
+    </div>
+    ${IS_ADMIN ? `<button class="nmc-edit" onclick="openEdit(${item.id},'event')"><i class="bi bi-pencil"></i></button>` : ''}
+  </div>`;
+}
+
+/* ─────────────────────────────────────────
+   NAV MOBILE
+───────────────────────────────────────── */
+document.getElementById('hamburger').addEventListener('click', () => {
+  document.getElementById('mobileNav').classList.toggle('open');
+});
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+(async () => {
+  await loadAgenda();
+  renderAll();
+  checkAdminAccess(); // async: re-renderiza com botões se admin
+})();
+</script>
+</body>
+</html>

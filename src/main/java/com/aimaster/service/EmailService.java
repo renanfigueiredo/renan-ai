@@ -25,6 +25,25 @@ public class EmailService {
     private final AppProperties appProperties;
     private final MailgunProperties mailgunProperties;
 
+    /** Envia e-mail de verificação para o próprio usuário. */
+    public void sendVerificationEmail(AppUser user) {
+        var verifyUrl = appProperties.baseUrl() + "/verify-email?token=" + user.getApprovalToken();
+        var html = """
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+                  <h2 style="color:#00ccff">EVJ AI — Confirme seu e-mail ✉️</h2>
+                  <p>Olá, <strong>%s</strong>! Bem-vindo(a) à EVJ AI!</p>
+                  <p>Para ativar sua conta, clique no botão abaixo:</p>
+                  <p style="margin:24px 0">
+                    <a href="%s" style="background:#00ccff;color:#0e0a1a;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:700">✅ Confirmar meu e-mail</a>
+                  </p>
+                  <p style="color:#6b7280;font-size:.85rem">Se você não criou uma conta na EVJ AI, ignore este e-mail.</p>
+                  <hr style="border:none;border-top:1px solid #374151;margin:20px 0">
+                  <p style="color:#6b7280;font-size:.8rem">Link: <a href="%s" style="color:#00ccff">%s</a></p>
+                </div>
+                """.formatted(user.getName(), verifyUrl, verifyUrl, verifyUrl);
+        send(user.getEmail(), "EVJ AI – Confirme seu e-mail para ativar sua conta", html);
+    }
+
     /** Notifica o administrador de que um novo usuário solicitou acesso. */
     public void sendApprovalRequest(AppUser user) {
         var approveUrl = appProperties.baseUrl() + "/admin/approve/" + user.getApprovalToken();

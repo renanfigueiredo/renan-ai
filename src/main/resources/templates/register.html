@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Solicitar Acesso — EVJ AI</title>
+    <title>Cadastrar — EVJ AI</title>
     <link rel="stylesheet" th:href="@{/css/app.css}"/>
     <link rel="stylesheet" th:href="@{/css/auth.css}"/>
 </head>
@@ -12,11 +12,10 @@
     <div class="auth-logo">
         <img th:src="@{/images/logo_evj.jpg}" alt="EVJ AI"/>
     </div>
-    <div class="auth-title">Solicitar Acesso</div>
-    <div class="auth-subtitle">Preencha os dados abaixo. O administrador irá avaliar sua solicitação.</div>
+    <div class="auth-title">Cadastrar</div>
 
     <div class="info-box">
-        🔒 O acesso é restrito e requer aprovação manual. Você receberá um e-mail assim que sua conta for ativada.
+        🔒 O acesso é restrito e requer validação por e-mail.
     </div>
 
     <div th:if="${error}" class="alert-error" th:text="${error}"></div>
@@ -39,7 +38,7 @@
             <label for="confirmPassword">Confirmar senha</label>
             <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Repita a senha"/>
         </div>
-        <button type="submit" class="btn-primary">Enviar Solicitação</button>
+        <button type="submit" class="btn-primary">Cadastrar</button>
     </form>
 
     <div class="auth-footer">

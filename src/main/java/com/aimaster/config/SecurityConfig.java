@@ -41,16 +41,20 @@ public class SecurityConfig {
             .addFilterBefore(guestAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 // Public routes
-                .requestMatchers("/", "/login", "/register", "/pending",
+                .requestMatchers("/", "/login", "/register", "/pending", "/verify-email",
                                  "/admin/approve/**", "/admin/reject/**",
                                  "/forgot-password", "/reset-password",
                                  "/guest/**",
                                  "/portal", "/portal/**",
                                  "/api/portal/chat",
+                                 "/api/me",
+                                 "/api/agenda",
                                  "/api/v1/**",
                                  "/swagger-ui/**", "/swagger-ui.html",
                                  "/v3/api-docs/**",
                                  "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                // Admin-only routes
+                .requestMatchers("/admin/users/**", "/api/admin/**").hasRole("ADMIN")
                 // Everything else requires authentication (includes ROLE_GUEST)
                 .anyRequest().authenticated()
             )

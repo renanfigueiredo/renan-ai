@@ -22,15 +22,15 @@
     <!-- ═══ LEFT PANEL ═══ -->
     <div class="lp-left">
         <img th:src="@{/images/logo_evj.jpg}" alt="EVJ AI" class="lp-logo"/>
-        <h1 class="lp-tagline">Uma IA <span>baseada na bíblia</span> e direcionada para Jovens</h1>
+        <h1 class="lp-tagline">IA <span>baseada na bíblia</span>.</h1>
         <div class="lp-features">
             <div class="lp-feat">
                 <div class="feat-icon cyan"><i class="bi bi-chat-dots-fill"></i></div>
-                <div class="feat-text"><strong>Chat Cristão</strong><span>Respostas sábias fundamentadas na Palavra de Deus</span></div>
+                <div class="feat-text"><strong>Perguntas</strong><span>Converse sobre fé, Bíblia e oração</span></div>
             </div>
             <div class="lp-feat">
                 <div class="feat-icon blue"><i class="bi bi-book-fill"></i></div>
-                <div class="feat-text"><strong>Baseada na Bíblia</strong><span>66 livros, discernimento espiritual e identidade em Cristo</span></div>
+                <div class="feat-text"><strong>Respostas</strong><span>Baseadas no fundamento Cristão</span></div>
             </div>
         </div>
     </div>
@@ -44,8 +44,7 @@
             <div class="lp-mobile-header">
                 <img th:src="@{/images/logo_evj.jpg}" alt="EVJ AI" class="lp-mobile-logo"/>
             </div>
-            <div class="lp-form-title">Bem-vindo de volta</div>
-            <div class="lp-form-sub">Entre com sua conta para acessar a plataforma</div>
+            <div class="lp-form-title">Bem-vindo!</div>
 
             <!-- Alerts -->
             <div th:if="${error}" class="lp-alert lp-alert-error">
@@ -87,12 +86,12 @@
 
             <button class="lp-btn-guest" id="btnGuest" onclick="startGuestMode()">
                 <span class="lp-guest-dot"></span>
-                Explorar como Visitante
+                Testar IA como Visitante
             </button>
 
             <div class="lp-footer">
                 <span>Não tem conta?</span>
-                <a th:href="@{/register}">Solicitar acesso</a>
+                <a th:href="@{/register}">Cadastrar</a>
             </div>
 
         </div>

@@ -278,7 +278,7 @@ body {
     font-weight: 800;
     text-decoration: none;
     letter-spacing: 0.02em;
-    flex: 1;
+    flex-shrink: 0;
     min-width: 0;
     overflow: hidden;
     display: flex;
@@ -330,6 +330,41 @@ body {
 }
 .topbar-brand:hover .evj-brand-vida { filter: drop-shadow(0 0 14px rgba(0,224,90,0.55)); }
 .topbar-brand:hover .evj-brand-station { opacity: 1; }
+
+/* ── Topbar nav links (Portal EVJ / Agenda / Admin) ── */
+.topbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    justify-content: center;
+}
+.topbar-nav-link {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 5px 12px;
+    border-radius: 6px;
+    transition: color 0.18s, background 0.18s;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+.topbar-nav-link:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+}
+.topbar-nav-admin {
+    color: #fb923c;
+}
+.topbar-nav-admin:hover {
+    color: #fdba74;
+    background: rgba(251, 146, 60, 0.1);
+}
+@media (max-width: 640px) {
+    .topbar-nav { display: none; }
+}
 
 .topbar-actions { display: flex; align-items: center; gap: 12px; }
 
