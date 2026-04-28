@@ -82,6 +82,37 @@
 
 </div><!-- /.hero-wrap -->
 
+<!-- ═══════════════════════════════════════════════════════
+     DESTAQUE
+     ═══════════════════════════════════════════════════════ -->
+<section class="destaque-section" id="destaque" aria-label="Destaques">
+  <div class="destaque-heading"><span>Destaque</span></div>
+
+  <!-- Namoro com Propósito CTA (visível até 09/05/2026) -->
+  <div class="dest-namoro-card" id="destNamoroCard" style="display:none">
+    <div class="dest-namoro-icon"><i class="bi bi-hearts"></i></div>
+    <div class="dest-namoro-body">
+      <div class="dest-namoro-kicker"><i class="bi bi-mortarboard me-1"></i>Curso especial · 8 aulas</div>
+      <div class="dest-namoro-title">Namoro com Propósito</div>
+      <div class="dest-namoro-meta">
+        <span><i class="bi bi-calendar-event"></i> Início: 10/05/2026</span>
+        <span><i class="bi bi-hourglass-split"></i> Inscrições encerram em <span id="destCountdown" class="dest-countdown"></span></span>
+      </div>
+    </div>
+    <a href="/portal/contents/cursos/namoro-com-proposito.html#inscricao" class="dest-namoro-cta">
+      <i class="bi bi-pencil-square"></i> Inscrever-se
+    </a>
+  </div>
+
+  <!-- Próximos eventos -->
+  <div class="dest-events-wrap">
+    <div class="dest-events-label"><i class="bi bi-calendar2-week-fill"></i> Próximos eventos</div>
+    <div class="dest-events-scroller" id="destEventsScroller">
+      <div class="dest-event-empty"><i class="bi bi-hourglass" style="font-size:18px;opacity:.5"></i> Carregando eventos…</div>
+    </div>
+  </div>
+</section>
+
 <div class="acc-list">
 
   <!-- ── Nosso Ministério ── -->
@@ -396,6 +427,93 @@
     <a href="/login">EVJ AI</a>
   </p>
 </footer>
+
+<script>
+/* ═══════════════════ DESTAQUE ═══════════════════ */
+(function () {
+  'use strict';
+
+  /* ── Namoro CTA: visível até 09/05/2026 23:59 ── */
+  var DEADLINE = new Date('2026-05-09T23:59:59');
+  var card     = document.getElementById('destNamoroCard');
+  var cdEl     = document.getElementById('destCountdown');
+
+  function updateCountdown() {
+    var now  = new Date();
+    var diff = DEADLINE - now;
+    if (diff <= 0) {
+      if (card) card.style.display = 'none';
+      return;
+    }
+    card.style.display = '';
+    var days  = Math.floor(diff / 86400000);
+    var hours = Math.floor((diff % 86400000) / 3600000);
+    var mins  = Math.floor((diff % 3600000)  / 60000);
+    if (days > 0)       cdEl.textContent = days + 'd ' + hours + 'h';
+    else if (hours > 0) cdEl.textContent = hours + 'h ' + mins + 'min';
+    else                cdEl.textContent = mins + ' min';
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 60000);
+
+  /* ── Próximos eventos (agenda) ── */
+  var scroller = document.getElementById('destEventsScroller');
+
+  var MONTH_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var DOW_PT   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  function fmtDate(dateStr) {
+    var d = new Date(dateStr + 'T00:00:00');
+    return DOW_PT[d.getDay()] + ', ' + d.getDate() + ' ' + MONTH_PT[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  function colorVar(c) {
+    var map = { cyan: '#00ccff', green: '#00e05a', purple: '#a78bfa',
+                pink: '#f472b6', orange: '#fb923c', yellow: '#fbbf24',
+                red: '#f87171', blue: '#60a5fa' };
+    return map[c] || '#00ccff';
+  }
+
+  function renderEvents(items) {
+    var today = new Date(); today.setHours(0,0,0,0);
+    var upcoming = items
+      .filter(function(it) { return it.type === 'event' && it.date; })
+      .filter(function(it) { return new Date(it.date + 'T00:00:00') >= today; })
+      .sort(function(a,b)  { return new Date(a.date) - new Date(b.date); })
+      .slice(0, 3);
+
+    if (!upcoming.length) {
+      scroller.innerHTML = '<div class="dest-event-empty"><i class="bi bi-calendar-x" style="font-size:18px;opacity:.5"></i> Nenhum evento próximo cadastrado.</div>';
+      return;
+    }
+
+    scroller.innerHTML = upcoming.map(function(it) {
+      var clr = colorVar(it.color);
+      var loc  = it.location ? '<span><i class="bi bi-geo-alt"></i>' + esc(it.location) + '</span>' : '';
+      var time = it.time     ? '<span><i class="bi bi-clock"></i>' + esc(it.time) + '</span>' : '';
+      return '<div class="dest-event-card">' +
+        '<div class="dest-event-date-badge" style="background:rgba(0,204,255,.08);color:' + clr + ';border-color:' + clr + '40">' +
+          '<i class="bi bi-calendar3"></i>' + fmtDate(it.date) +
+        '</div>' +
+        '<div class="dest-event-name">' + esc(it.name) + '</div>' +
+        '<div class="dest-event-meta">' + time + loc + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  fetch('/api/agenda')
+    .then(function(r) { return r.json(); })
+    .then(renderEvents)
+    .catch(function() {
+      scroller.innerHTML = '<div class="dest-event-empty"><i class="bi bi-exclamation-circle" style="font-size:18px;opacity:.5"></i> Não foi possível carregar os eventos.</div>';
+    });
+})();
+</script>
 
 <script>
   document.getElementById('hamburger').addEventListener('click', function() {

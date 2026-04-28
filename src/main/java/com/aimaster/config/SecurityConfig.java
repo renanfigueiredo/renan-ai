@@ -50,11 +50,12 @@ public class SecurityConfig {
                                  "/api/me",
                                  "/api/agenda",
                                  "/api/v1/**",
+                                 "/api/course/namoro/register",
                                  "/swagger-ui/**", "/swagger-ui.html",
                                  "/v3/api-docs/**",
                                  "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 // Admin-only routes
-                .requestMatchers("/admin/users/**", "/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/admin/users/**", "/admin/course/**", "/api/admin/**").hasRole("ADMIN")
                 // Everything else requires authentication (includes ROLE_GUEST)
                 .anyRequest().authenticated()
             )

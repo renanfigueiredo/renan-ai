@@ -57,12 +57,17 @@
             <i class="bi bi-braces"></i>
             <span>DOC API</span>
         </a>
-        <!-- Admin-only nav link -->
+        <!-- Admin-only nav links -->
         <a th:href="@{/admin/users}" class="nav-item" sec:authorize="hasRole('ADMIN')"
            th:classappend="${activeTab == 'admin-users'} ? 'active' : ''"
            style="margin-top:auto;border-top:1px solid rgba(255,255,255,0.07);padding-top:8px">
             <i class="bi bi-shield-fill-check"></i>
             <span>Usuários</span>
+        </a>
+        <a th:href="@{/admin/course/namoro}" class="nav-item" sec:authorize="hasRole('ADMIN')"
+           th:classappend="${activeTab == 'admin-namoro'} ? 'active' : ''">
+            <i class="bi bi-hearts"></i>
+            <span>Namoro c/ Propósito</span>
         </a>
     </nav>
 

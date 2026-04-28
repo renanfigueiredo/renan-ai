@@ -247,6 +247,120 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   <script src="../verses.js"></script>
   <script src="../../assets/js/sermon-scripts.js"></script>
+
+  <!-- ─── Inscrição CTA ─── -->
+  <div class="container my-5" id="inscricao">
+    <div class="card border-0 text-white text-center py-5 px-4"
+         style="background: linear-gradient(135deg,rgba(139,29,46,.18),rgba(100,15,28,.14)); border-radius: 24px; border: 1px solid rgba(139,29,46,.40)!important;">
+      <i class="bi bi-calendar-heart fs-1 mb-3" style="color:#c73048"></i>
+      <h2 class="fw-bold mb-2">Inscreva-se no curso!</h2>
+      <p class="opacity-75 mb-1">As aulas começam em <strong>10 de maio de 2026</strong>.</p>
+      <p class="opacity-75 mb-4">Reserve sua vaga e receba as informações sobre datas, local e horário.</p>
+      <button class="btn btn-lg fw-bold px-5 py-3 mx-auto"
+              style="background: linear-gradient(135deg,#c73048,#8b1d2e); color:#fff; border-radius:50px; border:none; max-width:260px"
+              data-bs-toggle="modal" data-bs-target="#modalInscricao">
+        <i class="bi bi-pencil-square me-2"></i>Quero me inscrever
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── Modal de inscrição ─── -->
+  <div class="modal fade" id="modalInscricao" tabindex="-1" aria-labelledby="modalInscricaoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 text-white" style="background:#1a1530; border-radius:18px; border:1px solid rgba(255,255,255,.1)!important;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="modalInscricaoLabel">
+            <i class="bi bi-hearts me-2" style="color:#c73048"></i>Inscrição — Namoro com Propósito
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body pt-3">
+          <p class="small opacity-75 mb-4">Preencha seus dados para garantir sua vaga. Início: <strong>10/05/2026</strong>.</p>
+
+          <!-- Success state -->
+          <div id="inscricaoSuccess" class="text-center py-4 d-none">
+            <i class="bi bi-check-circle-fill fs-1 mb-3" style="color:#00e05a"></i>
+            <h5 class="fw-bold">Inscrição realizada!</h5>
+            <p class="opacity-75">Sua vaga foi reservada. Fique atento às informações sobre datas e local.</p>
+          </div>
+
+          <!-- Form -->
+          <form id="inscricaoForm" novalidate>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold opacity-75">Nome completo *</label>
+              <input type="text" id="inscNome" class="form-control bg-dark border-secondary text-white"
+                     placeholder="Seu nome completo" required>
+              <div class="invalid-feedback">Nome é obrigatório.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold opacity-75">E-mail *</label>
+              <input type="email" id="inscEmail" class="form-control bg-dark border-secondary text-white"
+                     placeholder="seu@email.com" required>
+              <div class="invalid-feedback">Informe um e-mail válido.</div>
+            </div>
+            <div class="mb-4">
+              <label class="form-label small fw-semibold opacity-75">WhatsApp <span class="opacity-50">(opcional)</span></label>
+              <input type="tel" id="inscTel" class="form-control bg-dark border-secondary text-white"
+                     placeholder="(xx) 9xxxx-xxxx">
+            </div>
+            <div id="inscricaoError" class="alert alert-danger py-2 small d-none"></div>
+            <button type="submit" class="btn w-100 fw-bold py-2"
+                    style="background: linear-gradient(135deg,#c73048,#8b1d2e); color:#fff; border-radius:12px; border:none">
+              <i class="bi bi-send me-2"></i>Confirmar inscrição
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+    const form  = document.getElementById('inscricaoForm');
+    const err   = document.getElementById('inscricaoError');
+    const ok    = document.getElementById('inscricaoSuccess');
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      err.classList.add('d-none');
+      const nome  = document.getElementById('inscNome').value.trim();
+      const email = document.getElementById('inscEmail').value.trim();
+      const tel   = document.getElementById('inscTel').value.trim();
+
+      // Basic client-side validation
+      let valid = true;
+      [['inscNome', nome], ['inscEmail', email]].forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (!val) { el.classList.add('is-invalid'); valid = false; }
+        else el.classList.remove('is-invalid');
+      });
+      if (!valid) return;
+
+      const btn = form.querySelector('button[type=submit]');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando…';
+
+      try {
+        const res = await fetch('/api/course/namoro/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: nome, email, phone: tel || null })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao realizar inscrição.');
+        form.classList.add('d-none');
+        ok.classList.remove('d-none');
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('d-none');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send me-2"></i>Confirmar inscrição';
+      }
+    });
+  })();
+  </script>
+
   <!-- EVJ AI Banner -->
   <div class="evj-ai-banner">
     <span class="evj-ai-banner-text">✝️ <strong>EVJ AI</strong> — Inteligência Artificial Cristã</span>
