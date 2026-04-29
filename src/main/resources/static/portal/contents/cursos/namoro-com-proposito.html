@@ -31,6 +31,20 @@
       </div>
     </header>
 
+    <!-- ─── Inscrição CTA ─── -->
+    <div class="container my-4" id="inscricao">
+      <div class="course-cta-card">
+        <i class="bi bi-calendar-heart course-cta-icon"></i>
+        <h2 class="fw-bold mb-2">Inscreva-se no curso!</h2>
+        <p class="opacity-75 mb-1">As aulas começam em <strong>10 de maio de 2026</strong>.</p>
+        <p class="opacity-75 mb-4">Reserve sua vaga e receba as informações sobre datas, local e horário.</p>
+        <button class="course-cta-btn mx-auto"
+                data-bs-toggle="modal" data-bs-target="#modalInscricao">
+          <i class="bi bi-pencil-square"></i>Quero me inscrever
+        </button>
+      </div>
+    </div>
+
     <div class="verse-highlight verse-ref" data-ref="Gn 2:24">
       <i class="bi bi-stars fs-1 text-warning mb-3"></i>
       <p class="mb-3">"Por isso, deixa o homem pai e mãe e se une à sua mulher, tornando-se os dois uma só carne."</p>
@@ -248,29 +262,13 @@
   <script src="../verses.js"></script>
   <script src="../../assets/js/sermon-scripts.js"></script>
 
-  <!-- ─── Inscrição CTA ─── -->
-  <div class="container my-5" id="inscricao">
-    <div class="card border-0 text-white text-center py-5 px-4"
-         style="background: linear-gradient(135deg,rgba(139,29,46,.18),rgba(100,15,28,.14)); border-radius: 24px; border: 1px solid rgba(139,29,46,.40)!important;">
-      <i class="bi bi-calendar-heart fs-1 mb-3" style="color:#c73048"></i>
-      <h2 class="fw-bold mb-2">Inscreva-se no curso!</h2>
-      <p class="opacity-75 mb-1">As aulas começam em <strong>10 de maio de 2026</strong>.</p>
-      <p class="opacity-75 mb-4">Reserve sua vaga e receba as informações sobre datas, local e horário.</p>
-      <button class="btn btn-lg fw-bold px-5 py-3 mx-auto"
-              style="background: linear-gradient(135deg,#c73048,#8b1d2e); color:#fff; border-radius:50px; border:none; max-width:260px"
-              data-bs-toggle="modal" data-bs-target="#modalInscricao">
-        <i class="bi bi-pencil-square me-2"></i>Quero me inscrever
-      </button>
-    </div>
-  </div>
-
   <!-- ─── Modal de inscrição ─── -->
   <div class="modal fade" id="modalInscricao" tabindex="-1" aria-labelledby="modalInscricaoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 text-white" style="background:#1a1530; border-radius:18px; border:1px solid rgba(255,255,255,.1)!important;">
+      <div class="modal-content course-modal-content">
         <div class="modal-header border-0 pb-0">
           <h5 class="modal-title fw-bold" id="modalInscricaoLabel">
-            <i class="bi bi-hearts me-2" style="color:#c73048"></i>Inscrição — Namoro com Propósito
+            <i class="bi bi-hearts me-2 course-modal-icon"></i>Inscrição — Namoro com Propósito
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
@@ -279,7 +277,7 @@
 
           <!-- Success state -->
           <div id="inscricaoSuccess" class="text-center py-4 d-none">
-            <i class="bi bi-check-circle-fill fs-1 mb-3" style="color:#00e05a"></i>
+            <i class="bi bi-check-circle-fill course-modal-success-icon"></i>
             <h5 class="fw-bold">Inscrição realizada!</h5>
             <p class="opacity-75">Sua vaga foi reservada. Fique atento às informações sobre datas e local.</p>
           </div>
@@ -304,8 +302,7 @@
                      placeholder="(xx) 9xxxx-xxxx">
             </div>
             <div id="inscricaoError" class="alert alert-danger py-2 small d-none"></div>
-            <button type="submit" class="btn w-100 fw-bold py-2"
-                    style="background: linear-gradient(135deg,#c73048,#8b1d2e); color:#fff; border-radius:12px; border:none">
+            <button type="submit" class="course-modal-submit">
               <i class="bi bi-send me-2"></i>Confirmar inscrição
             </button>
           </form>
