@@ -235,4 +235,13 @@ window.Verses["Jo 1:12"] = window.Verses["Jo 1:12-13"];
 // Entradas que não existiam no mapeamento original
 window.Verses["Jo 1:29"] = "Jesus é o Cordeiro de Deus que tira o pecado do mundo.";
 window.Verses["Rm 8:15"] = "Recebemos o Espírito de adoção; clamamos: Aba, Pai.";
+
+// Aula 02 — Namoro com Propósito (deveres dos cônjuges)
+window.Verses["Gn 2:18"] = "Disse mais o Senhor Deus: Não é bom que o homem esteja só; far-lhe-ei uma auxiliadora que lhe seja idônea.";
+window.Verses["Sl 121:1-2"] = "Elevo os olhos para os montes: de onde me virá o socorro? O meu socorro vem do Senhor, que fez o céu e a terra.";
+window.Verses["Pv 18:21"] = "Da língua depende a vida e a morte; os que a amam comerão do seu fruto.";
+window.Verses["Pv 31:11"] = "O coração do seu marido confia nela, e não haverá falta de ganho.";
+window.Verses["Pv 31:11-12"] = "O coração do seu marido confia nela, e não haverá falta de ganho. Ela lhe faz bem e não mal, todos os dias da sua vida.";
+window.Verses["2Ts 3:10"] = "Quando ainda estávamos convosco, vos ordenamos isto: se alguém não quer trabalhar, também não coma.";
+window.Verses["1Pe 4:8"] = "Acima de tudo, porém, tende amor intenso uns para com os outros, porque o amor cobre multidão de pecados.";
 window.Verses["Rm 8:32"] = "Deus não poupou o próprio Filho; entregou-o por nós.";
