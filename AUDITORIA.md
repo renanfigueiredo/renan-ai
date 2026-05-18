@@ -135,12 +135,10 @@ listado em **"Aplicado nesta branch"**. O resto fica como roadmap.
 4. **Cache** (`@Cacheable`) em `PortalContentService` — chamado a cada chat.
 5. **`Conversation.messages`** está `EAGER` — mudar para `LAZY` + repositório
    paginado.
-6. **Spring Boot 4.0.5 → 3.3.x LTS** (4.x ainda é cedo demais para produção).
-7. **Java 25 → Java 21 LTS**.
-8. **Tasks em memória** em `EvjAiApiController` (`ConcurrentHashMap`) — perde
+6. **Tasks em memória** em `EvjAiApiController` (`ConcurrentHashMap`) — perde
    tudo no restart. Persistir no BD com TTL.
-9. **Rate limit no `requestPasswordReset`** (cooldown de 5 min).
-10. **Retry** em `EmailService.send()` (Mailgun cair = usuário não recebe email
+7. **Rate limit no `requestPasswordReset`** (cooldown de 5 min).
+8. **Retry** em `EmailService.send()` (Mailgun cair = usuário não recebe email
     de aprovação/reset).
 
 ---
