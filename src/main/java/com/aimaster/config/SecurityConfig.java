@@ -23,6 +23,8 @@ public class SecurityConfig {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final GuestAuthFilter guestAuthFilter;
+    private final AuthHandlers.SmartAuthenticationEntryPoint authEntryPoint;
+    private final AuthHandlers.NextAwareSuccessHandler authSuccessHandler;
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -63,7 +65,7 @@ public class SecurityConfig {
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/dashboard", true)
+                .successHandler(authSuccessHandler)
                 .failureUrl("/login?error")
                 .permitAll()
             )
@@ -72,6 +74,10 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/")
                 .permitAll()
             )
+            // Sessão expirada / não autenticado:
+            //   • XHR/SSE  → 401 JSON  (frontend redireciona com ?next=)
+            //   • navegação → 302 /login?next=<path>
+            .exceptionHandling(eh -> eh.authenticationEntryPoint(authEntryPoint))
             // Keep CSRF enabled but exempt the API endpoints (called via fetch/AJAX)
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/api/**", "/ws/**", "/guest/**")

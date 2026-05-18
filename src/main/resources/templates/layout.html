@@ -320,6 +320,8 @@
 <!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+<!-- session-guard antes do app.js: instala o wrapper de fetch para detectar 401 -->
+<script th:src="@{/js/session-guard.js(v=20260517)}"></script>
 <script th:src="@{/js/app.js(v=20260316)}"></script>
 <th:block layout:fragment="scripts"></th:block>
 </body>

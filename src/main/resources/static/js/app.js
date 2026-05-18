@@ -420,7 +420,11 @@ async function sendMessage() {
             body: JSON.stringify(req)
         });
 
-        if (!res.ok) throw new Error(await res.text());
+        if (!res.ok) {
+            // Sessão expirou: o session-guard já está redirecionando para /login
+            if (window.__evjAuthRedirecting || res.status === 401) return;
+            throw new Error(await res.text());
+        }
 
         // Remove typing indicator and create streaming message bubble
         removeTypingIndicator();
@@ -1052,7 +1056,11 @@ async function generateImage() {
             body: JSON.stringify(request)
         });
 
-        if (!res.ok) throw new Error(await res.text());
+        if (!res.ok) {
+            // Sessão expirou: o session-guard já está redirecionando para /login
+            if (window.__evjAuthRedirecting || res.status === 401) return;
+            throw new Error(await res.text());
+        }
         const data = await res.json();
 
         showGeneratedImages(data);

@@ -25,12 +25,32 @@ public class AuthController {
     @GetMapping("/login")
     public String loginPage(@RequestParam(required = false) String error,
                             @RequestParam(required = false) String logout,
+                            @RequestParam(required = false) String next,
+                            @RequestParam(required = false) String session,
                             Model model,
                             Principal principal) {
-        if (principal != null) return "redirect:/dashboard";
+        // Se já tem sessão válida, vai direto para o destino (ou dashboard)
+        if (principal != null) {
+            String safeNext = sanitizeNextPath(next);
+            return "redirect:" + (safeNext != null ? safeNext : "/dashboard");
+        }
         if (error != null) model.addAttribute("error", "E-mail ou senha inválidos. Verifique se sua conta foi aprovada.");
         if (logout != null) model.addAttribute("message", "Você saiu com sucesso.");
+        if ("expired".equals(session)) model.addAttribute("message", "Sua sessão expirou. Faça login novamente para continuar de onde parou.");
+        // next: passamos adiante para o form (hidden input) e o SuccessHandler usa
+        model.addAttribute("next", sanitizeNextPath(next));
         return "login";
+    }
+
+    /** Mesma validação anti open-redirect usada em AuthHandlers.sanitizeNext. */
+    private static String sanitizeNextPath(String next) {
+        if (next == null || next.isBlank()) return null;
+        if (!next.startsWith("/")) return null;
+        if (next.startsWith("//")) return null;
+        if (next.startsWith("/login")) return null;
+        if (next.startsWith("/logout")) return null;
+        if (next.length() > 512) return null;
+        return next;
     }
 
     @GetMapping("/register")

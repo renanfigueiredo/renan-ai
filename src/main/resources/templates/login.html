@@ -62,6 +62,7 @@
 
             <!-- Login form -->
             <form th:action="@{/login}" method="post" autocomplete="on">
+                <input type="hidden" name="next" th:value="${next}" th:if="${next != null}"/>
                 <div class="lp-field">
                     <input type="email" id="username" name="username"
                            placeholder="E-mail" required autocomplete="email"/>
