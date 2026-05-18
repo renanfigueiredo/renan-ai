@@ -27,7 +27,10 @@ public class UserPreferenceController {
             String favoriteTopics,
             String interactionStyle,
             String aiSuggestions,
-            String customInstructions
+            String customInstructions,
+            String bibleVersion,
+            String userRole,
+            String denomination
     ) {}
 
     private Long getUserId(Principal principal) {
@@ -54,6 +57,9 @@ public class UserPreferenceController {
             pref.setInteractionStyle(body.interactionStyle());
         if (body.aiSuggestions() != null)     pref.setAiSuggestions(body.aiSuggestions());
         if (body.customInstructions() != null) pref.setCustomInstructions(body.customInstructions());
+        if (body.bibleVersion() != null)      pref.setBibleVersion(body.bibleVersion());
+        if (body.userRole() != null)          pref.setUserRole(body.userRole());
+        if (body.denomination() != null)      pref.setDenomination(body.denomination());
         return ResponseEntity.ok(toMap(preferenceService.save(pref)));
     }
 
@@ -77,12 +83,15 @@ public class UserPreferenceController {
 
     /** Converts entity to a plain Map so Jackson never touches the JPA entity directly. */
     private static Map<String, Object> toMap(UserPreference p) {
-        return Map.of(
-                "favoriteTopics",     p.getFavoriteTopics()     != null ? p.getFavoriteTopics()     : "",
-                "interactionStyle",   p.getInteractionStyle()   != null ? p.getInteractionStyle()   : "",
-                "aiSuggestions",      p.getAiSuggestions()      != null ? p.getAiSuggestions()      : "",
-                "customInstructions", p.getCustomInstructions() != null ? p.getCustomInstructions() : "",
-                "onboardingCompleted", p.isOnboardingCompleted()
-        );
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("favoriteTopics",      p.getFavoriteTopics()     != null ? p.getFavoriteTopics()     : "");
+        m.put("interactionStyle",    p.getInteractionStyle()   != null ? p.getInteractionStyle()   : "");
+        m.put("aiSuggestions",       p.getAiSuggestions()      != null ? p.getAiSuggestions()      : "");
+        m.put("customInstructions",  p.getCustomInstructions() != null ? p.getCustomInstructions() : "");
+        m.put("bibleVersion",        p.getBibleVersion()       != null ? p.getBibleVersion()       : "");
+        m.put("userRole",            p.getUserRole()           != null ? p.getUserRole()           : "");
+        m.put("denomination",        p.getDenomination()       != null ? p.getDenomination()       : "");
+        m.put("onboardingCompleted", p.isOnboardingCompleted());
+        return m;
     }
 }

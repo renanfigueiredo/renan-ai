@@ -275,6 +275,38 @@
                     <i class="bi bi-mortarboard-fill"></i><strong>Acadêmico</strong>
                 </button>
             </div>
+            <label class="prefs-label" style="margin-top:1.2rem">Quem é você?</label>
+            <select id="prefsUserRole" class="prefs-select">
+                <option value="">— escolha (opcional) —</option>
+                <option value="PASTOR">Pastor</option>
+                <option value="LIDER">Líder de ministério</option>
+                <option value="PROFESSOR_EBD">Professor de EBD</option>
+                <option value="JOVEM">Jovem</option>
+                <option value="MEMBRO">Membro de igreja</option>
+                <option value="INTERESSADO">Conhecendo a fé</option>
+            </select>
+
+            <div class="prefs-row">
+                <div class="prefs-col">
+                    <label class="prefs-label" style="margin-top:1.2rem">Tradução preferida da Bíblia</label>
+                    <select id="prefsBibleVersion" class="prefs-select">
+                        <option value="">— escolha (opcional) —</option>
+                        <option value="ARA">ARA — Almeida Revista e Atualizada</option>
+                        <option value="ARC">ARC — Almeida Revista e Corrigida</option>
+                        <option value="NAA">NAA — Nova Almeida Atualizada</option>
+                        <option value="NVI">NVI — Nova Versão Internacional</option>
+                        <option value="ACF">ACF — Almeida Corrigida Fiel</option>
+                        <option value="NTLH">NTLH — Linguagem de Hoje</option>
+                        <option value="KJA">KJA — King James Atualizada</option>
+                    </select>
+                </div>
+                <div class="prefs-col">
+                    <label class="prefs-label" style="margin-top:1.2rem">Tradição / denominação</label>
+                    <input id="prefsDenomination" class="prefs-input" type="text" maxlength="64"
+                           placeholder="Ex: Presbiteriana, Batista Reformada..." />
+                </div>
+            </div>
+
             <label class="prefs-label" style="margin-top:1.2rem">Instruções personalizadas <span style="opacity:.5;font-size:.85em">(opcional)</span></label>
             <textarea id="prefsCustomInstructions" class="prefs-textarea" rows="3" maxlength="500" placeholder="Ex: Sempre cite versículos bíblicos. Seja breve..."></textarea>
         </div>

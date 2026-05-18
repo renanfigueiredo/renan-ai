@@ -52,6 +52,29 @@ public class UserPreferenceService {
         var p = opt.get();
         var sb = new StringBuilder();
 
+        if (p.getUserRole() != null && !p.getUserRole().isBlank()) {
+            String roleDesc = switch (p.getUserRole()) {
+                case "PASTOR"        -> "pastor (calibre profundidade exegética e use vocabulário pastoral)";
+                case "LIDER"         -> "líder de ministério (foque em aplicações práticas para ministério)";
+                case "PROFESSOR_EBD" -> "professor de EBD (forneça material pedagógico, perguntas para classe)";
+                case "JOVEM"         -> "jovem cristão (use linguagem acessível e exemplos contemporâneos)";
+                case "MEMBRO"        -> "membro de igreja (equilibre profundidade e clareza)";
+                case "INTERESSADO"   -> "alguém interessado em conhecer Cristo (seja convidativo, evite jargão)";
+                default              -> p.getUserRole();
+            };
+            sb.append("• Papel do usuário: ").append(roleDesc).append("\n");
+        }
+
+        if (p.getDenomination() != null && !p.getDenomination().isBlank()) {
+            sb.append("• Tradição/denominação: ").append(p.getDenomination())
+              .append(" — use exemplos e referências relevantes a essa tradição quando apropriado.\n");
+        }
+
+        if (p.getBibleVersion() != null && !p.getBibleVersion().isBlank()) {
+            sb.append("• Versão preferida da Bíblia: ").append(p.getBibleVersion())
+              .append(" — quando citar versículos, prefira essa tradução.\n");
+        }
+
         if (p.getFavoriteTopics() != null && !p.getFavoriteTopics().isBlank()) {
             sb.append("• Tópicos favoritos do usuário: ").append(p.getFavoriteTopics()).append("\n");
         }

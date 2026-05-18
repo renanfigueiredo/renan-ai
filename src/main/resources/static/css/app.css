@@ -3908,6 +3908,33 @@ textarea#messageInput {
     outline: none;
     border-color: var(--accent, #00ccff);
 }
+.prefs-select,
+.prefs-input {
+    background: var(--bg-secondary, #0e1220);
+    border: 1.5px solid var(--border, #1e2640);
+    border-radius: 10px;
+    color: var(--text-primary, #e8eaf0);
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    width: 100%;
+    transition: border-color 0.18s;
+}
+.prefs-select:focus,
+.prefs-input:focus {
+    outline: none;
+    border-color: var(--accent, #00ccff);
+}
+.prefs-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+}
+@media (min-width: 640px) {
+    .prefs-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+.prefs-col { display: flex; flex-direction: column; }
 
 /* Spinner inside button */
 .spinner-sm {

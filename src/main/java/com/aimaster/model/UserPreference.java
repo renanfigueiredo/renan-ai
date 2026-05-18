@@ -49,6 +49,29 @@ public class UserPreference {
     @Column(columnDefinition = "TEXT")
     private String customInstructions;
 
+    /**
+     * Tradução bíblica preferida — afeta como a IA cita versículos.
+     * Valores típicos: ARA, ARC, NAA, NVI, NTLH, ACF, KJA.
+     */
+    @Column(length = 32)
+    private String bibleVersion;
+
+    /**
+     * Papel/responsabilidade ministerial do usuário.
+     * Valores típicos: PASTOR, LIDER, PROFESSOR_EBD, JOVEM, MEMBRO, INTERESSADO.
+     * Usado pela IA para calibrar profundidade e tom.
+     */
+    @Column(length = 32)
+    private String userRole;
+
+    /**
+     * Tradição/denominação do usuário — opcional, ajuda a IA a usar exemplos
+     * relevantes. Texto livre porque não queremos engessar (ex: "Presbiteriana",
+     * "Batista Reformada", "Reformada Continental", "Não-denominacional").
+     */
+    @Column(length = 64)
+    private String denomination;
+
     /** True once the user completes the onboarding wizard. */
     @Builder.Default
     private boolean onboardingCompleted = false;

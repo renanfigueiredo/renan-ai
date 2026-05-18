@@ -293,7 +293,7 @@ function renderConvList(convs) {
     }
 
     list.innerHTML = convs.map(c => `
-        <div class="conv-item ${c.id === App.currentConversationId ? 'active' : ''}" onclick="selectConversation('${c.id}')">
+        <div class="conv-item ${c.id === App.currentConversationId ? 'active' : ''}" data-updated="${c.updatedAt || c.createdAt || ''}" onclick="selectConversation('${c.id}')">
             <div class="conv-item-icon"><i class="bi bi-chat-dots"></i>${c.pinned ? '<span class="pin-badge"><i class="bi bi-pin-fill"></i></span>' : ''}</div>
             <div class="conv-item-info">
                 <span class="conv-item-title">${escHtml(c.title)}</span>
@@ -1755,6 +1755,12 @@ function openPreferencesModal() {
         });
         const ta = document.getElementById('prefsCustomInstructions');
         if (ta) ta.value = prefs.customInstructions || '';
+        const role = document.getElementById('prefsUserRole');
+        if (role) role.value = prefs.userRole || '';
+        const ver = document.getElementById('prefsBibleVersion');
+        if (ver) ver.value = prefs.bibleVersion || '';
+        const den = document.getElementById('prefsDenomination');
+        if (den) den.value = prefs.denomination || '';
     });
     document.getElementById('prefsBackdrop')?.classList.add('active');
     document.getElementById('prefsModal')?.classList.add('active');
@@ -1781,10 +1787,16 @@ document.addEventListener('click', e => {
 
 async function savePreferences() {
     const ta    = document.getElementById('prefsCustomInstructions');
+    const role  = document.getElementById('prefsUserRole');
+    const ver   = document.getElementById('prefsBibleVersion');
+    const den   = document.getElementById('prefsDenomination');
     const body  = {
         favoriteTopics:      [..._prefsSelectedTopics].join(','),
         interactionStyle:    _prefsSelectedStyle || 'CASUAL',
-        customInstructions:  ta?.value?.trim() || ''
+        customInstructions:  ta?.value?.trim() || '',
+        userRole:            role?.value || '',
+        bibleVersion:        ver?.value || '',
+        denomination:        den?.value?.trim() || ''
     };
     try {
         const res = await fetch('/api/preferences', {
