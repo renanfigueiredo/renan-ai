@@ -4,6 +4,7 @@ import com.aimaster.model.AgendaItem;
 import com.aimaster.service.AgendaItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -27,13 +28,15 @@ public class AgendaApiController {
         return agendaItemService.findAll();
     }
 
-    /** Admin-only — criação via /api/admin/agenda (protegido pela SecurityConfig) */
+    /** Admin-only — criação via /api/admin/agenda */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/api/admin/agenda")
     public ResponseEntity<AgendaItem> create(@RequestBody AgendaRequest req) {
         return ResponseEntity.ok(agendaItemService.save(toEntity(req)));
     }
 
     /** Admin-only — atualização */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/api/admin/agenda/{id}")
     public ResponseEntity<AgendaItem> update(@PathVariable Long id, @RequestBody AgendaRequest req) {
         return agendaItemService.update(id, toEntity(req))
@@ -42,6 +45,7 @@ public class AgendaApiController {
     }
 
     /** Admin-only — exclusão */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/api/admin/agenda/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         agendaItemService.delete(id);

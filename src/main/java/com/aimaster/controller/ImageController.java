@@ -87,22 +87,25 @@ public class ImageController {
 
     @DeleteMapping("/api/image/{id}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> deleteImage(@PathVariable String id) {
-        storageService.deleteImage(id);
+    public ResponseEntity<Map<String, Object>> deleteImage(@PathVariable String id, Principal principal) {
+        boolean ok = storageService.deleteImageByUser(id, getUserId(principal));
+        if (!ok) return ResponseEntity.status(404).body(Map.of("success", false));
         return ResponseEntity.ok(Map.of("success", true));
     }
 
     @PatchMapping("/api/image/{id}/favorite")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> toggleFavorite(@PathVariable String id) {
-        storageService.toggleImageFavorite(id);
+    public ResponseEntity<Map<String, Object>> toggleFavorite(@PathVariable String id, Principal principal) {
+        boolean ok = storageService.toggleImageFavoriteByUser(id, getUserId(principal));
+        if (!ok) return ResponseEntity.status(404).body(Map.of("success", false));
         return ResponseEntity.ok(Map.of("success", true));
     }
 
     @GetMapping("/api/image/{id}/download")
     public ResponseEntity<byte[]> downloadImage(@PathVariable String id,
-                                                  @RequestParam(defaultValue = "0") int index) {
-        return storageService.findImage(id).map(img -> {
+                                                  @RequestParam(defaultValue = "0") int index,
+                                                  Principal principal) {
+        return storageService.findImageByUser(id, getUserId(principal)).map(img -> {
             String base64 = img.getBase64Images().get(index);
             byte[] imageBytes = Base64.getDecoder().decode(base64);
             return ResponseEntity.ok()

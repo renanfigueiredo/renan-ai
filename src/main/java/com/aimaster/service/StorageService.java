@@ -90,9 +90,22 @@ public class StorageService {
         return imageRepo.findById(id);
     }
 
+    /** Garante que apenas o dono da imagem consegue acessá-la. */
+    public Optional<GeneratedImage> findImageByUser(String id, Long userId) {
+        return imageRepo.findByIdAndUserId(id, userId);
+    }
+
     @Transactional
     public void deleteImage(String id) {
         imageRepo.deleteById(id);
+    }
+
+    /** Deleta apenas se a imagem pertencer ao usuário informado. */
+    @Transactional
+    public boolean deleteImageByUser(String id, Long userId) {
+        return imageRepo.findByIdAndUserId(id, userId)
+                .map(img -> { imageRepo.delete(img); return true; })
+                .orElse(false);
     }
 
     @Transactional
@@ -101,6 +114,18 @@ public class StorageService {
             img.setFavorite(!img.isFavorite());
             imageRepo.save(img);
         });
+    }
+
+    /** Toggle favorite apenas se o usuário for dono. */
+    @Transactional
+    public boolean toggleImageFavoriteByUser(String id, Long userId) {
+        return imageRepo.findByIdAndUserId(id, userId)
+                .map(img -> {
+                    img.setFavorite(!img.isFavorite());
+                    imageRepo.save(img);
+                    return true;
+                })
+                .orElse(false);
     }
 
     // ========== VIDEOS ==========

@@ -40,11 +40,12 @@ public class GuestController {
         try {
             GuestSession session = guestSessionService.createOrResumeSession(fingerprint, ip);
 
-            // Cookie HttpOnly — JavaScript não consegue ler nem apagar
+            // Cookie HttpOnly + SameSite=Lax — JS não consegue ler; mitiga CSRF cross-site
             Cookie cookie = new Cookie("GUEST_TOKEN", session.getId());
             cookie.setHttpOnly(true);
             cookie.setSecure(request.isSecure());
             cookie.setPath("/");
+            cookie.setAttribute("SameSite", "Lax");
             cookie.setMaxAge(7 * 24 * 3600); // cookie dura 7 dias; tempo real rastreado no DB
             response.addCookie(cookie);
 
