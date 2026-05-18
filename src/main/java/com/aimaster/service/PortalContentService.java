@@ -177,6 +177,25 @@ public class PortalContentService {
     }
 
     /**
+     * Retorna o "versículo do dia" — determinístico: o mesmo dia do ano sempre
+     * devolve o mesmo versículo, criando um hábito devocional estável.
+     */
+    public Map.Entry<String, String> getVerseOfTheDay() {
+        if (bibleVerses.isEmpty()) return null;
+        java.time.LocalDate today = java.time.LocalDate.now(
+                java.time.ZoneId.of("America/Sao_Paulo"));
+        // dia do ano (1..366) como seed estável
+        int seed = today.getYear() * 1000 + today.getDayOfYear();
+        int idx = Math.floorMod(seed, bibleVerses.size());
+        int i = 0;
+        for (Map.Entry<String, String> entry : bibleVerses.entrySet()) {
+            if (i == idx) return entry;
+            i++;
+        }
+        return bibleVerses.entrySet().iterator().next();
+    }
+
+    /**
      * Busca conteúdos relevantes para a mensagem do usuário.
      * Retorna texto formatado para injeção no system prompt.
      */

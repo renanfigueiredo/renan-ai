@@ -1,0 +1,360 @@
+/* =====================================================
+   EVJ AI — Chat Enhancements (Pacote A + B + C)
+   ===================================================== */
+
+/* ── Slash menu ─────────────────────────────────────── */
+.slash-menu {
+    position: fixed;
+    z-index: 9999;
+    background: var(--bg-elev-2, #1a1530);
+    border: 1px solid var(--border, rgba(255,255,255,0.08));
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    padding: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+    backdrop-filter: blur(12px);
+}
+.slash-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 120ms ease;
+}
+.slash-item.active,
+.slash-item:hover {
+    background: rgba(0, 204, 255, 0.10);
+}
+.slash-item .bi {
+    font-size: 1.1rem;
+    color: var(--accent-cyan, #00ccff);
+    flex-shrink: 0;
+}
+.slash-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    min-width: 0;
+}
+.slash-cmd {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 600;
+    color: var(--accent-cyan, #00ccff);
+    font-size: 0.85rem;
+}
+.slash-label {
+    font-size: 0.85rem;
+    color: var(--text-muted, #a8acc4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Stop button ────────────────────────────────────── */
+.stop-btn {
+    background: linear-gradient(135deg, #d64545, #a32424) !important;
+}
+.stop-btn:hover {
+    filter: brightness(1.1);
+}
+
+/* ── Hover actions na resposta ─────────────────────── */
+.evj-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+    opacity: 0;
+    transform: translateY(-2px);
+    transition: opacity 160ms ease, transform 160ms ease;
+}
+.message-body:hover .evj-actions,
+.message.assistant:hover .evj-actions,
+.evj-actions:focus-within {
+    opacity: 1;
+    transform: translateY(0);
+}
+.evj-act-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.06);
+    color: var(--text-muted, #a8acc4);
+    border-radius: 8px;
+    padding: 5px 9px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 140ms ease;
+}
+.evj-act-btn:hover {
+    background: rgba(0, 204, 255, 0.08);
+    color: var(--accent-cyan, #00ccff);
+    border-color: rgba(0, 204, 255, 0.3);
+}
+.evj-act-btn.speaking {
+    background: rgba(0, 224, 90, 0.12);
+    color: #00e05a;
+    border-color: rgba(0, 224, 90, 0.4);
+}
+.evj-act-btn .bi {
+    pointer-events: none;
+}
+
+/* ── Follow-up suggestions ─────────────────────────── */
+.evj-followups {
+    margin-top: 14px;
+    padding: 12px;
+    border-top: 1px dashed rgba(255,255,255,0.08);
+}
+.evj-followups-label {
+    font-size: 0.78rem;
+    color: var(--text-muted, #a8acc4);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.evj-followups-label .bi {
+    color: #f7b500;
+}
+.evj-followups-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.evj-followup-chip {
+    background: rgba(0, 204, 255, 0.06);
+    color: var(--text, #e8eaf0);
+    border: 1px solid rgba(0, 204, 255, 0.2);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 140ms ease;
+    text-align: left;
+    line-height: 1.3;
+}
+.evj-followup-chip:hover {
+    background: rgba(0, 204, 255, 0.14);
+    border-color: rgba(0, 204, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+/* ── Histórico agrupado por data ───────────────────── */
+.conv-group-header {
+    padding: 10px 12px 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted, #a8acc4);
+    border-top: 1px solid rgba(255,255,255,0.04);
+    margin-top: 4px;
+}
+.conv-group-header:first-child {
+    border-top: none;
+    margin-top: 0;
+}
+
+/* ── Daily card (home do chat) ─────────────────────── */
+.evj-daily-card {
+    margin: 0 auto 24px;
+    max-width: 720px;
+    background: linear-gradient(135deg, rgba(0,204,255,0.06), rgba(155,89,255,0.06));
+    border: 1px solid rgba(0,204,255,0.18);
+    border-radius: 16px;
+    padding: 22px 24px;
+}
+.evj-daily-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+.evj-daily-kicker {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-cyan, #00ccff);
+    font-weight: 700;
+}
+.evj-daily-date {
+    font-size: 0.78rem;
+    color: var(--text-muted, #a8acc4);
+}
+.evj-daily-verse {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.04rem;
+    line-height: 1.55;
+    font-style: italic;
+    color: var(--text, #e8eaf0);
+    margin-bottom: 8px;
+    padding-left: 14px;
+    border-left: 3px solid var(--accent-cyan, #00ccff);
+}
+.evj-daily-verse-ref {
+    font-size: 0.85rem;
+    color: var(--text-muted, #a8acc4);
+    margin-bottom: 18px;
+    padding-left: 14px;
+}
+.evj-daily-suggestions-label {
+    font-size: 0.78rem;
+    color: var(--text-muted, #a8acc4);
+    margin: 14px 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+.evj-daily-suggestions {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+    .evj-daily-suggestions {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+.evj-daily-chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: left;
+    color: var(--text, #e8eaf0);
+    cursor: pointer;
+    font-size: 0.92rem;
+    line-height: 1.35;
+    transition: all 140ms ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.evj-daily-chip:hover {
+    background: rgba(0,204,255,0.08);
+    border-color: rgba(0,204,255,0.3);
+    transform: translateY(-1px);
+}
+.evj-daily-chip .bi {
+    color: var(--accent-cyan, #00ccff);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* ── Settings modal (Custom Instructions) ──────────── */
+.evj-settings-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 3, 15, 0.7);
+    backdrop-filter: blur(6px);
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.evj-settings-modal {
+    background: var(--bg-elev-1, #14101f);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 620px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+}
+.evj-settings-header {
+    padding: 20px 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.evj-settings-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+}
+.evj-settings-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #a8acc4);
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+.evj-settings-close:hover {
+    color: var(--text, #e8eaf0);
+    background: rgba(255,255,255,0.05);
+}
+.evj-settings-body {
+    padding: 22px;
+}
+.evj-settings-field {
+    margin-bottom: 20px;
+}
+.evj-settings-field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text, #e8eaf0);
+}
+.evj-settings-field .hint {
+    font-size: 0.75rem;
+    color: var(--text-muted, #a8acc4);
+    margin-bottom: 8px;
+}
+.evj-settings-field textarea,
+.evj-settings-field input,
+.evj-settings-field select {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text, #e8eaf0);
+    font-family: inherit;
+    font-size: 0.92rem;
+}
+.evj-settings-field textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+.evj-settings-field textarea:focus,
+.evj-settings-field input:focus,
+.evj-settings-field select:focus {
+    outline: none;
+    border-color: rgba(0,204,255,0.5);
+    background: rgba(255,255,255,0.06);
+}
+.evj-settings-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 22px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+.evj-btn-primary {
+    background: linear-gradient(135deg, #00ccff, #00e05a);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.evj-btn-primary:hover { filter: brightness(1.05); }
+.evj-btn-secondary {
+    background: transparent;
+    color: var(--text, #e8eaf0);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 9px 18px;
+    cursor: pointer;
+}
+.evj-btn-secondary:hover { background: rgba(255,255,255,0.04); }

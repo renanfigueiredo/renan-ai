@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Slf4j
@@ -24,6 +26,57 @@ public class ChatController {
     private final ModelCatalogService modelCatalog;
     private final StorageService storageService;
     private final UserService userService;
+    private final PortalContentService portalContentService;
+
+    /**
+     * Conjunto rotativo de prompts sugeridos. O conjunto exibido a cada dia é
+     * determinístico (mesma data → mesmas sugestões), o que evita "ruído" para
+     * o usuário e cria sensação de "card do dia".
+     */
+    private static final List<List<String>> SUGGESTION_BUCKETS = List.of(
+            List.of(
+                "Faça um devocional curto sobre Salmos 23",
+                "Prepare um esboço de sermão sobre Romanos 8.28",
+                "Explique a doutrina da justificação pela fé",
+                "Quero estudar 1 João — por onde começo?"
+            ),
+            List.of(
+                "Como conduzir o culto doméstico em família?",
+                "Faça uma exegese curta de João 3.16",
+                "Diferença entre arrependimento e remorso",
+                "Sugira um plano de leitura bíblica em 90 dias"
+            ),
+            List.of(
+                "Como pregar Cristo no Antigo Testamento?",
+                "Resuma a Confissão de Fé de Westminster em 5 pontos",
+                "O que é a doutrina da expiação penal substitutiva?",
+                "Estou desanimado — me lembre do evangelho"
+            ),
+            List.of(
+                "Faça um plano de estudo sobre a Reforma Protestante",
+                "Como combater a teologia da prosperidade biblicamente?",
+                "Prepare uma EBD para jovens sobre santidade",
+                "Como aconselhar alguém em crise de fé?"
+            ),
+            List.of(
+                "Estudo expositivo de Efésios 2.1-10",
+                "Como crescer em oração? Princípios bíblicos",
+                "Diferença entre lei e evangelho",
+                "Sugira versículos para memorizar esta semana"
+            ),
+            List.of(
+                "Prepare um devocional sobre o Salmo 1",
+                "O que é a soberania de Deus na salvação?",
+                "Como ensinar a Bíblia para crianças?",
+                "Esboço de sermão sobre Filipenses 4.4-7"
+            ),
+            List.of(
+                "Estudo sobre os 5 Solas da Reforma",
+                "Como tratar a ansiedade segundo a Escritura?",
+                "Faça um sermão evangelístico curto",
+                "O que significa 'seguir a Cristo'?"
+            )
+    );
 
     private Long getUserId(Principal principal) {
         return userService.findByEmail(principal.getName())
@@ -178,6 +231,48 @@ public class ChatController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
         }
+    }
+
+    /**
+     * Gera 3 perguntas curtas de follow-up baseadas na última troca da conversa.
+     * Retorna {"followups": ["...", "...", "..."]}. Lista vazia se não conseguir gerar.
+     * Endpoint best-effort — frontend não deve falhar se vier vazio.
+     */
+    @PostMapping("/api/chat/followups")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> followups(@RequestBody Map<String, String> body) {
+        String userMsg = body.getOrDefault("userMessage", "");
+        String assistantReply = body.getOrDefault("assistantReply", "");
+        List<String> suggestions = textGenerationService.generateFollowups(userMsg, assistantReply);
+        return ResponseEntity.ok(Map.of("followups", suggestions, "success", true));
+    }
+
+    /**
+     * Retorna o "card do dia" da home do chat: versículo do dia + 4 sugestões
+     * de prompts rotativas. Determinístico por dia — mesma data devolve sempre
+     * o mesmo card, criando hábito devocional estável.
+     */
+    @GetMapping("/api/chat/daily")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> daily() {
+        Map<String, Object> response = new LinkedHashMap<>();
+
+        Map.Entry<String, String> verse = portalContentService.getVerseOfTheDay();
+        if (verse != null) {
+            response.put("verse", Map.of(
+                    "reference", verse.getKey(),
+                    "text", verse.getValue()
+            ));
+        }
+
+        // Bucket rotativo determinístico (dia do ano % buckets.size)
+        LocalDate today = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
+        int idx = Math.floorMod(today.getYear() * 1000 + today.getDayOfYear(),
+                                SUGGESTION_BUCKETS.size());
+        response.put("suggestions", SUGGESTION_BUCKETS.get(idx));
+        response.put("date", today.toString());
+
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/api/chat/conversation/{id}/pin")

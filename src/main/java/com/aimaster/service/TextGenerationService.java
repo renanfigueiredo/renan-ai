@@ -946,4 +946,67 @@ public class TextGenerationService {
         Node document = markdownParser.parse(markdown);
         return htmlRenderer.render(document);
     }
+
+    /**
+     * Gera 3 perguntas curtas de follow-up para aprofundar o estudo, com base na
+     * última pergunta do usuário e na resposta do assistente. Retorna uma lista
+     * pronta para ser exibida como chips clicáveis abaixo da resposta.
+     *
+     * Falhas devolvem lista vazia — follow-ups são best-effort, nunca devem
+     * quebrar o fluxo de chat.
+     */
+    public java.util.List<String> generateFollowups(String userMessage, String assistantReply) {
+        if (userMessage == null || userMessage.isBlank()
+                || assistantReply == null || assistantReply.isBlank()) {
+            return java.util.List.of();
+        }
+
+        // Limita o tamanho do contexto enviado para manter custo baixo.
+        String trimmedReply = assistantReply.length() > 1500
+                ? assistantReply.substring(0, 1500) + "..."
+                : assistantReply;
+
+        String system =
+                "Você é assistente da EVJ AI. Dada uma pergunta do usuário e a resposta " +
+                "do assistente, gere EXATAMENTE 3 perguntas curtas (máx. 70 caracteres cada) " +
+                "que aprofundem o estudo bíblico/teológico/pastoral do mesmo tema. " +
+                "Cada pergunta deve poder ser feita diretamente ao assistente. " +
+                "Responda em português do Brasil. " +
+                "Retorne APENAS um JSON array de strings — sem texto antes ou depois, sem markdown, sem aspas externas. " +
+                "Exemplo válido: [\"Pergunta 1?\", \"Pergunta 2?\", \"Pergunta 3?\"]";
+
+        String userBlock =
+                "PERGUNTA DO USUÁRIO:\n" + userMessage + "\n\n" +
+                "RESPOSTA DO ASSISTENTE:\n" + trimmedReply + "\n\n" +
+                "Gere 3 perguntas curtas de follow-up no formato JSON array.";
+
+        ChatRequest req = ChatRequest.builder()
+                .modelId("us.anthropic.claude-sonnet-4-6")
+                .systemPrompt(system)
+                .message(userBlock)
+                .maxTokens(256)
+                .temperature(0.6)
+                .build();
+
+        try {
+            Message msg = generateResponse(req, null);
+            String raw = msg.getContent();
+            if (raw == null) return java.util.List.of();
+            int start = raw.indexOf('[');
+            int end = raw.lastIndexOf(']');
+            if (start < 0 || end <= start) return java.util.List.of();
+            String json = raw.substring(start, end + 1);
+            java.util.List<String> parsed = objectMapper.readValue(
+                    json, new com.fasterxml.jackson.core.type.TypeReference<java.util.List<String>>() {});
+            // Sanitiza: limita tamanho, descarta nulos/vazios, máximo 3
+            return parsed.stream()
+                    .filter(s -> s != null && !s.isBlank())
+                    .map(s -> s.length() > 120 ? s.substring(0, 120) : s)
+                    .limit(3)
+                    .toList();
+        } catch (Exception e) {
+            log.debug("Falha gerando follow-ups (ignorado): {}", e.getMessage());
+            return java.util.List.of();
+        }
+    }
 }

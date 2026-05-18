@@ -5,6 +5,7 @@
       lang="pt-BR">
 <head>
     <title>Chat - EVJ AI</title>
+    <link rel="stylesheet" th:href="@{/css/chat-enhancements.css(v=20260517)}">
 </head>
 <body>
 <div layout:fragment="content">
@@ -35,6 +36,7 @@
                  class="conv-item"
                  th:classappend="${conv.id == conversation.id} ? ' active' : ''"
                  th:data-id="${conv.id}"
+                 th:attr="data-updated=${conv.updatedAt != null ? conv.updatedAt : conv.createdAt}"
                  onclick="loadConversation(this.dataset.id)"
             >
                 <div class="conv-item-icon">
@@ -255,5 +257,10 @@
 <div id="modelId" th:data-id="${conversation.modelId}" style="display:none"></div>
 
 </div>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/js/chat-enhancements.js(v=20260517)}"></script>
+    <script th:src="@{/js/chat-daily.js(v=20260517)}"></script>
+</th:block>
 </body>
 </html>
