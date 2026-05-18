@@ -1,0 +1,27 @@
+{
+  "name": "EVJ — Estação Vida Jovem",
+  "short_name": "EVJ",
+  "description": "Portal oficial da Estação Vida Jovem — sermões, EBD, cursos e EVJ AI.",
+  "start_url": "/portal",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0e0a1a",
+  "theme_color": "#0e0a1a",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/images/logo_evj.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logo_mini.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["education", "lifestyle", "religion"]
+}

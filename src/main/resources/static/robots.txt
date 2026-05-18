@@ -1,0 +1,24 @@
+# EVJ — Estação Vida Jovem
+User-agent: *
+Allow: /
+Allow: /portal/
+Allow: /portal/contents/
+
+# Áreas restritas / técnicas — não indexar
+Disallow: /admin/
+Disallow: /api/
+Disallow: /actuator/
+Disallow: /swagger-ui/
+Disallow: /v3/api-docs/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /pending
+Disallow: /dashboard
+Disallow: /chat
+Disallow: /image
+Disallow: /video
+Disallow: /history
+
+Sitemap: https://www.evj.app.br/sitemap.xml
