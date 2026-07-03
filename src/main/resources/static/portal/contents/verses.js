@@ -271,3 +271,59 @@ window.Verses["Mt 27:51"] = "E eis que o véu do templo se rasgou em dois, de al
 window.Verses["Jo 5:39"] = "Examinais as Escrituras, porque julgais ter nelas a vida eterna; e são elas mesmas que testificam de mim.";
 window.Verses["Jo 6:37"] = "Todo aquele que o Pai me dá, virá a mim; e o que vier a mim, de modo algum o lançarei fora.";
 window.Verses["Jo 13:31"] = "Quando, pois, saiu Judas, disse Jesus: Agora é glorificado o Filho do Homem, e Deus é glorificado nele.";
+
+// Versículos para o Ciclo 4 — Atributos de Deus
+// Aula 01: Introdução, Independência e Imutabilidade
+window.Verses["Jr 9:23-24"] = "Assim diz o Senhor: Não se glorie o sábio na sua sabedoria, nem o forte na sua força, nem o rico nas suas riquezas; mas o que se gloriar, glorie-se nisto: em me conhecer e entender que eu sou o Senhor e faço misericórdia, juízo e justiça na terra; porque destas coisas me agrado, diz o Senhor.";
+window.Verses["At 17:24-25"] = "O Deus que fez o mundo e tudo o que nele existe, sendo ele Senhor do céu e da terra, não habita em templos feitos por mãos humanas; nem é servido por mãos de homens, como se necessitasse de alguma coisa; pois ele mesmo é quem dá a todos a vida, e o alento, e todas as coisas.";
+window.Verses["Dn 4:35"] = "Todos os moradores da terra são por ele reputados em nada; e segundo a sua vontade ele opera com o exército do céu e os moradores da terra; não há quem lhe possa deter a mão, nem lhe dizer: Que fazes?";
+window.Verses["Sl 102:25-27"] = "Em tempos remotos, lançaste os fundamentos da terra; e os céus são obra das tuas mãos. Eles perecerão, mas tu permaneces; todos eles envelhecerão como uma veste, como roupa os mudarás, e serão mudados. Tu, porém, és o mesmo, e os teus anos jamais terão fim.";
+window.Verses["Tg 1:17"] = "Toda boa dádiva e todo dom perfeito vêm do alto, descendo do Pai das luzes, em quem não pode existir variação ou sombra de mudança.";
+
+// Aula 02: Eternidade e Onipresença
+window.Verses["Sl 90:2"] = "Antes que os montes nascessem, e se formassem a terra e o mundo, sim, de eternidade a eternidade, tu és Deus.";
+window.Verses["Jó 36:26"] = "Sim, grande é Deus, sem que possamos compreendê-lo, e insondável é o número dos seus anos.";
+window.Verses["Ap 1:8"] = "Eu sou o Alfa e o Ômega, diz o Senhor Deus, aquele que é, que era e que há de vir, o Todo-Poderoso.";
+window.Verses["Jr 23:23-24"] = "Sou eu apenas Deus de perto, diz o Senhor, e não também Deus de longe? Esconder-se-á alguém em esconderijos, de modo que eu não o veja? — diz o Senhor. Porventura, não encho eu os céus e a terra? — diz o Senhor.";
+window.Verses["Sl 139:7-10"] = "Para onde me irei do teu Espírito, ou para onde fugirei da tua face? Se subir aos céus, tu ali estás; se fizer a minha cama no mais profundo abismo, tu ali estás também. Se tomar as asas da alvorada e habitar nos confins dos mares, ainda lá me haverá de guiar a tua mão, e a tua destra me susterá.";
+
+// Aula 03: Unidade, Trindade e o Ser de Deus
+window.Verses["Dt 6:4"] = "Ouve, Israel: o Senhor, nosso Deus, é o único Senhor.";
+window.Verses["Jo 4:24"] = "Deus é espírito; e importa que os seus adoradores o adorem em espírito e em verdade.";
+window.Verses["Êx 20:4-6"] = "Não farás para ti imagem de escultura, nem semelhança alguma do que há em cima nos céus, nem embaixo na terra, nem nas águas debaixo da terra. Não as adorarás, nem lhes darás culto; porque eu, o Senhor, teu Deus, sou Deus zeloso, que visito a iniquidade dos pais nos filhos até à terceira e quarta geração daqueles que me aborrecem, e faço misericórdia a milhares dos que me amam e guardam os meus mandamentos.";
+window.Verses["1 Tm 6:16"] = "O único que possui imortalidade, que habita em luz inacessível, a quem nenhum dos homens viu nem pode ver; a ele honra e poder eterno. Amém.";
+window.Verses["Jo 1:18"] = "Ninguém jamais viu a Deus; o Deus unigênito, que está no seio do Pai, é quem o revelou.";
+window.Verses["Mt 28:19"] = "Ide, portanto, fazei discípulos de todas as nações, batizando-os em nome do Pai, e do Filho, e do Espírito Santo.";
+
+// Aula 04: Atributos Intelectuais
+window.Verses["1 Jo 3:20"] = "Se o nosso coração nos condena, maior é Deus do que o nosso coração e conhece todas as coisas.";
+window.Verses["Jó 37:16"] = "Tens conhecimento do equilíbrio das nuvens, e das maravilhas daquele que é perfeito em conhecimento?";
+window.Verses["Rm 16:27"] = "Ao único Deus sábio, seja dada glória por meio de Jesus Cristo, pelos séculos dos séculos. Amém.";
+window.Verses["Jó 12:13"] = "Com Deus está a sabedoria e o poder; ele tem conselho e entendimento.";
+window.Verses["Jr 10:10-11"] = "Mas o Senhor é o Deus verdadeiro; ele é o Deus vivo e o Rei eterno; do seu furor treme a terra, e as nações não podem suportar a sua indignação. Assim lhes direis: Os deuses que não fizeram os céus e a terra desaparecerão da terra e de debaixo destes céus.";
+
+// Aula 05: Atributos Morais
+window.Verses["Sl 106:1"] = "Aleluia! Rendei graças ao Senhor, porque ele é bom; porque a sua misericórdia dura para sempre.";
+window.Verses["1 Jo 4:8"] = "Aquele que não ama não conhece a Deus, pois Deus é amor.";
+window.Verses["Sl 103:8"] = "O Senhor é misericordioso e compassivo; longânimo e cheio de amor.";
+window.Verses["Sl 71:22"] = "Também eu te louvarei ao som do saltério, quanto à tua fidelidade, ó meu Deus; cantar-te-ei louvores com a harpa, ó Santo de Israel.";
+window.Verses["1 Co 14:33"] = "Porque Deus não é Deus de confusão, e sim de paz. Como em todas as igrejas dos santos.";
+window.Verses["Dt 32:4"] = "Ele é a Rocha, cuja obra é perfeita, porque todos os seus caminhos são juízo; Deus é a verdade, e não há nele injustiça; justo e reto é.";
+window.Verses["Êx 34:14"] = "Porque não adorarás outro deus; pois o nome do Senhor é Zeloso, sim, Ele é Deus zeloso.";
+window.Verses["Rm 1:18"] = "Pois do céu é revelada a ira de Deus contra toda impiedade e perversão dos homens que detêm a verdade pela injustiça.";
+window.Verses["Is 45:19"] = "Não falei em segredo, nem em lugar algum da terra tenebrosa; não disse à descendência de Jacó: Buscai-me em vão; eu, o Senhor, falo a justiça e proclamo o que é reto.";
+
+// Aula 06: Atributos de Síntese
+window.Verses["Mt 5:48"] = "Portanto, sede vós perfeitos como perfeito é o vosso Pai celeste.";
+window.Verses["Mt 5:28"] = "Eu, porém, vos digo: qualquer que olhar para uma mulher com intenção impura, no coração, já adulterou com ela.";
+window.Verses["Sl 24:10"] = "Quem é esse Rei da Glória? O Senhor dos Exércitos, ele é o Rei da Glória.";
+window.Verses["1 Tm 6:15"] = "A qual, no tempo próprio, mostrará o bem-aventurado e único Soberano, Rei dos reis e Senhor dos senhores.";
+window.Verses["Sl 27:4"] = "Uma coisa peço ao Senhor, e a buscarei: que possa morar na casa do Senhor todos os dias da minha vida, para contemplar a beleza do Senhor e meditar no seu templo.";
+
+// Aula 07: Atributos de Propósito
+window.Verses["Ef 1:11"] = "Nele, digo, no qual fomos também feitos herança, predestinados conforme o propósito daquele que faz todas as coisas segundo o conselho da sua vontade.";
+window.Verses["Sl 115:3"] = "O nosso Deus está nos céus; tudo faz como lhe agrada.";
+window.Verses["Sl 24:8"] = "Quem é o Rei da Glória? O Senhor forte e poderoso, o Senhor poderoso na batalha.";
+window.Verses["Jó 42:2"] = "Bem sei que tudo podes, e nenhum dos teus planos pode ser frustrado.";
+window.Verses["Jr 32:17"] = "Ah! Senhor Deus, eis que fizeste os céus e a terra com o teu grande poder e com o teu braço estendido; coisa alguma te é demasiadamente maravilhosa.";
+window.Verses["1 Ts 4:3"] = "Porque esta é a vontade de Deus, a vossa santificação: que vos abstenhais da prostituição.";
