@@ -33,3 +33,6 @@ Thumbs.db
 .env
 .env.*
 !.env.template
+**/*.ps1
+**/*.cmd
+.claude/
