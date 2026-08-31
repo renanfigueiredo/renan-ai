@@ -327,3 +327,9 @@ window.Verses["Sl 24:8"] = "Quem é o Rei da Glória? O Senhor forte e poderoso,
 window.Verses["Jó 42:2"] = "Bem sei que tudo podes, e nenhum dos teus planos pode ser frustrado.";
 window.Verses["Jr 32:17"] = "Ah! Senhor Deus, eis que fizeste os céus e a terra com o teu grande poder e com o teu braço estendido; coisa alguma te é demasiadamente maravilhosa.";
 window.Verses["1 Ts 4:3"] = "Porque esta é a vontade de Deus, a vossa santificação: que vos abstenhais da prostituição.";
+
+// Ciclo 5 — Introdução à Bíblia, Aula 05: Hermenêutica
+window.Verses["Mc 16:16"] = "Quem crer e for batizado será salvo; mas quem não crer será condenado.";
+window.Verses["At 2:38"] = "Disse-lhes Pedro: Arrependei-vos, e cada um de vós seja batizado em nome de Jesus Cristo, para perdão dos vossos pecados; e recebereis o dom do Espírito Santo.";
+window.Verses["Rm 10:9-13"] = "Porque, se de tua boca fizeres confissão de Jesus como Senhor e, em teu coração, creres que Deus o ressuscitou dos mortos, serás salvo. Pois é com o coração que se crê para justiça e com a boca que se faz confissão para a salvação. Porque a Escritura diz: Todo aquele que nele crer não será confundido. Porquanto não há distinção entre judeu e grego; pois um mesmo é o Senhor de todos, rico para todos os que o invocam. Porque todo aquele que invocar o nome do Senhor será salvo.";
+window.Verses["Lc 23:42-43"] = "E dizia: Jesus, lembra-te de mim, quando entrares no teu Reino. Respondeu-lhe Jesus: Em verdade te digo que hoje estarás comigo no paraíso.";

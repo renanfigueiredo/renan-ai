@@ -187,6 +187,14 @@ body {
   border-radius: 2px;
 }
 
+/* REFERÊNCIA CLICÁVEL INLINE */
+span.verse-ref {
+  cursor: pointer;
+  color: var(--neon-blue);
+  text-decoration: underline dotted;
+  font-weight: 600;
+}
+
 /* CARDS ESTRUTURA */
 .structure-card {
   background: var(--glass-bg);
